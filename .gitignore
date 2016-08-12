@@ -3,3 +3,4 @@ data/
 .python-version
 *.log
 todo.md
+config.yaml

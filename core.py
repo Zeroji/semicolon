@@ -1,13 +1,19 @@
 #!/usr/bin/env python
 """Bot core."""
+import argparse
 import asyncio
 import importlib
 import logging
 import os.path
+import sys
 import time
 import discord
 import cogs
+import config
 import gearbox
+
+
+CFG = {}
 
 
 class Bot(discord.Client):
@@ -91,18 +97,20 @@ class Bot(discord.Client):
     async def wheel(self):  # They see me loading
         logging.info('Wheel rolling.')
         while True:
-            for name, cog in cogs.COGS.items():
-                if os.path.getmtime(cog.__file__) > self.last_update:
-                    try:
-                        importlib.reload(cog)
-                    except Exception as exc:
-                        logging.error("Error while reloading '%s': %s", name, exc)
-                    else:
-                        logging.info("Reloaded '%s'.", name)
-                    self.last_update = time.time()
-            for name in [f[:-3] for f in os.listdir('cogs') if f.endswith('.py')]:
-                if name not in cogs.COGS and gearbox.is_valid(name):
-                    cogs.load(name)  # They're addin'
+            if CFG['wheel']['import']:
+                for name in [f[:-3] for f in os.listdir('cogs') if f.endswith('.py')]:
+                    if name not in cogs.COGS and gearbox.is_valid(name):
+                        cogs.load(name)  # They're addin'
+            if CFG['wheel']['reload']:
+                for name, cog in cogs.COGS.items():
+                    if os.path.getmtime(cog.__file__) > self.last_update:
+                        try:
+                            importlib.reload(cog)
+                        except Exception as exc:
+                            logging.error("Error while reloading '%s': %s", name, exc)
+                        else:
+                            logging.info("Reloaded '%s'.", name)
+                        self.last_update = time.time()
             await asyncio.sleep(2)
 
 
@@ -115,13 +123,30 @@ class Bot(discord.Client):
 
 def main():
     """Load authentication data and run the bot."""
-    logging.basicConfig(filename='run.log', level=logging.DEBUG)
-    logging.info('Starting...')
-    token = open('data/secret/token', 'r').read().strip()
+    parser = argparse.ArgumentParser(description='Run semicolon.')
+    parser.add_argument('-c', '--config', action='store')
+    parser.add_argument('-l', '--load', action='append')
+    parser.add_argument('--generate', action='store')
+    args = parser.parse_args(sys.argv[1:])
+    if args.generate:
+        if config.write(args.generate):
+            print("Created config file '%s'" % args.generate)
+        return
+    config.load(args.config, CFG)
 
-    master = open('data/master', 'r').read().strip()
-    admins = open('data/admins', 'r').read().splitlines()
-    banned = open('data/banned', 'r').read().splitlines()
+    logging.basicConfig(filename=CFG['path']['log'], level=logging.DEBUG)
+    logging.info('Starting...')
+
+    if args.load is not None:
+        for name in args.load:
+            cogs.load(name)
+        CFG['wheel']['import'] = False
+
+    token = open(CFG['path']['token'], 'r').read().strip()
+
+    master = open(CFG['path']['master'], 'r').read().strip()
+    admins = open(CFG['path']['admins'], 'r').read().splitlines()
+    banned = open(CFG['path']['banned'], 'r').read().splitlines()
 
     bot = Bot(master, admins, banned)
     bot.run(token)
