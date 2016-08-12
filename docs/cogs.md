@@ -123,11 +123,9 @@ This creates aliases for your command. Let's say you find `encrypt` is a quite l
 
 ##### `@cog.init`
 This doesn't apply to a command, but to a regular function - it marks it, so it will be called when the cog is loaded. You can only have one init function.
-> *Not yet implemented as of v0.1.0*
 
 ##### `@cog.exit`
 This doesn't apply to a command, but to a regular function - it marks it, so it will be called when the cog is unloaded. You can only have one exit function.
-> *Not yet implemented as of v0.1.0*
 
 ### Using your cog
 

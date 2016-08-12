@@ -2,7 +2,6 @@
 """Bot core."""
 import argparse
 import asyncio
-import importlib
 import logging
 import os.path
 import sys
@@ -22,15 +21,17 @@ class Bot(discord.Client):
     def __init__(self, master='', admins=(), banned=()):
         """Magic method docstring."""
         super(Bot, self).__init__()
+        if master not in admins:
+            admins = (master,) + admins
         self.master = master
         self.admins = admins
         self.banned = banned
         self.cogs = {}
         self.last_update = time.time()
 
-    def run(self, *args):
+    def run(self, *args, **kwargs):
         """Start client."""
-        super(Bot, self).run(*args)
+        super(Bot, self).run(*args, **kwargs)
 
     async def on_message(self, message):
         """Handle messages."""
@@ -45,7 +46,7 @@ class Bot(discord.Client):
         # Detecting and stripping prefixes
         prefixes = [';']
         prefixes.append(self.user.mention)
-        breaker = '|'
+        breaker = '|'  # See README.md
         text = message.content
         if not message.channel.is_private:
             text, is_command = gearbox.strip_prefix(text, prefixes)
@@ -71,6 +72,21 @@ class Bot(discord.Client):
             commands = (gearbox.strip_prefix(text, prefixes)[0],)
 
         for text in commands:
+            # Very special commands (reload/restart/shutdown)
+            if message.author.id in self.admins:
+                if text == 'reload':
+                    logging.info("Reloading all cogs")
+                    for name, cog in cogs.COGS.items():
+                        cogs.reload(name, cog)
+                if text == 'restart' or (text == 'shutdown' and message.author.id == self.master):
+                    logging.info("%s initiated by %s", text.capitalize(), message.author.name)
+                    if text == 'shutdown':
+                        # An external script runs the bot forever unless this file exists
+                        open('stop', 'a').close()
+                    for cog in cogs.COGS.values():
+                        cog.cog.on_exit()
+                    logging.info("All cogs unloaded.")
+                    await self.logout()
             # Getting command arguments (or not)
             if ' ' in text:
                 command, arguments = text.split(' ', 1)
@@ -104,12 +120,7 @@ class Bot(discord.Client):
             if CFG['wheel']['reload']:
                 for name, cog in cogs.COGS.items():
                     if os.path.getmtime(cog.__file__) > self.last_update:
-                        try:
-                            importlib.reload(cog)
-                        except Exception as exc:
-                            logging.error("Error while reloading '%s': %s", name, exc)
-                        else:
-                            logging.info("Reloaded '%s'.", name)
+                        cogs.reload(name, cog)
                         self.last_update = time.time()
             await asyncio.sleep(2)
 
@@ -123,20 +134,29 @@ class Bot(discord.Client):
 
 def main():
     """Load authentication data and run the bot."""
+    # Make commandline arguments available
     parser = argparse.ArgumentParser(description='Run semicolon.')
-    parser.add_argument('-c', '--config', action='store')
-    parser.add_argument('-l', '--load', action='append')
-    parser.add_argument('--generate', action='store')
+    parser.add_argument('-c', '--config', action='store', metavar='file',
+                        help='specify the config file')
+    parser.add_argument('-l', '--load', action='append', metavar='cog_name',
+                        help='load only specific cogs')
+    parser.add_argument('--generate', action='store', metavar='path',
+                        help='generate a default configuration file')
     args = parser.parse_args(sys.argv[1:])
+
+    # Generate a default config file
     if args.generate:
         if config.write(args.generate):
             print("Created config file '%s'" % args.generate)
         return
-    config.load(args.config, CFG)
 
-    logging.basicConfig(filename=CFG['path']['log'], level=logging.DEBUG)
+    # Load config and finally start logging
+    config.load(args.config, CFG)
+    logging.basicConfig(filename=CFG['path']['log'], level=logging.DEBUG,
+                        format='%(name)s:%(asctime)s %(levelname)s %(message)s')
     logging.info('Starting...')
 
+    # When in debug mode, load speficic cogs and prevent dynamic import
     if args.load is not None:
         for name in args.load:
             cogs.load(name)
@@ -148,8 +168,9 @@ def main():
     admins = open(CFG['path']['admins'], 'r').read().splitlines()
     banned = open(CFG['path']['banned'], 'r').read().splitlines()
 
-    bot = Bot(master, admins, banned)
+    bot = Bot(master, tuple(admins), tuple(banned))
     bot.run(token)
+    logging.info("Stopped")
 
 if __name__ == '__main__':
     main()

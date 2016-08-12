@@ -71,7 +71,7 @@ class Command:
 class Cog:
     """The cog class containing the decorators."""
 
-    def __init__(self, name=''):
+    def __init__(self, name=None):
         """Initialization."""
         self.on_init = lambda: None
         self.on_exit = lambda: None
