@@ -51,13 +51,13 @@ class Bot(discord.Client):
         if not message.channel.is_private:
             text, is_command = gearbox.strip_prefix(text, prefixes)
             if is_command:
-                commands = (text,)
+                commands = [text]
             else:
                 if breaker * 2 in text:
                     text = text[text.find(breaker * 2) + 2:].lstrip()
                     text, is_command = gearbox.strip_prefix(text, prefixes)
                     if is_command:
-                        commands = (text,)
+                        commands = [text]
                 elif breaker in text:
                     parts = [part.strip() for part in text.split(breaker)]
                     commands = []
@@ -69,7 +69,7 @@ class Bot(discord.Client):
                 if not is_command:
                     return
         else:
-            commands = (gearbox.strip_prefix(text, prefixes)[0],)
+            commands = [gearbox.strip_prefix(text, prefixes)[0]]
 
         for text in commands:
             # Very special commands (reload/restart/shutdown)
@@ -102,15 +102,17 @@ class Bot(discord.Client):
                 func = cog.get(cmd)
             else:
                 # Checking for command existence / possible duplicates
-                func = cogs.command(command)
-                if isinstance(func, list):
+                matches = cogs.command(command)
+                if len(matches) > 1:
                     output = ("The command `%s` was found in multiple cogs: %s. Use <cog>.%s to specify." %
-                              (command, gearbox.pretty(func, '`%s`'), command))
+                              (command, gearbox.pretty([m[0] for m in matches], '`%s`'), command))
                     await self.send_message(message.channel, output)
-            if isinstance(func, gearbox.Command):
+                func = matches[0][1] if len(matches) == 1 else None
+            if func is not None:
                 await func.call(self, message, arguments)
 
     async def wheel(self):  # They see me loading
+        """Dynamically update the cogs."""
         logging.info('Wheel rolling.')
         while True:
             if CFG['wheel']['import']:

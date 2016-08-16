@@ -7,7 +7,7 @@ cog = gearbox.Cog()
 
 
 def shift(letter, number):
-    """Shifts a letter by a numeric offset."""
+    """Shift a letter by a numeric offset."""
     if 'A' <= letter <= 'Z':
         return chr((ord(letter) - ord('A') + number) % 26 + ord('A'))
     if 'a' <= letter <= 'z':
@@ -16,7 +16,7 @@ def shift(letter, number):
 
 
 def encode_7879(message, reverse=False):
-    """Encode using 7879's custom cipher."""
+    """Encode text using 7879's custom cipher."""
     return ' '.join([
         ''.join([
             shift(char, (-1 if reverse else 1) * (i + 1) * len(word)) for i, char in enumerate(word)
@@ -84,7 +84,7 @@ def encode_cipher_box(text, size=0, reverse=False):
 
 
 def decode_null(pattern, text):
-    """Decode text hidden with null cipher."""
+    """Decode text with the null cipher."""
     i = 0
     result = ''
     for word in text.split():
@@ -120,7 +120,9 @@ def encode_substitute(alphabet, text, reverse=False):
 
 class Polybius:
     """Use Polybius squares for ciphers."""
+
     def __init__(self, size=5, replace='J', replace_by='I'):
+        """Initialization."""
         self.size = size
         self.mat = [[None] * size for _ in range(size)]
         self.replace = replace or ''
@@ -170,8 +172,9 @@ def encode_tap_code(text, reverse=False):
                 result += char
         return result
 
-@cog.command
+@cog.command(fulltext=True)
 def atbash(text):
+    """Encode text using the Atbash cipher."""
     result = ''
     for char in text:
         if 'A' <= char <= 'Z':
@@ -182,33 +185,31 @@ def atbash(text):
             result += char
     return result
 
-@cog.command
-def encode(text):
-    return encode_7879(text)
+@cog.command(fulltext=True, flags='de')
+def rot7879(text, flags):
+    """Encode text using 7879's custom cipher."""
+    if 'd' in flags and 'e' in flags:
+        return 'Mutually exclusive flags: -d and -e'
+    return encode_7879(text, reverse='d' in flags)
 
-@cog.command
-@cog.alias('de')
-def decode(text):
-    return encode_7879(text, reverse=True)
+@cog.command(fulltext=True, flags='de')
+@cog.alias('vig')
+def vigenere(key, text, flags):
+    """Encode a text with Vigenere cipher."""
+    if 'd' in flags and 'e' in flags:
+        return 'Mutually exclusive flags: -d and -e'
+    return encode_vigenere(text, key, reverse='d' in flags)
 
-@cog.command
-def vigenere(key, text):
-    return encode_vigenere(text, key)
+@cog.command(fulltext=True, flags='de')
+def morse(text, flags):
+    """Encode text into Morse code."""
+    if 'd' in flags and 'e' in flags:
+        return 'Mutually exclusive flags: -d and -e'
+    return encode_morse(text, reverse='d' in flags)
 
-@cog.command
-def vigdec(key, text):
-    return encode_vigenere(text, key, reverse=True)
-
-@cog.command
-def morse(text):
-    return encode_morse(text)
-
-@cog.command
-def morsed(text):
-    return encode_morse(text, reverse=True)
-
-@cog.command
-def null(pattern, text):
+@cog.command(fulltext=True)
+def null(pattern, text=''):
+    """Decode text with the null cipher."""
     try:
         patt = [int(x.strip()) for x in pattern.split(',')]
     except ValueError:
@@ -220,56 +221,47 @@ def null(pattern, text):
                 patt[i] = index-1
     return decode_null(patt, text)
 
-@cog.command
-def box(size, text):
+@cog.command(fulltext=True, flags='de')
+def box(size, flags, text=''):
+    """Encode text using cipher boxes."""
+    if 'd' in flags and 'e' in flags:
+        return 'Mutually exclusive flags: -d and -e'
     try:
         size = int(size)
     except ValueError:
         text = size
         size = 0
-    return encode_cipher_box(text, size)
+    return encode_cipher_box(text, size, reverse='d' in flags)
 
-@cog.command
-def boxd(size, text):
-    try:
-        size = int(size)
-    except ValueError:
-        text = size
-        size = 0
-    return encode_cipher_box(text, size, True)
-
-
-@cog.command
+@cog.command(fulltext=True)
 def pad_block(size, text):
+    """Format text into blocks of letters."""
     size = int(size)
     text = ''.join([c for c in text.upper() if c in string.ascii_uppercase])
     while len(text) % size:
         text += random.choice(text)
     return ' '.join([text[i:i + size] for i in range(0, len(text), size)])
 
-@cog.command
-def mixed(key, text):
-    return encode_mixed_alphabet(key, text)
+@cog.command(fulltext=True, flags='de')
+def mixed(key, text, flags):
+    """Encode using a mixed alphabet (ZEBRAS-like)."""
+    if 'd' in flags and 'e' in flags:
+        return 'Mutually exclusive flags: -d and -e'
+    return encode_mixed_alphabet(key, text, reverse='d' in flags)
 
-@cog.command
-def mixedd(key, text):
-    return encode_mixed_alphabet(key, text, reverse=True)
-
-@cog.command
-def subs(alpha, text):
+@cog.command(fulltext=True, flags='de')
+def subs(alpha, text, flags):
+    """Encode using alphabet substitution."""
+    if 'd' in flags and 'e' in flags:
+        return 'Mutually exclusive flags: -d and -e'
     return encode_substitute(alpha, text)
 
-@cog.command
-def subd(alpha, text):
-    return encode_substitute(alpha, text, reverse=True)
-
-@cog.command
-def taptap(text):
-    return encode_tap_code(text)
-
-@cog.command
-def taptapd(text):
-    return encode_tap_code(text, reverse=True)
+@cog.command(fulltext=True, flags='de')
+def taptap(text, flags):
+    """Encode text using the tap code."""
+    if 'd' in flags and 'e' in flags:
+        return 'Mutually exclusive flags: -d and -e'
+    return encode_tap_code(text, reverse='d' in flags)
 
 
 # TODO hash functions (md5, sha1/224/256/384/512)
