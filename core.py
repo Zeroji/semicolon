@@ -48,10 +48,12 @@ class Bot(discord.Client):
         prefixes.append(self.user.mention)
         breaker = '|'  # See README.md
         text = message.content
+        command_only = False
         if not message.channel.is_private:
             text, is_command = gearbox.strip_prefix(text, prefixes)
             if is_command:
                 commands = [text]
+                command_only = True
             else:
                 if breaker * 2 in text:
                     text = text[text.find(breaker * 2) + 2:].lstrip()
@@ -110,6 +112,10 @@ class Bot(discord.Client):
                 func = matches[0][1] if len(matches) == 1 else None
             if func is not None:
                 await func.call(self, message, arguments)
+                if (func.delete_message and command_only and
+                        message.channel.permissions_for(
+                            message.server.get_member(self.user.id)).manage_messages):
+                    await self.delete_message(message)
 
     async def wheel(self):  # They see me loading
         """Dynamically update the cogs."""

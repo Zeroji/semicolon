@@ -36,7 +36,7 @@ def strip_prefix(text, prefixes=';'):
 class Command:
     """Guess what."""
 
-    def __init__(self, func, fulltext=False, flags=''):
+    def __init__(self, func, fulltext=False, flags='', delete_message=False):
         """Guess."""
         self.params = inspect.signature(func).parameters
         # self.special = [arg for arg in params if arg in SPECIAL_ARGS]
@@ -48,6 +48,7 @@ class Command:
         else:
             self.last_arg_mode = 0  # Fixed argument count
         self.flags = flags
+        self.delete_message = delete_message
         self.min_arg = len([arg for arg, val in self.params.items() if arg not in SPECIAL_ARGS and isinstance(val.default, type)])
         self.iscoroutine = inspect.iscoroutine(func)
         self.func = func
@@ -68,7 +69,6 @@ class Command:
         max_args = len(self.normal)
         text = arguments.split(' ', max_args - 1)
         text = [arg for arg in text if len(arg) > 0]
-        print(self.min_arg, max_args, self.last_arg_mode, text)
         if (len(text) < self.min_arg or len(text) > max_args or
                 (self.last_arg_mode == 0 and len(text) > 0 and ' ' in text[-1])):
             await client.send_message(message.channel, 'Invalid argument count!')
@@ -83,20 +83,19 @@ class Command:
         #     args[-1] = ' '.join(text[len(self.normal) - 1:])
         ordered_args = [args[key] for key in self.params if key in args]
         ordered_args += pos_args
-        print(ordered_args)
         if self.iscoroutine:
-            await self.func(*ordered_args)
+            output = await self.func(*ordered_args)
         else:
             output = self.func(*ordered_args)
-            if output is not None:
-                try:
-                    output = str(output)
-                except (UnicodeError, UnicodeEncodeError):
-                    logging.warning("Unicode error in command '%s' (with arguments %s)",
-                                    self.func.__name__, ordered_args)
-                else:
-                    if len(output) > 0:
-                        await client.send_message(message.channel, str(output))
+        if output is not None:
+            try:
+                output = str(output)
+            except (UnicodeError, UnicodeEncodeError):
+                logging.warning("Unicode error in command '%s' (with arguments %s)",
+                                self.func.__name__, ordered_args)
+            else:
+                if len(output) > 0:
+                    await client.send_message(message.channel, str(output))
 
 
 class Cog:
