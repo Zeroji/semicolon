@@ -6,4 +6,4 @@ cog = gearbox.Cog('example')
 @cog.alias('hi')
 def hello(author):
     """Say hello."""
-    return 'Hello, %s!' % author.name
+    return f'Hello, {author.name}!'

@@ -60,7 +60,7 @@ class Command:
         if arguments.startswith('-') and self.flags:
             for flag in arguments.split(' ')[0][1:]:
                 if flag not in self.flags:
-                    await client.send_message(message.channel, 'Invalid flag: -%s' % flag)
+                    await client.send_message(message.channel, f'Invalid flag: -{flag}')
                     return
                 special_args['flags'] += flag
             arguments = arguments[arguments.find(' ') + 1:] if ' ' in arguments else ''

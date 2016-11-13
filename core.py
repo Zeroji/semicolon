@@ -106,8 +106,8 @@ class Bot(discord.Client):
                 # Checking for command existence / possible duplicates
                 matches = cogs.command(command)
                 if len(matches) > 1:
-                    output = ("The command `%s` was found in multiple cogs: %s. Use <cog>.%s to specify." %
-                              (command, gearbox.pretty([m[0] for m in matches], '`%s`'), command))
+                    output = f"The command `{command}` was found in multiple cogs: " \
+                             f"{gearbox.pretty([m[0] for m in matches], '`%s`')}. Use <cog>.{command} to specify."
                     await self.send_message(message.channel, output)
                 func = matches[0][1] if len(matches) == 1 else None
             if func is not None:
@@ -136,7 +136,7 @@ class Bot(discord.Client):
     async def on_ready(self):
         """Initialization."""
         self.loop.create_task(self.wheel())
-        await super(Bot, self).change_status(idle=True)
+        await super(Bot, self).change_presence(status=discord.Status.idle)
         logging.info('Client started.')
 
 
@@ -155,13 +155,16 @@ def main():
     # Generate a default config file
     if args.generate:
         if config.write(args.generate):
-            print("Created config file '%s'" % args.generate)
+            print(f"Created config file '{args.generate}'")
         return
 
     # Load config and finally start logging
     config.load(args.config, CFG)
     logging.basicConfig(filename=CFG['path']['log'], level=logging.DEBUG,
-                        format='%(name)s:%(asctime)s %(levelname)s %(message)s')
+                        format='%(asctime)s:%(name)s: %(levelname)s %(message)s')
+    logging.getLogger('discord').setLevel(logging.WARNING)
+    logging.getLogger('asyncio').setLevel(logging.WARNING)
+    logging.getLogger('websockets').setLevel(logging.WARNING)
     logging.info('Starting...')
 
     # When in debug mode, load speficic cogs and prevent dynamic import

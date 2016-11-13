@@ -1,2 +1,2 @@
-discord.py==0.11.0
-PyYAML==3.11
+discord.py==0.14.3
+PyYAML==3.12

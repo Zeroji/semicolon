@@ -1,7 +1,14 @@
-__pycache__
-data/
+# Temporary
+__pycache__/
+*.swp
+
+# Environment
+.idea
 .python-version
-*.log
 todo.md
+
+# Program
+data/
+*.log
 config.yaml
 stop
