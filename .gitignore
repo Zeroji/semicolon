@@ -12,3 +12,6 @@ data/
 *.log
 config.yaml
 stop
+
+# Who reads this file anyway
+cogs/kinky.py

@@ -2,16 +2,18 @@
 import inspect
 import logging
 import re
+import json
 
 
 SERVER_CONFIG_PATH = 'servers/%s.json'
-SPECIAL_ARGS = ('message', 'author', 'channel', 'server', 'client', 'flags')
+SPECIAL_ARGS = ('message', 'author', 'channel', 'server', 'server_ex', 'client', 'flags')
 VALID_NAME = re.compile('[a-z][a-z_0-9]*$')
 
 
 def is_valid(name):
     """Check if a name matches `[a-z][a-z_0-9]*`."""
     return VALID_NAME.match(name) is not None
+
 
 def pretty(items, formatting='%s'):
     """Prettify a list of strings."""
@@ -36,7 +38,7 @@ def strip_prefix(text, prefixes=';'):
 class Command:
     """Guess what."""
 
-    def __init__(self, func, fulltext=False, flags='', delete_message=False):
+    def __init__(self, func, flags='', fulltext=False, delete_message=False, permissions=None):
         """Guess."""
         self.params = inspect.signature(func).parameters
         # self.special = [arg for arg in params if arg in SPECIAL_ARGS]
@@ -49,14 +51,24 @@ class Command:
             self.last_arg_mode = 0  # Fixed argument count
         self.flags = flags
         self.delete_message = delete_message
-        self.min_arg = len([arg for arg, val in self.params.items() if arg not in SPECIAL_ARGS and isinstance(val.default, type)])
-        self.iscoroutine = inspect.iscoroutine(func)
+        self.min_arg = len([arg for arg, val in self.params.items()
+                            if arg not in SPECIAL_ARGS and isinstance(val.default, type)])
+        self.iscoroutine = inspect.iscoroutinefunction(func)
         self.func = func
+        self.permissions = []
+        if permissions is not None:
+            if type(permissions) is str:
+                self.permissions.append((permissions, True))
+            elif type(permissions) is tuple:
+                self.permissions.append(permissions)
+            elif type(permissions) is list:
+                self.permissions.extend([(perm, True) if type(perm) is str else perm for perm in permissions])
 
     async def call(self, client, message, arguments):
         """Call a command."""
         special_args = {'client': client, 'message': message, 'author': message.author,
-                        'channel': message.channel, 'server': message.server, 'flags': ''}
+                        'channel': message.channel, 'server': message.server,
+                        'server_ex': client.server[message.server.id], 'flags': ''}
         if arguments.startswith('-') and self.flags:
             for flag in arguments.split(' ')[0][1:]:
                 if flag not in self.flags:
@@ -65,7 +77,7 @@ class Command:
                 special_args['flags'] += flag
             arguments = arguments[arguments.find(' ') + 1:] if ' ' in arguments else ''
         pos_args = []
-        args = {key:value for key, value in special_args.items() if key in self.params}
+        args = {key: value for key, value in special_args.items() if key in self.params}
         max_args = len(self.normal)
         text = arguments.split(' ', max_args - 1)
         text = [arg for arg in text if len(arg) > 0]
@@ -76,7 +88,7 @@ class Command:
         if len(text) == max_args and self.last_arg_mode == 2:
             pos_args = text[-1].split()
             text = text[:-1]
-        args.update({key:text[i] for i, key in enumerate(self.normal) if i < len(text)})
+        args.update({key: text[i] for i, key in enumerate(self.normal) if i < len(text)})
         # if self.multiple:
         #     args = args[:-1] + text[len(self.normal) - 1:]
         # elif self.normal:
@@ -152,17 +164,17 @@ class Cog:
 
     def command(self, func=None, **kwargs):
         """Command decorator."""
-        def decorator(func):
+        def decorator(function):
             """Command decorator."""
-            name = func.__name__
+            name = function.__name__
             if not is_valid(name):
                 logging.critical("Invalid command name '%s' in module '%s'", name, self.name)
                 return lambda *a, **kw: None
             if name in self.aliases:
                 logging.warning("Command '%s' overwrites an alias mapped to '%s'", name, self.aliases[name])
             self.aliases[name] = name
-            self.commands[name] = Command(func, **kwargs)
-            return func
+            self.commands[name] = Command(function, **kwargs)
+            return function
         return decorator if func is None else decorator(func)
 
     def has(self, name):
@@ -173,3 +185,26 @@ class Cog:
         """Return the command needed."""
         if name in self.aliases:
             return self.commands.get(self.aliases[name])
+
+
+class Server:
+    """Custom server class."""
+
+    def __init__(self, sid, path):
+        """Initialize."""
+        self.id = sid
+        self.path = path % sid
+        self.config = None
+        self.blacklist = None
+        self.load()
+
+    def load(self):
+        try:
+            self.config = json.load(open(self.path))
+        except FileNotFoundError:
+            self.config = {'cogs':{'blacklist':[]}}
+        self.blacklist = self.config['cogs']['blacklist']
+
+    def write(self):
+        self.config['cogs']['blacklist'] = self.blacklist
+        json.dump(self.config, open(self.path, 'w'))

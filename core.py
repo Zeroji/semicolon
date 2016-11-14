@@ -28,6 +28,7 @@ class Bot(discord.Client):
         self.banned = banned
         self.cogs = {}
         self.last_update = time.time()
+        self.server = {}
 
     def run(self, *args, **kwargs):
         """Start client."""
@@ -43,11 +44,14 @@ class Bot(discord.Client):
         if message.author == self.user:
             return
 
+        if message.server.id not in self.server:
+            self.server[message.server.id] = gearbox.Server(message.server.id, CFG['path']['server'])
+
         # Detecting and stripping prefixes
-        prefixes = [';']
-        prefixes.append(self.user.mention)
+        prefixes = [';', self.user.mention]
         breaker = '|'  # See README.md
         text = message.content
+        commands = []
         command_only = False
         if not message.channel.is_private:
             text, is_command = gearbox.strip_prefix(text, prefixes)
@@ -98,19 +102,22 @@ class Bot(discord.Client):
             if '.' in command:
                 # Getting command from cog when using cog.command
                 cog, cmd = command.split('.')
+                if cog in self.server[message.server.id].config['cogs']['blacklist']:
+                    return
                 cog = cogs.cog(cog)
                 if not cog:
                     return
                 func = cog.get(cmd)
             else:
                 # Checking for command existence / possible duplicates
-                matches = cogs.command(command)
+                matches = cogs.command(command, self.server[message.server.id].config['cogs']['blacklist'])
                 if len(matches) > 1:
                     output = f"The command `{command}` was found in multiple cogs: " \
                              f"{gearbox.pretty([m[0] for m in matches], '`%s`')}. Use <cog>.{command} to specify."
                     await self.send_message(message.channel, output)
                 func = matches[0][1] if len(matches) == 1 else None
-            if func is not None:
+            if func is not None and all([permission in message.channel.permissions_for(message.author)
+                                         for permission in func.permissions]):
                 await func.call(self, message, arguments)
                 if (func.delete_message and command_only and
                         message.channel.permissions_for(
@@ -131,7 +138,6 @@ class Bot(discord.Client):
                         cogs.reload(name, cog)
                         self.last_update = time.time()
             await asyncio.sleep(2)
-
 
     async def on_ready(self):
         """Initialization."""
