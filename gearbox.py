@@ -52,7 +52,8 @@ class Command:
         self.flags = flags
         self.delete_message = delete_message
         self.min_arg = len([arg for arg, val in self.params.items()
-                            if arg not in SPECIAL_ARGS and isinstance(val.default, type)])
+                            if arg not in SPECIAL_ARGS and isinstance(val.default, type)
+                            and self.params[arg].kind.name is not 'VAR_POSITIONAL'])
         self.iscoroutine = inspect.iscoroutinefunction(func)
         self.func = func
         self.permissions = []
@@ -196,15 +197,22 @@ class Server:
         self.path = path % sid
         self.config = None
         self.blacklist = None
+        self.prefixes = None
         self.load()
 
     def load(self):
         try:
             self.config = json.load(open(self.path))
         except FileNotFoundError:
-            self.config = {'cogs':{'blacklist':[]}}
+            self.config = {'cogs': {'blacklist': []}, 'prefixes': [';']}
+            self._write()
         self.blacklist = self.config['cogs']['blacklist']
+        self.prefixes = self.config['prefixes']
 
     def write(self):
         self.config['cogs']['blacklist'] = self.blacklist
+        self.config['prefixes'] = self.prefixes
+        self._write()
+
+    def _write(self):
         json.dump(self.config, open(self.path, 'w'))

@@ -48,7 +48,8 @@ class Bot(discord.Client):
             self.server[message.server.id] = gearbox.Server(message.server.id, CFG['path']['server'])
 
         # Detecting and stripping prefixes
-        prefixes = [';', self.user.mention]
+        prefixes = [self.user.mention]
+        prefixes.extend(self.server[message.server.id].prefixes)
         breaker = '|'  # See README.md
         text = message.content
         commands = []
