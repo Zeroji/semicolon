@@ -54,7 +54,7 @@ def hello(author):
 As you can see, simply putting `author` in the function definition will give you the corresponding object. Why? Because `;;` is made in such a way that it'll look at what you want, and attempt to provide it to you so you don't need to write extra pieces of code. Here's a list of those "special" arguments: *(as of v0.1.1)*
 
 |Argument    | Description
-|-
+| ---        | ---
 |`client`    | The application's `discord.Client()`
 |`message`   | The Message object which was sent - don't use like a string!
 |`author`    | Shortcut for `message.author`
@@ -67,7 +67,7 @@ As you can see, simply putting `author` in the function definition will give you
 
 > **Side note about flags**  
 Flags with `;;` are like flags in Bash: if the first argument of your command
-starts with a dash (`-`), the letters behind if, called "flags", will be sent to the command.
+starts with a dash (`-`), the letters behind it, called "flags", will be sent to the command.
 You can specify which flags your command accept. Flags are case-sensitive. Quick example:
 > ```python
 > @cog.command(flags='abc')
@@ -108,8 +108,8 @@ def add(number_a, number_b):
 If the user doesn't provide the arguments you need, for example if they type `add 4`, `;;` will print `Invalid argument count` in the chat, and your command won't be executed.
 If the user sends too many arguments, for example by typing `add 1 2 3`, the same thing will happen.
 
-Now what if you'd like to have default argument? Let's say you want `add` to add 1 if `number_b` isn't specified:
-with the new version, just do like you'd do with regular Python functions!
+Now what if you'd like to have default arguments? Let's say you want `add` to add 1 if `number_b` isn't specified:
+since v0.1.1, just do like you'd do with regular Python functions!
 
 ```python
 @cog.command
