@@ -69,7 +69,8 @@ class Command:
         """Call a command."""
         special_args = {'client': client, 'message': message, 'author': message.author,
                         'channel': message.channel, 'server': message.server,
-                        'server_ex': client.server[message.server.id], 'flags': ''}
+                        'server_ex': client.server[message.channel.id if message.channel.is_private else
+                                                   message.server.id], 'flags': ''}
         if arguments.startswith('-') and self.flags:
             for flag in arguments.split(' ')[0][1:]:
                 if flag not in self.flags:

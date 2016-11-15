@@ -44,12 +44,14 @@ class Bot(discord.Client):
         if message.author == self.user:
             return
 
-        if message.server.id not in self.server:
-            self.server[message.server.id] = gearbox.Server(message.server.id, CFG['path']['server'])
+        server_ex_id = message.channel.id if message.channel.is_private else message.server.id
+        if server_ex_id not in self.server:
+            self.server[server_ex_id] = gearbox.Server(server_ex_id, CFG['path']['server'])
+        server_ex = self.server[server_ex_id]
 
         # Detecting and stripping prefixes
         prefixes = [self.user.mention]
-        prefixes.extend(self.server[message.server.id].prefixes)
+        prefixes.extend(server_ex.prefixes)
         breaker = '|'  # See README.md
         text = message.content
         commands = []
@@ -103,7 +105,7 @@ class Bot(discord.Client):
             if '.' in command:
                 # Getting command from cog when using cog.command
                 cog, cmd = command.split('.')
-                if cog in self.server[message.server.id].config['cogs']['blacklist']:
+                if cog in server_ex.config['cogs']['blacklist']:
                     return
                 cog = cogs.cog(cog)
                 if not cog:
@@ -111,7 +113,7 @@ class Bot(discord.Client):
                 func = cog.get(cmd)
             else:
                 # Checking for command existence / possible duplicates
-                matches = cogs.command(command, self.server[message.server.id].config['cogs']['blacklist'])
+                matches = cogs.command(command, server_ex.config['cogs']['blacklist'])
                 if len(matches) > 1:
                     output = f"The command `{command}` was found in multiple cogs: " \
                              f"{gearbox.pretty([m[0] for m in matches], '`%s`')}. Use <cog>.{command} to specify."
