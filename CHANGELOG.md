@@ -20,10 +20,6 @@ All notable changes to this project will be documented in this file.
 * `Invalid argument count` when passing no arguments to a command using positional arguments
 * Private message channels are now considered as servers (regarding settings)
 
-#### Bugs
-
-- `@cog.rename` crashes cog on loading, sends error on reloading
-
 ### [v0.1.1]
 
 #### Added

@@ -10,7 +10,7 @@ def load(name):
     try:
         mod = importlib.import_module(__name__ + '.' + name)
     except Exception as exc:  # Yes I know it's too general. Just wanna catch 'em all.
-        logging.critical("Error while loading '%s': %s", name, exc)
+        logging.critical("%s while loading '%s': %s", type(exc).__name__, name, exc)
     else:
         mod.cog.on_init()
         if mod.cog.name is not None:
@@ -29,7 +29,7 @@ def reload(name, mod):  # Passing name for logging purposes
     try:
         importlib.reload(mod)
     except Exception as exc:
-        logging.error("Error while reloading '%s': %s", name, exc)
+        logging.error("%s while reloading '%s': %s", type(exc).__name__, name, exc)
     else:
         if mod.cog.name is None:
             mod.cog.name = name

@@ -193,8 +193,7 @@ class Cog:
                 if name in self.aliases:
                     logging.warning("Command '%s' overwrites an alias mapped to '%s'", name, self.aliases[name])
                 self.aliases[name] = name
-                self.commands[name] = Command(func)
-                self.commands.pop(func.__name__)
+                self.commands[func.__name__] = name
             return func
         return decorate
 
@@ -203,12 +202,17 @@ class Cog:
         def decorator(function):
             """Command decorator."""
             name = function.__name__
-            if not is_valid(name):
-                logging.critical("Invalid command name '%s' in module '%s'", name, self.name)
-                return lambda *a, **kw: None
-            if name in self.aliases:
-                logging.warning("Command '%s' overwrites an alias mapped to '%s'", name, self.aliases[name])
-            self.aliases[name] = name
+            if name in self.commands:
+                real_name = self.commands[name]
+                self.commands.pop(name)
+                name = real_name
+            else:
+                if not is_valid(name):
+                    logging.critical("Invalid command name '%s' in module '%s'", name, self.name)
+                    return lambda *a, **kw: None
+                if name in self.aliases:
+                    logging.warning("Command '%s' overwrites an alias mapped to '%s'", name, self.aliases[name])
+                self.aliases[name] = name
             self.commands[name] = Command(function, **kwargs)
             return function
         return decorator if func is None else decorator(func)
