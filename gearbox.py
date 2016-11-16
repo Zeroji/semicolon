@@ -49,7 +49,7 @@ class Command:
             self.last_arg_mode = 1  # Full text
         else:
             self.last_arg_mode = 0  # Fixed argument count
-        self.flags = flags
+        self.flags = {c: '' for c in flags} if type(flags) is str else flags
         self.delete_message = delete_message
         self.min_arg = len([arg for arg, val in self.params.items()
                             if arg not in SPECIAL_ARGS and isinstance(val.default, type)
@@ -64,6 +64,19 @@ class Command:
                 self.permissions.append(permissions)
             elif type(permissions) is list:
                 self.permissions.extend([(perm, True) if type(perm) is str else perm for perm in permissions])
+        self.annotations = {arg: None for arg in self.normal}
+        type_types = (type, type(re.compile('')))
+        for key, item in func.__annotations__.items():
+            if key in self.normal:
+                if type(item) is str:
+                    self.annotations[key] = (None, item)
+                elif type(item) in type_types:
+                    self.annotations[key] = (item, None)
+                elif type(item) is tuple:
+                    if type(item[0]) is str and type(item[1]) in type_types:
+                        self.annotations[key] = (item[1], item[0])
+                    elif type(item[0]) in type_types and type(item[1]) is str:
+                        self.annotations[key] = item
 
     async def call(self, client, message, arguments):
         """Call a command."""
@@ -90,7 +103,28 @@ class Command:
         if len(text) == max_args and self.last_arg_mode == 2:
             pos_args = text[-1].split()
             text = text[:-1]
-        args.update({key: text[i] for i, key in enumerate(self.normal) if i < len(text)})
+        temp_args = {key: text[i] for i, key in enumerate(self.normal) if i < len(text)}
+        for key, arg in temp_args.items():
+            argtype = self.annotations[key][0]
+            if argtype is not None and not(self.last_arg_mode == 2 and self.normal[-1] == key):
+                if type(argtype) is type:
+                    try:
+                        if argtype is bool:
+                            if arg.lower() not in ('true', 'yes', '1', 'false', 'no', '0'):
+                                raise ValueError
+                            temp_args[key] = arg.lower() in ('true', 'yes', '1')
+                        else:
+                            temp_args[key] = self.annotations[key][0](arg)
+                    except ValueError:
+                        await client.send_message(message.channel,
+                                                  f'Argument "{arg}" should be of type `{argtype.__name__}`')
+                        return None
+                else:  # argtype is re.compile
+                    if argtype.match(arg) is None:
+                        await client.send_message(message.channel, f'Argument "{arg}" should match '
+                                                                   f'the following regex: `{argtype.pattern}`')
+                        return None
+        args.update(temp_args)
         # if self.multiple:
         #     args = args[:-1] + text[len(self.normal) - 1:]
         # elif self.normal:

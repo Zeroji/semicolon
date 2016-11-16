@@ -7,13 +7,22 @@ All notable changes to this project will be documented in this file.
 
 + Per-server prefixes
 + Changelog file ;)
++ Added type checking on command arguments, done with type hints
++ Possibility to to regex checks on arguments
++ Added basic support for argument documentation (you can add it without errors, but it's not used yet)
 
 #### Changed
+
+* Flags in `@cog.command` can now be either a string or a dictionary `{flag: description}` (for future documentation)
 
 #### Fixed
 
 * `Invalid argument count` when passing no arguments to a command using positional arguments
 * Private message channels are now considered as servers (regarding settings)
+
+#### Bugs
+
+- `@cog.rename` crashes cog on loading, sends error on reloading
 
 ### [v0.1.1]
 
