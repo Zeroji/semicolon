@@ -7,8 +7,7 @@ which may or may not be implemented in future versions.
 
 ##### Next things I'll work on
 
-1. Integrate `;base.help` function
-0. Possibly tweak other base functions
+1. Possibly tweak other base functions
 0. Refine all examples / commands annotations
 3. Update documentation accordingly
 

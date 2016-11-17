@@ -71,12 +71,14 @@ class Command:
                 if type(item) is str:
                     self.annotations[key] = (None, item)
                 elif type(item) in type_types:
-                    self.annotations[key] = (item, None)
+                    self.annotations[key] = (item, '')
                 elif type(item) is tuple:
                     if type(item[0]) is str and type(item[1]) in type_types:
                         self.annotations[key] = (item[1], item[0])
                     elif type(item[0]) in type_types and type(item[1]) is str:
                         self.annotations[key] = item
+        if not func.__doc__:
+            func.__doc__ = ' '
 
     async def call(self, client, message, arguments, _cogs=None):
         """Call a command."""

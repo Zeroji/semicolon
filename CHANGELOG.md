@@ -1,7 +1,7 @@
 ## Change Log
 All notable changes to this project will be documented in this file.
 
-### [Unreleased]
+### [v0.1.2]
 
 #### Added
 
@@ -11,6 +11,7 @@ All notable changes to this project will be documented in this file.
 + Possibility to to regex checks on arguments
 + Added basic support for argument documentation (you can add it without errors, but it's not used yet)
 + Added reaction support via `@cog.on_reaction` (more in doc)
++ `help` command, finally!
 
 #### Changed
 
