@@ -121,11 +121,21 @@ class Bot(discord.Client):
                 func = matches[0][1] if len(matches) == 1 else None
             if func is not None and all([permission in message.channel.permissions_for(message.author)
                                          for permission in func.permissions]):
-                await func.call(self, message, arguments)
+                await func.call(self, message, arguments, cogs)
                 if (func.delete_message and command_only and
                         message.channel.permissions_for(
                             message.server.get_member(self.user.id)).manage_messages):
                     await self.delete_message(message)
+
+    async def on_reaction_add(self, reaction, user):
+        await self.on_reaction(True, reaction, user)
+
+    async def on_reaction_remove(self, reaction, user):
+        await self.on_reaction(False, reaction, user)
+
+    async def on_reaction(self, added, reaction, user):
+        for cog in cogs.COGS:
+            await cogs.COGS.get(cog).cog.on_reaction_any(self, added, reaction, user)
 
     async def wheel(self):  # They see me loading
         """Dynamically update the cogs."""

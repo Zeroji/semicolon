@@ -10,6 +10,7 @@ All notable changes to this project will be documented in this file.
 + Added type checking on command arguments, done with type hints
 + Possibility to to regex checks on arguments
 + Added basic support for argument documentation (you can add it without errors, but it's not used yet)
++ Added reaction support via `@cog.on_reaction` (more in doc)
 
 #### Changed
 

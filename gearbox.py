@@ -6,7 +6,7 @@ import json
 
 
 SERVER_CONFIG_PATH = 'servers/%s.json'
-SPECIAL_ARGS = ('message', 'author', 'channel', 'server', 'server_ex', 'client', 'flags')
+SPECIAL_ARGS = ('message', 'author', 'channel', 'server', 'server_ex', 'client', 'flags', '__cogs')
 VALID_NAME = re.compile('[a-z][a-z_0-9]*$')
 
 
@@ -64,7 +64,7 @@ class Command:
                 self.permissions.append(permissions)
             elif type(permissions) is list:
                 self.permissions.extend([(perm, True) if type(perm) is str else perm for perm in permissions])
-        self.annotations = {arg: None for arg in self.normal}
+        self.annotations = {arg: (None, '') for arg in self.normal}
         type_types = (type, type(re.compile('')))
         for key, item in func.__annotations__.items():
             if key in self.normal:
@@ -78,12 +78,12 @@ class Command:
                     elif type(item[0]) in type_types and type(item[1]) is str:
                         self.annotations[key] = item
 
-    async def call(self, client, message, arguments):
+    async def call(self, client, message, arguments, _cogs=None):
         """Call a command."""
         special_args = {'client': client, 'message': message, 'author': message.author,
                         'channel': message.channel, 'server': message.server,
                         'server_ex': client.server[message.channel.id if message.channel.is_private else
-                                                   message.server.id], 'flags': ''}
+                                                   message.server.id], 'flags': '', '__cogs': _cogs}
         if arguments.startswith('-') and self.flags:
             for flag in arguments.split(' ')[0][1:]:
                 if flag not in self.flags:
@@ -156,6 +156,7 @@ class Cog:
         self.commands = {}
         self.aliases = {}
         self.name = name
+        self.react = {}
 
     def init(self, func):
         """Define a function to call upon loading."""
@@ -164,6 +165,28 @@ class Cog:
     def exit(self, func):
         """Define a function to call upon exiting."""
         self.on_exit = func
+
+    def on_reaction(self, arg):
+        func = None
+        if type(arg) is str:
+            arg = (arg,)
+        elif type(arg) is not tuple:
+            func = arg
+            arg = (0,)
+
+        def decorator(function):
+            for a in arg:
+                if a not in self.react:
+                    self.react[a] = []
+                self.react[a].append(function)
+            return function
+        return decorator if func is None else decorator(func)
+
+    async def on_reaction_any(self, client, added, reaction, user):
+        calls = self.react.get(0, [])
+        calls.extend(self.react.get(reaction.emoji.id if reaction.custom_emoji else reaction.emoji, []))
+        for func in calls:
+            await func(client, added, reaction, user)
 
     def alias(self, *aliases):
         """Add aliases to a command."""
