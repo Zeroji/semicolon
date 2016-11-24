@@ -31,6 +31,7 @@ HELP_WIDTH = 29
 
 
 @cog.command
+@cog.alias('halp')
 @cog.rename('help')
 def halp(__cogs, server_ex, name: 'Cog or command name'=None):
     active_cogs = [cog for cog in __cogs.COGS if cog not in server_ex.blacklist]
