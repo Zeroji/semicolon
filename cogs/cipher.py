@@ -3,7 +3,72 @@ import math
 import random
 import string
 import gearbox
+import os
 cog = gearbox.Cog()
+
+BIGRAMS = {}
+NGRAMS_PATH = 'data/cipher.ngrams/'
+
+
+@cog.init
+def load_files():
+    """Load bigram files."""
+
+    # Files are text files named `language_bigrams.txt` in folder `data/cipher.ngrams`
+    # They contain one ngram per line, followed by a space then its count or frequency
+    # Example: `EN 4569` then `ER 1532`
+    global BIGRAMS
+    files = [name for name in os.listdir(NGRAMS_PATH) if 'bigrams' in name]
+    for file in files:
+        lines = open(NGRAMS_PATH + file).read().splitlines()
+        total = sum([int(line.split()[1]) for line in lines])
+        lang = file.split('_')[0].lower()
+        BIGRAMS[lang] = {}
+        for line in lines:
+            ngram, freq = line.split()
+            BIGRAMS[lang][ngram.upper()] = float(freq) / total
+
+
+def analyze_frequency(message):
+    """Analyze bigram frequency of a message to detect its language.
+
+    Return a sorted list of (score, language) tuples, lower score means higher probability."""
+
+    def first_ngrams(freq_dict, count):
+        """Sort a ngram dictionary and return the 'count' most frequent items."""
+        freq_list = [(freq, ngram) for ngram, freq in freq_dict.items()]
+        freq_list.sort(reverse=True)
+        return [ngram for freq, ngram in freq_list[:count]]
+
+    def out_of_place(target, sample):
+        """Calculate the out-of-place score of a sample text against a target."""
+        distance = 0
+        for index, ngram in enumerate(sample):
+            try:
+                err = abs(index - target.index(ngram))
+            except ValueError:
+                err = len(target)
+            distance += (len(target) - index) * err
+        return distance
+
+    bigrams = {}
+    bi_count = 0
+    for i, char in enumerate(message):
+        if char.lower() != char.upper():  # Keep only letters
+            char = char.upper()
+            if i + 1 < len(message):
+                char2 = message[i+1].upper()
+                if char2.lower() != char2.upper():
+                    bigrams[char + char2] = bigrams.get(char + char2, 0) + 1
+                    bi_count += 1
+    for bigram in bigrams:
+        bigrams[bigram] /= bi_count
+    distances = []
+    first_bigrams = first_ngrams(bigrams, 40)
+    for lang, frequencies in BIGRAMS.items():
+        distances.append((out_of_place(first_ngrams(frequencies, 40), first_bigrams), lang))
+    distances.sort()
+    return distances
 
 
 def shift(letter, number):
@@ -13,6 +78,17 @@ def shift(letter, number):
     if 'a' <= letter <= 'z':
         return chr((ord(letter) - ord('a') + number) % 26 + ord('a'))
     return letter  # If it's not a letter don't change it
+
+
+def encode_rot(message, offset, reverse=False):
+    """Encode text using Caesar's ROT cipher."""
+    result = ''
+    for char in message:
+        if 'A' <= char <= 'Z' or 'a' <= char <= 'z':
+            result += shift(char, -offset if reverse else offset)
+        else:
+            result += char
+    return result
 
 
 def encode_7879(message, reverse=False):
@@ -142,12 +218,13 @@ class Polybius:
         for x in range(self.size):
             for y in range(self.size):
                 if self.mat[x][y] == letter:
-                    return ((x+1), (y+1))
+                    return (x + 1), (y + 1)
 
     def decode(self, x, y):
         """Decode a letter."""
         if 0 < x <= self.size and 0 < y <= self.size:
             return self.mat[x-1][y-1]
+        return ''
 
 
 def encode_tap_code(text, reverse=False):
@@ -172,6 +249,7 @@ def encode_tap_code(text, reverse=False):
                 result += char
         return result
 
+
 @cog.command(fulltext=True)
 def atbash(text):
     """Encode text using the Atbash cipher."""
@@ -185,30 +263,53 @@ def atbash(text):
             result += char
     return result
 
-@cog.command(fulltext=True, flags='de')
+
+@cog.command(fulltext=True, flags={'d': 'decode', 'e': 'encode'})
+@cog.alias('rot')
+def caesar(offset: int, text, flags):
+    """Encode text using Caesar's ROT cipher.
+
+    Use an offset of 0 for automatic detection."""
+    if 'd' in flags and 'e' in flags:
+        return 'Mutually exclusive flags: -d and -e'
+    if offset:
+        return encode_rot(text, offset, reverse='d' in flags)
+    else:
+        scores = [(analyze_frequency(encode_rot(text, off)), off) for off in range(26)]
+        scores.sort()
+        output = ''
+        for freq, offset in scores[:3]:
+            output += f"`ROT{offset:02}` {encode_rot(text, offset)} `[{freq[0][1]}]`\n"
+        return output
+
+
+@cog.command(fulltext=True, flags={'d': 'decode', 'e': 'encode'})
 def rot7879(text, flags):
     """Encode text using 7879's custom cipher."""
     if 'd' in flags and 'e' in flags:
         return 'Mutually exclusive flags: -d and -e'
     return encode_7879(text, reverse='d' in flags)
 
-@cog.command(fulltext=True, flags='de')
+
+@cog.command(fulltext=True, flags={'d': 'decode', 'e': 'encode'})
 @cog.alias('vig')
-def vigenere(key, text, flags):
+def vigenere(key: 'Vigenere encryption key', text, flags):
     """Encode a text with Vigenere cipher."""
     if 'd' in flags and 'e' in flags:
         return 'Mutually exclusive flags: -d and -e'
     return encode_vigenere(text, key, reverse='d' in flags)
 
-@cog.command(fulltext=True, flags='de')
+
+@cog.command(fulltext=True, flags={'d': 'decode', 'e': 'encode'})
 def morse(text, flags):
     """Encode text into Morse code."""
     if 'd' in flags and 'e' in flags:
         return 'Mutually exclusive flags: -d and -e'
     return encode_morse(text, reverse='d' in flags)
 
+
 @cog.command(fulltext=True)
-def null(pattern, text=''):
+def null(pattern: 'Comma-separated list of numbers (default 0)', text=''):
     """Decode text with the null cipher."""
     try:
         patt = [int(x.strip()) for x in pattern.split(',')]
@@ -221,8 +322,9 @@ def null(pattern, text=''):
                 patt[i] = index-1
     return decode_null(patt, text)
 
-@cog.command(fulltext=True, flags='de')
-def box(size, flags, text=''):
+
+@cog.command(fulltext=True, flags={'d': 'decode', 'e': 'encode'})
+def box(size: 'Box size', flags, text=''):
     """Encode text using cipher boxes."""
     if 'd' in flags and 'e' in flags:
         return 'Mutually exclusive flags: -d and -e'
@@ -233,8 +335,9 @@ def box(size, flags, text=''):
         size = 0
     return encode_cipher_box(text, size, reverse='d' in flags)
 
+
 @cog.command(fulltext=True)
-def pad_block(size, text):
+def pad_block(size: '"word" size', text):
     """Format text into blocks of letters."""
     size = int(size)
     text = ''.join([c for c in text.upper() if c in string.ascii_uppercase])
@@ -242,21 +345,24 @@ def pad_block(size, text):
         text += random.choice(text)
     return ' '.join([text[i:i + size] for i in range(0, len(text), size)])
 
-@cog.command(fulltext=True, flags='de')
-def mixed(key, text, flags):
+
+@cog.command(fulltext=True, flags={'d': 'decode', 'e': 'encode'})
+def mixed(key: 'Alphabet key (no duplicate letters)', text, flags):
     """Encode using a mixed alphabet (ZEBRAS-like)."""
     if 'd' in flags and 'e' in flags:
         return 'Mutually exclusive flags: -d and -e'
     return encode_mixed_alphabet(key, text, reverse='d' in flags)
 
-@cog.command(fulltext=True, flags='de')
-def subs(alpha, text, flags):
+
+@cog.command(fulltext=True, flags={'d': 'decode', 'e': 'encode'})
+def subs(alphabet: 'Substitute alphabet (all 26 letters)', text, flags):
     """Encode using alphabet substitution."""
     if 'd' in flags and 'e' in flags:
         return 'Mutually exclusive flags: -d and -e'
-    return encode_substitute(alpha, text)
+    return encode_substitute(alphabet, text)
 
-@cog.command(fulltext=True, flags='de')
+
+@cog.command(fulltext=True, flags={'d': 'decode', 'e': 'encode'})
 def taptap(text, flags):
     """Encode text using the tap code."""
     if 'd' in flags and 'e' in flags:
@@ -264,6 +370,19 @@ def taptap(text, flags):
     return encode_tap_code(text, reverse='d' in flags)
 
 
+@cog.command(fulltext=True)
+def language(text):
+    """Determine language of text (not all are supported)."""
+    distances = analyze_frequency(text)
+    upper = distances[0][0] + (distances[-1][0] - distances[0][0]) / 10
+    langs = [lang for dist, lang in distances if dist <= upper]
+    if len(langs) == 1:
+        return f"This message is most likely in {langs[0]}"
+    elif len(langs) < 3:
+        return f"This message seems to be in {langs[0]}, or maybe in {langs[1]}"
+    else:
+        return f"Multiple languages have been detected: {gearbox.pretty(langs)}"
+
+
 # TODO hash functions (md5, sha1/224/256/384/512)
 # TODO base conversion (2, 10, 16, 64, 256)
-# TODO Caesar cipher (ROT(@))

@@ -1,6 +1,15 @@
 ## Change Log
 All notable changes to this project will be documented in this file.
 
+### [Unreleased]
+
+#### Added
+
++ Added things to `cipher`:
+  + Caesar cipher (finally)
+  + Language detection by bigram analysis
+  + Automatic Caesar solving (multiple languages)
+
 ### [v0.1.2]
 
 #### Added
