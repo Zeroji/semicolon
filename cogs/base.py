@@ -1,69 +1,140 @@
 """Base module."""
+import os
+
 import gearbox
 cog = gearbox.Cog(__name__.split('.')[-1])
 
 
 @cog.command(permissions='manage_server')
-def enable(server_ex, cog_name):
-    """Enable cog for server."""
-    if cog_name not in server_ex.blacklist:
-        return 'Cog already enabled'
+def enable(__cogs, server_ex, *cogs: 'Name of cogs to enable'):
+    """Enable cogs for the current server.
+
+    If called with no cogs, displays enabled cogs. Use `*` to enable all cogs."""
+    if not cogs:
+        return 'Enabled cogs: ' + gearbox.pretty([c for c in __cogs.COGS if c not in server_ex.blacklist], '`%s`')
+    print(cogs)
+    if cogs == ('*',):
+        cogs = server_ex.blacklist[::]
+    not_found = [c for c in cogs if c not in __cogs.COGS]
+    if not_found:
+        return gearbox.pretty(not_found, '`%s`') + f" do{'es' * (len(not_found) == 1)}n't exist"
+    already = [c for c in cogs if c not in server_ex.blacklist]
+    if already:
+        return gearbox.pretty(already, '`%s`') + f" {'are' if len(already) > 1 else 'is'} already enabled"
     else:
-        server_ex.blacklist.remove(cog_name)
+        for c in cogs:
+            server_ex.blacklist.remove(c)
         server_ex.write()
-        return f'Enabled {cog_name}'
+        return 'Enabled ' + gearbox.pretty(cogs, '`%s`')
 
 
 @cog.command(permissions='manage_server')
-def disable(server_ex, cog_name):
-    """Disable cog for server."""
-    if cog_name == __name__.split('.')[-1]:
+def disable(__cogs, server_ex, *cogs: 'Name of cogs to enable'):
+    """Disable cogs for the current server.
+
+    If called with no cogs, displays disabled cogs. Use `*` to disable all cogs."""
+    if not cogs:
+        if not server_ex.blacklist:
+            return 'No cogs are disabled.'
+        return 'Disabled cogs: ' + gearbox.pretty(server_ex.blacklist, '`%s`')
+    if cogs == ('*',):
+        cogs = [c for c in __cogs.COGS if c != __name__.split('.')[-1] and c not in server_ex.blacklist]
+    not_found = [c for c in cogs if c not in __cogs.COGS]
+    if not_found:
+        return gearbox.pretty(not_found, '`%s`') + f" do{'es' * (len(not_found) == 1)}n't exist"
+    if any([c == __name__.split('.')[-1] for c in cogs]):
         return 'Error: cannot disable self'
-    if cog_name in server_ex.blacklist:
-        return 'Cog already disabled'
+    already = [c for c in cogs if c in server_ex.blacklist]
+    if already:
+        return gearbox.pretty(already, '`%s`') + f" {'are' if len(already) > 1 else 'is'} already disabled"
     else:
-        server_ex.blacklist.append(cog_name)
+        server_ex.blacklist.extend(cogs)
         server_ex.write()
-        return f'Disabled {cog_name}'
+        return 'Disabled ' + gearbox.pretty(cogs, '`%s`')
 
 
-HELP_WIDTH = 29
+HELP_WIDTH = 29  # Size of left part of help messages (command list between backticks)
 
 
-@cog.command
+def markdown_parser(data):
+    """Parse regular Markdown to make it more readable by Discord."""
+    output = ''
+    lines = data.splitlines()
+    code_block = False
+    for i, line in enumerate(lines):
+        if line.startswith('```'):
+            code_block = not code_block
+            output += line + '\n'
+            continue
+        if code_block:
+            output += line + '\n'
+            continue
+        if line.endswith('  '):
+            output += line[:-2] + '\n'
+        elif not line:
+            if not output.endswith('\n'):
+                output += '\n'
+        else:
+            output += line + ' '
+    return output
+
+
+@cog.command(flags={'d': 'Show special documentation'})
 @cog.rename('help')
-def halp(__cogs, server_ex, name: 'Cog or command name'=None):
-    active_cogs = [cog for cog in __cogs.COGS if cog not in server_ex.blacklist]
+def halp(__cogs, server_ex, flags, name: 'Cog or command name'=None):
+    """Display information on a cog or command.
+
+    Display general help when called without parameter, or list commands in a cog, or list command information.
+    `<argument>` means an argument is mandatory, `[argument]` means you can omit it.
+    Display special documentation pages when called with `-d [page]`"""
+    if 'd' in flags:
+        pages = [page[:-3] for page in os.listdir('doc/internal') if page.endswith('.md')]
+        if name is None or name not in pages:
+            return f"The following special documentation page{'s are' if len(pages) > 1 else ' is'} available:\n" + \
+                   gearbox.pretty(pages, '`%s`')
+        else:
+            return markdown_parser(open('doc/internal/%s.md' % name).read())
+
+    active_cogs = [cogg for cogg in __cogs.COGS if cogg not in server_ex.blacklist]
     commands = __cogs.command(name, server_ex.blacklist)
-    if '.' in name:
-        cog, cname = name.split('.', 2)
-        if cog in active_cogs and __cogs.COGS[cog].cog.get(cname):
-            commands = [(cog, __cogs.COGS[cog].cog.get(cname))]
+    if name is not None and '.' in name:
+        cogg, temp_name = name.rsplit('.', 1)
+        if cogg in active_cogs and __cogs.COGS[cogg].cog.get(temp_name):
+            commands = [((cogg, temp_name), __cogs.COGS[cogg].cog.get(temp_name))]
     if name is None:
         return "Hi, I'm `;;` :no_mouth: I'm split into several cogs, type `;help <cog>` for more information\n" \
                f"The following cog{'s are' if len(active_cogs)>1 else ' is'} currently enabled: " \
                f"{gearbox.pretty(active_cogs, '`%s`')}"
     elif name in active_cogs:
-        cog = __cogs.COGS[name]
-        output = f'`{name}` - ' + cog.__doc__.replace('\n\n', '\n')
-        for cname, command in cog.cog.commands.items():
-            line = cname;
+        cogg = __cogs.COGS[name]
+        output = f'`{name}` - ' + cogg.__doc__.replace('\n\n', '\n')
+        for cname, command in cogg.cog.commands.items():
+            line = cname
             for i, arg in enumerate(command.normal):
                 line += (' <%s>' if i < command.min_arg else ' [%s]') % arg
             output += f'\n`{line:{HELP_WIDTH}.{HELP_WIDTH}}|` {command.func.__doc__.splitlines()[0]}'
+        if cogg.cog.subcogs:
+            output += f"\nThe following subcog{'s are' if len(cogg.cog.subcogs) > 1 else ' is'} available:"
+            for subname, subcog in cogg.cog.subcogs.items():
+                output += f"\n`{subname:{HELP_WIDTH}.{HELP_WIDTH}}|` {subcog.__doc__}"
         if commands:
             output += f"\nThe following command{'s' if len(commands) > 1 else ''} " \
                       f"also exist{'s' if len(commands) == 1 else ''}: " +\
-                      gearbox.pretty([f'{cog}.{command.func.__name__}' for cog, command in commands], '`%s`')
+                      gearbox.pretty([f'{cogg}.{__cogs.COGS[cogg].cog.aliases[name]}' for cogg, _ in commands], '`%s`')
         return output
     elif commands:
         if len(commands) > 1:
             return 'There are commands in multiple cogs with that name:\n' +\
-                   '\n'.join([f'`{cog + "." + command.func.__name__:{HELP_WIDTH}.{HELP_WIDTH}}|` ' +
-                              command.func.__doc__.splitlines()[0] for cog, command in commands])
-        cog, command = commands[0]
-        complete_name = cog + '.' + command.func.__name__
+                   '\n'.join([f'`{cogg + "." + __cogs.COGS[cogg].cog.aliases[name]:{HELP_WIDTH}.{HELP_WIDTH}}|` ' +
+                              command.func.__doc__.splitlines()[0] for cogg, command in commands])
+        (cogg, cname), command = commands[0]
+        cname = __cogs.COGS[cogg].cog.aliases[cname]
+        complete_name = cogg + '.' + cname
         output = f'`{complete_name}` - {command.func.__doc__.splitlines()[0]}'
+        aliases = [alias for alias, res in __cogs.COGS[cogg].cog.aliases.items() if res == cname]
+        aliases.remove(cname)
+        if aliases:
+            output += '\nAlso known as: ' + gearbox.pretty(aliases, '`%s`')
         output += '\nUsage: `' + complete_name + (' -flags' if command.flags else '')
         for i, arg in enumerate(command.normal):
             output += (' <%s>' if i < command.min_arg else ' [%s]') % arg
@@ -72,7 +143,7 @@ def halp(__cogs, server_ex, name: 'Cog or command name'=None):
             output += '\nFlags: '
             keys = list(command.flags)
             keys.sort()
-            output += gearbox.pretty([f'`-{flag}`' + (f' ({command.flags[flag]})' if command.flags[flag] else '')
+            output += gearbox.pretty([f'`-{flag}`' + (f' ({command.flags[flag]})'if command.flags[flag] else '')
                                       for flag in keys])
         if any([arg[0] is not None or len(arg[1]) > 0 for arg in command.annotations.values()]):
             output += '\nArguments: '
@@ -92,15 +163,16 @@ def halp(__cogs, server_ex, name: 'Cog or command name'=None):
         if '\n' in command.func.__doc__:
             output += '\n' + '\n'.join([line.strip() for line in command.func.__doc__.splitlines()[1:] if line])
         return output
-    return 'Nah sorry mate dunno about that'
-    # return f'I has halp! But no wit {name} :(' + str(dir(__cogs))
+    return 'Unknown cog or command.'
 
 
 @cog.command(permissions='manage_server')
-def prefix(server_ex, command='get', *args):
-    """Display or modify prefix settings for server."""
+def prefix(server_ex, command: 'get/add/del/reset'='get', *args):
+    """Display or edit prefix settings for the current server.
+
+    `get`: show prefixes, `add . ? !`: add prefixes, `del . ? !`: remove prefixes, `reset`: reset back to `;`"""
     command = command.lower()
-    plur = len(server_ex.prefixes)>1
+    plur = len(server_ex.prefixes) > 1
     if command == 'get':
         if len(server_ex.prefixes) == 0:
             return 'This server has no prefix. Use `prefix add` to add some!'

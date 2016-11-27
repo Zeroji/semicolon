@@ -19,6 +19,19 @@ cog = gearbox.Cog()
 > By default, your cog's name will be the file name, minus the `.py` part.  
 To change this, simply pass a new name as an argument to `gearbox.Cog()`.
 
+### Cogception
+
+If you're an organized person, you might dislike the "drop it in the folder" part.
+That's why `;;` has sub-cogs! Start by creating a cog that can accept sub-cogs:
+- Make a new folder with the name of your cog
+- Inside it, create an `__init__.py` file - this will be your source code,
+use it like a regular cog source file
+
+Now you can drop other cogs in that folder, and they'll be all neatly organized!
+Note that disabling a cog also disables its sub-cogs.
+
+> Yes, you can have sub-sub-cogs. And so on.
+
 ### Creating a command
 
 #### The basics
@@ -51,7 +64,10 @@ def hello(author):
 > Wondering what this `f'{}'` thing does? Basically, it's the same as `'Hello, ' + author.name + '!'` but shorter and fancier.
 [Learn more here](https://www.python.org/dev/peps/pep-0498/)
 
-As you can see, simply putting `author` in the function definition will give you the corresponding object. Why? Because `;;` is made in such a way that it'll look at what you want, and attempt to provide it to you so you don't need to write extra pieces of code. Here's a list of those "special" arguments: *(as of v0.1.1)*
+As you can see, simply putting `author` in the function definition will give you the corresponding object.
+Why? Because `;;` is made in such a way that it'll look at what you want,
+and attempt to provide it to you so you don't need to write extra pieces of code.
+Here's a list of those "special" arguments: *(as of [v0.1.3](https://github.com/Zeroji/semicolon/releases/tag/v0.1.3))*
 
 |Argument    | Description
 | ---        | ---
@@ -74,7 +90,8 @@ You can specify which flags your command accept. Flags are case-sensitive. Quick
 > def flag(flags):
 >     return f'I got {flags}'
 > ```
-> Now if you call `;flag -ab`, it'll reply `I got ab`.
+> Now if you call `;flag -ab`, it'll reply `I got ab`.  
+> Since [v0.1.3](https://github.com/Zeroji/semicolon/releases/tag/v0.1.3), writing `;flag -a-b` or `;flag -a -b` is also accepted.
 
 
 #### Normal arguments
@@ -87,7 +104,7 @@ def repeat(what_they_said):
     return what_they_said
 ```
 
-Now, this may lead to an `Invalid argument count` error. That's because since v0.1.1,
+Now, this may lead to an `Invalid argument count` error. That's because since [v0.1.1](https://github.com/Zeroji/semicolon/releases/tag/v0.1.1),
 `;;` has to be told explicitly when you want all the remaining text to be sent to your function:
 
 ```python
@@ -104,12 +121,12 @@ def add(number_a, number_b):
     return str(int(number_a) + int(number_b))
 ```
 
-> *May change in future versions (last changed v0.1.1)*  
+> *May change in future versions (last changed [v0.1.1](https://github.com/Zeroji/semicolon/releases/tag/v0.1.1))*  
 If the user doesn't provide the arguments you need, for example if they type `add 4`, `;;` will print `Invalid argument count` in the chat, and your command won't be executed.
 If the user sends too many arguments, for example by typing `add 1 2 3`, the same thing will happen.
 
 Now what if you'd like to have default arguments? Let's say you want `add` to add 1 if `number_b` isn't specified:
-since v0.1.1, just do like you'd do with regular Python functions!
+since [v0.1.1](https://github.com/Zeroji/semicolon/releases/tag/v0.1.1), just do like you'd do with regular Python functions!
 
 ```python
 @cog.command
@@ -140,7 +157,7 @@ It's that simple. If your command is a coroutine, then `;;` will simply `await` 
 
 ### Decorating your command
 
-No, this isn't about adding a cute little ribbon onto it. *(as of v0.1.1)*.
+No, this isn't about adding a cute little ribbon onto it. *(as of [v0.1.3](https://github.com/Zeroji/semicolon/releases/tag/v0.1.3))*.
 Also, this technically adds functionalities to the cog rather than to the command.
 
 You've already used the decorator `@cog.command` to indicate that your function was a `;;` command and not a random function.  
@@ -151,12 +168,6 @@ This will change the name of your command. It's useful, for example, if you want
 
 ##### `@cog.alias(alias, ...)`
 This creates aliases for your command. Let's say you find `encrypt` is a quite long name, just add `@cog.alias('en')` and you'll be able to call your command with `encrypt` *and* `en`.
-
-##### `@cog.init`
-This doesn't apply to a command, but to a regular function - it marks it, so it will be called when the cog is loaded. You can only have one init function.
-
-##### `@cog.exit`
-This doesn't apply to a command, but to a regular function - it marks it, so it will be called when the cog is unloaded. You can only have one exit function.
 
 ### Getting the best out of `@cog.command`
 
@@ -196,7 +207,7 @@ available only to non-admins who can delete messages?
 @cog.command(permissions=[('manage_server', False), 'manage_messages'])
 ```
 
-> As of v0.1.1, no error message is printed in case of wrong permissions.  
+> As of [v0.1.3](https://github.com/Zeroji/semicolon/releases/tag/v0.1.), no error message is printed in case of wrong permissions.  
 This is intended behaviour.
 
 `flags` (string, defaults to `''`)
@@ -204,6 +215,41 @@ This is intended behaviour.
 This allows you to tell `;;` which flags can be used by the command.
 An error message will be printed if the user tries to use an invalid flag.
 See the [Special arguments](#special-arguments) section above for more information about flags.
+
+### Special functions
+
+Cogs aren't made of commands only: you can have functions execute upon loading/unloading of a cog,
+have another function being called when a reaction is added, when a message is deleted, and so on.  
+This is done by using special decorators:
+
+#### `@cog.init`
+Any function decorated with this will be called when the cog is loaded.
+You can only have one init function.
+
+####  `@cog.exit`
+Any function decorated with this will be called when the cog is unloaded.
+You can only have one exit function.
+
+#### `@cog.on_reaction`
+Any function decorated with this will be called when a reaction is added to / removed from a message.
+You can add arguments to the decorator to specify a reaction whitelist,
+by default it will match any reaction. The blacklist can either be a string (one reaction),
+or a tuple of strings for multiple reactions:
+
+```python
+@cog.on_reaction(('😃', '❤'))
+async def my_reaction_function(client, added, reaction, user):
+    await client.send_message(reaction.message.channel,
+                              f'User {user.mention} {"added" if added else "removed"} reaction {reaction.emoji}')
+```
+
+A reaction function has to be defined as `async`,
+and must take four arguments, in this order:
+- `client` The `discord.py` `Client` object, otherwise you can't do anything
+- `added` A boolean, set to `True` if the reaction was added and `False` if it was removed
+- `reaction` The `Reaction` object. You can use `reaction.emoji` to get the `Emoji` object or Unicode emoji string,
+  and `reaction.message` to get the associated `Message` object.
+- `user` The `User` who added or removed the reaction.
 
 ### Using your cog
 

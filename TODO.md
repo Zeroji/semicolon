@@ -7,9 +7,8 @@ which may or may not be implemented in future versions.
 
 ##### Next things I'll work on
 
-1. Possibly tweak other base functions
-0. Refine all examples / commands annotations
-3. Update documentation accordingly
+1. Improved user experience
+2. Bug hunting
 
 ##### Other features that *will* exist
 

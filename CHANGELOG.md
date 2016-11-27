@@ -1,16 +1,32 @@
 ## Change Log
 All notable changes to this project will be documented in this file.
 
-### [Unreleased]
+### [[v0.1.3](https://github.com/Zeroji/semicolon/releases/tag/v0.1.3)]
 
 #### Added
 
++ Extra documentation on all cogs
++ Sub-cogs!
+  + Create a folder with an `__init__.py` file in it, that'll be like a normal cog
+  + Any cog placed in this folder will become a sub-cog
++ Special documentation pages in `help`
 + Added things to `cipher`:
   + Caesar cipher (finally)
   + Language detection by bigram analysis
   + Automatic Caesar solving (multiple languages)
 
-### [v0.1.2]
+#### Changed
+
+* `enable` and `disable` work with multiple cogs
+* `help` now displays command aliases
+* `help` can display special documentation with `-d page`
+* Flags can now be called with `-a-b` or `-a -b` (instead of only `-ab` previously)
+
+#### Fixed
+
+* `help` displaying base name of renamed commands
+
+### [[v0.1.2](https://github.com/Zeroji/semicolon/releases/tag/v0.1.2)]
 
 #### Added
 
@@ -31,7 +47,7 @@ All notable changes to this project will be documented in this file.
 * `Invalid argument count` when passing no arguments to a command using positional arguments
 * Private message channels are now considered as servers (regarding settings)
 
-### [v0.1.1]
+### [[v0.1.1](https://github.com/Zeroji/semicolon/releases/tag/v0.1.1)]
 
 #### Added
 
@@ -61,7 +77,7 @@ All notable changes to this project will be documented in this file.
 
 * Coroutine commands not detected as such
 
-### [v0.1.0]
+### [[v0.1.0](https://github.com/Zeroji/semicolon/releases/tag/v0.1.0)]
 
 #### Added
 

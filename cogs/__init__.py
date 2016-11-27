@@ -12,11 +12,13 @@ def load(name):
     except Exception as exc:  # Yes I know it's too general. Just wanna catch 'em all.
         logging.critical("%s while loading '%s': %s", type(exc).__name__, name, exc)
     else:
+        base_name = name[:name.rfind('.') + 1]
         mod.cog.on_init()
         if mod.cog.name is not None:
-            name = mod.cog.name
+            name = base_name + mod.cog.name
         else:
-            mod.cog.name = name
+            name = base_name + name
+        mod.cog.name = name
         logging.info("Loaded cog '%s'.", name)
     COGS[name] = mod
 
@@ -25,6 +27,7 @@ def reload(name, mod):  # Passing name for logging purposes
     """Reload a cog."""
     import importlib
     import logging
+    subcogs = mod.cog.subcogs
     mod.cog.on_exit()
     try:
         importlib.reload(mod)
@@ -40,6 +43,7 @@ def reload(name, mod):  # Passing name for logging purposes
         else:
             logging.info("Reloaded '%s'.", name)
     mod.cog.on_init()
+    mod.cog.subcogs = subcogs
 
 
 def cog(name):

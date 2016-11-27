@@ -7,7 +7,7 @@ import json
 
 SERVER_CONFIG_PATH = 'servers/%s.json'
 SPECIAL_ARGS = ('message', 'author', 'channel', 'server', 'server_ex', 'client', 'flags', '__cogs')
-VALID_NAME = re.compile('[a-z][a-z_0-9]*$')
+VALID_NAME = re.compile('[a-z][a-z_.0-9]*$')
 
 
 def is_valid(name):
@@ -86,12 +86,13 @@ class Command:
                         'channel': message.channel, 'server': message.server,
                         'server_ex': client.server[message.channel.id if message.channel.is_private else
                                                    message.server.id], 'flags': '', '__cogs': _cogs}
-        if arguments.startswith('-') and self.flags:
+        while arguments.startswith('-') and self.flags:
             for flag in arguments.split(' ')[0][1:]:
-                if flag not in self.flags:
-                    await client.send_message(message.channel, f'Invalid flag: -{flag}')
-                    return
-                special_args['flags'] += flag
+                if flag != '-':
+                    if flag not in self.flags:
+                        await client.send_message(message.channel, f'Invalid flag: -{flag}')
+                        return
+                    special_args['flags'] += flag
             arguments = arguments[arguments.find(' ') + 1:] if ' ' in arguments else ''
         pos_args = []
         args = {key: value for key, value in special_args.items() if key in self.params}
@@ -155,6 +156,7 @@ class Cog:
         """Initialization."""
         self.on_init = lambda: None
         self.on_exit = lambda: None
+        self.subcogs = {}
         self.commands = {}
         self.aliases = {}
         self.name = name
@@ -197,7 +199,10 @@ class Cog:
             for alias in aliases:
                 if is_valid(alias):
                     if alias not in self.aliases:
-                        self.aliases[alias] = func.__name__
+                        if func.__name__ in self.commands and type(self.commands[func.__name__]) is str:
+                            self.aliases[alias] = self.commands[func.__name__]
+                        else:
+                            self.aliases[alias] = func.__name__
                     else:
                         logging.error("Couldn't register alias '%s' for '%s': already mapped to '%s'",
                                       alias, func.__name__, self.aliases[alias])
@@ -218,6 +223,9 @@ class Cog:
                 if name in self.aliases:
                     logging.warning("Command '%s' overwrites an alias mapped to '%s'", name, self.aliases[name])
                 self.aliases[name] = name
+                for alias, dest in self.aliases.items():
+                    if dest == func.__name__:
+                        self.aliases[alias] = name
                 self.commands[func.__name__] = name
             return func
         return decorate

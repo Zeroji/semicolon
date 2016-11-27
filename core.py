@@ -95,6 +95,7 @@ class Bot(discord.Client):
                     for cog in cogs.COGS.values():
                         cog.cog.on_exit()
                     logging.info("All cogs unloaded.")
+                    await self.change_presence(game=None)
                     await self.logout()
             # Getting command arguments (or not)
             if ' ' in text:
@@ -104,7 +105,7 @@ class Bot(discord.Client):
 
             if '.' in command:
                 # Getting command from cog when using cog.command
-                cog, cmd = command.split('.')
+                cog, cmd = command.rsplit('.', 1)
                 if cog in server_ex.config['cogs']['blacklist']:
                     return
                 cog = cogs.cog(cog)
@@ -139,12 +140,37 @@ class Bot(discord.Client):
 
     async def wheel(self):  # They see me loading
         """Dynamically update the cogs."""
+
+        def load_dir(path='cogs', base_name='', parent_cog=None):
+            for name in os.listdir(path):
+                full = os.path.join(path, name)
+                if name.endswith('.py'):
+                    name = name[:-3]
+                    if gearbox.is_valid(name):
+                        if parent_cog is not None and name in parent_cog.aliases:
+                            logging.critical("Sub-cog %s from cog %s couldn't be loaded because "
+                                             "a command with the same name exists", name, parent_cog.name)
+                            continue
+                        name = base_name + name
+                        if name not in cogs.COGS:
+                            cogs.load(name)
+                            if parent_cog is not None:
+                                parent_cog.subcogs[name] = cogs.COGS[name]
+                elif os.path.isdir(full) and gearbox.is_valid(name) and name not in cogs.COGS :
+                    if parent_cog is not None and name in parent_cog.aliases:
+                        logging.critical("Sub-cog %s from cog %s couldn't be loaded because "
+                                         "a command with the same name exists", name, parent_cog.name)
+                        continue
+                    if '__init__.py' in os.listdir(full):
+                        cogs.load(name)
+                        if parent_cog is not None:
+                            parent_cog.subcogs[name] = cogs.COGS[name]
+                        load_dir(full, base_name + name + '.', cogs.COGS[name].cog)
+
         logging.info('Wheel rolling.')
         while True:
             if CFG['wheel']['import']:
-                for name in [f[:-3] for f in os.listdir('cogs') if f.endswith('.py')]:
-                    if name not in cogs.COGS and gearbox.is_valid(name):
-                        cogs.load(name)  # They're addin'
+                load_dir()
             if CFG['wheel']['reload']:
                 for name, cog in cogs.COGS.items():
                     if os.path.getmtime(cog.__file__) > self.last_update:
@@ -155,7 +181,9 @@ class Bot(discord.Client):
     async def on_ready(self):
         """Initialization."""
         self.loop.create_task(self.wheel())
-        await super(Bot, self).change_presence(status=discord.Status.idle)
+        version = discord.Game()
+        version.name = 'v0.1.3'
+        await super(Bot, self).change_presence(status=discord.Status.idle, game=version)
         logging.info('Client started.')
 
 

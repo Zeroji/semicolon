@@ -1,6 +1,6 @@
 ## ;;
 
-> v0.1.1
+> v0.1.3
 
 This is the repository for the *new* version of `;;`,
 a nice Discord bot with currently very few features.  
@@ -16,13 +16,16 @@ If you want to add features, feel free to [write a cog](https://github.com/Zeroj
 #### How to use
 
 Clone this repo, run `pip install -r requirements`, then`./core.py`  
-Since v0.1.1 you'll need Python 3.6 - currently, 3.6.0b3 is available.
+Since [v0.1.1](https://github.com/Zeroji/semicolon/releases/tag/v0.1.1) you'll need Python 3.6 - currently, 3.6.0b4 is available.
 
 #### How to use (Discord side)
 
 When the bot status gets yellow (idle), it means everything is properly loaded.  
 You can then call commands by typing `;command whatever arguments it takes`.
-If two cogs have the same command, type `;cog.command` to differentiate them.
+If two cogs have the same command, type `;cog.command` to differentiate them.  
+Since multiple bots may use the `;` prefix, you can also mention `;;` instead of using the prefix:
+`@;; cog.command arguments`. You can also change the prefix to your liking if you have
+the `Manage Server` permission, check `@;; help prefix`.
 
 #### Fancy new stuff in last version
 
