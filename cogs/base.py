@@ -80,6 +80,7 @@ def markdown_parser(data):
 
 
 @cog.command(flags={'d': 'Show special documentation'})
+@cog.alias('halp')
 @cog.rename('help')
 def halp(__cogs, server_ex, flags, name: 'Cog or command name'=None):
     """Display information on a cog or command.
