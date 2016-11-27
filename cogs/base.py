@@ -128,7 +128,11 @@ def halp(__cogs, server_ex, flags, name: 'Cog or command name'=None):
             return 'There are commands in multiple cogs with that name:\n' +\
                    '\n'.join([f'`{cogg + "." + __cogs.COGS[cogg].cog.aliases[name]:{HELP_WIDTH}.{HELP_WIDTH}}|` ' +
                               command.func.__doc__.splitlines()[0] for cogg, command in commands])
-        (cogg, cname), command = commands[0]
+        if type(commands[0][0]) is not tuple:
+            cogg, command = commands[0]
+            cname = name
+        else:
+            (cogg, cname), command = commands[0]
         cname = __cogs.COGS[cogg].cog.aliases[cname]
         complete_name = cogg + '.' + cname
         output = f'`{complete_name}` - {command.func.__doc__.splitlines()[0]}'
