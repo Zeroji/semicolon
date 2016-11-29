@@ -182,7 +182,9 @@ class Bot(discord.Client):
         """Initialization."""
         self.loop.create_task(self.wheel())
         version = discord.Game()
-        version.name = 'v0.1.3'
+        version.name = 'v' + gearbox.version
+        if gearbox.version_dev:
+            version.name += ' [dev]'
         await super(Bot, self).change_presence(status=discord.Status.idle, game=version)
         logging.info('Client started.')
 

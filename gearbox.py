@@ -5,6 +5,8 @@ import re
 import json
 
 
+version = '0.1.4'
+version_dev = True
 SERVER_CONFIG_PATH = 'servers/%s.json'
 SPECIAL_ARGS = ('message', 'author', 'channel', 'server', 'server_ex', 'client', 'flags', '__cogs')
 VALID_NAME = re.compile('[a-z][a-z_.0-9]*$')
