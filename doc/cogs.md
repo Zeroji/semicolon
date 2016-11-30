@@ -16,8 +16,24 @@ Every cog must contain a `cog` variable, which has to be an instance of `gearbox
 import gearbox
 cog = gearbox.Cog()
 ```
-> By default, your cog's name will be the file name, minus the `.py` part.  
+By default, your cog's name will be the file name, minus the `.py` part.  
 To change this, simply pass a new name as an argument to `gearbox.Cog()`.
+
+```python
+import gearbox
+cog = gearbox.Cog('my_awesome_cog')
+```
+
+> Since [v0.1.4](https://github.com/Zeroji/semicolon/releases/tag/v0.1.4),
+> you can have a specific config file just for your cog, just add a `config`
+> argument with the value `json` or `yaml`:
+> ```python
+> import gearbox
+> cog = gearbox.Cog('my_awesome_cog', config='yaml')
+> print(cog.config)
+> ```
+> If the file exists, `cog.load_cfg()` is automatically created. After you write
+> changes to the `cog.config` dictionary, you can use `cog.save_cfg()`.
 
 ### Cogception
 

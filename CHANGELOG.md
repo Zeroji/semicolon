@@ -1,6 +1,14 @@
 ## Change Log
 All notable changes to this project will be documented in this file.
 
+### [[Unreleased](https://github.com/Zeroji/semicolon)]
+
+#### Added
+
++ `info` command with bot / Python / Discord versions
++ Displaying version number in *Playing* status
++ Cog-specific configuration files (yaml or json)
+
 ### [[v0.1.3](https://github.com/Zeroji/semicolon/releases/tag/v0.1.3)]
 
 #### Added

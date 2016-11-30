@@ -19,6 +19,7 @@ def load(name):
         else:
             name = base_name + name
         mod.cog.name = name
+        mod.cog.load_cfg()
         logging.info("Loaded cog '%s'.", name)
     COGS[name] = mod
 
@@ -39,7 +40,6 @@ def reload(name, mod):  # Passing name for logging purposes
         if mod.cog.name != name:
             COGS[mod.cog.name] = COGS.pop(name)
             logging.info("Reloaded '%s' as '%s'.", name, mod.cog.name)
-            name = mod.cog.name
         else:
             logging.info("Reloaded '%s'.", name)
     mod.cog.on_init()
@@ -48,7 +48,7 @@ def reload(name, mod):  # Passing name for logging purposes
 
 def cog(name):
     """Return a Cog object given its name."""
-    if not name in COGS:
+    if name not in COGS:
         return None
     return COGS[name].cog
 

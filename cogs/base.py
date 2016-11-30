@@ -4,7 +4,7 @@ import discord
 import sys
 
 import gearbox
-cog = gearbox.Cog(__name__.split('.')[-1])
+cog = gearbox.Cog(config='yaml')
 
 
 @cog.command(permissions='manage_server')
@@ -55,9 +55,6 @@ def disable(__cogs, server_ex, *cogs: 'Name of cogs to enable'):
         return 'Disabled ' + gearbox.pretty(cogs, '`%s`')
 
 
-HELP_WIDTH = 29  # Size of left part of help messages (command list between backticks)
-
-
 def markdown_parser(data):
     """Parse regular Markdown to make it more readable by Discord."""
     output = ''
@@ -91,13 +88,14 @@ def halp(__cogs, server_ex, flags, name: 'Cog or command name'=None):
     `<argument>` means an argument is mandatory, `[argument]` means you can omit it.
     Display special documentation pages when called with `-d [page]`"""
     if 'd' in flags:
-        pages = [page[:-3] for page in os.listdir('doc/internal') if page.endswith('.md')]
+        doc_path = cog.config['help']['doc_path']
+        pages = [page[:-3] for page in os.listdir(doc_path) if page.endswith('.md')]
         if name is None or name not in pages:
             return f"The following special documentation page{'s are' if len(pages) > 1 else ' is'} available:\n" + \
                    gearbox.pretty(pages, '`%s`')
         else:
-            return markdown_parser(open('doc/internal/%s.md' % name).read())
-
+            return markdown_parser(open(f'{doc_path}/{name}.md').read())
+    width = cog.config['help']['width']
     active_cogs = [cogg for cogg in __cogs.COGS if cogg not in server_ex.blacklist]
     commands = __cogs.command(name, server_ex.blacklist)
     if name is not None and '.' in name:
@@ -115,11 +113,11 @@ def halp(__cogs, server_ex, flags, name: 'Cog or command name'=None):
             line = cname
             for i, arg in enumerate(command.normal):
                 line += (' <%s>' if i < command.min_arg else ' [%s]') % arg
-            output += f'\n`{line:{HELP_WIDTH}.{HELP_WIDTH}}|` {command.func.__doc__.splitlines()[0]}'
+            output += f'\n`{line:{width}.{width}}|` {command.func.__doc__.splitlines()[0]}'
         if cogg.cog.subcogs:
             output += f"\nThe following subcog{'s are' if len(cogg.cog.subcogs) > 1 else ' is'} available:"
             for subname, subcog in cogg.cog.subcogs.items():
-                output += f"\n`{subname:{HELP_WIDTH}.{HELP_WIDTH}}|` {subcog.__doc__}"
+                output += f"\n`{subname:{width}.{width}}|` {subcog.__doc__}"
         if commands:
             output += f"\nThe following command{'s' if len(commands) > 1 else ''} " \
                       f"also exist{'s' if len(commands) == 1 else ''}: " +\
@@ -128,7 +126,7 @@ def halp(__cogs, server_ex, flags, name: 'Cog or command name'=None):
     elif commands:
         if len(commands) > 1:
             return 'There are commands in multiple cogs with that name:\n' +\
-                   '\n'.join([f'`{cogg + "." + __cogs.COGS[cogg].cog.aliases[name]:{HELP_WIDTH}.{HELP_WIDTH}}|` ' +
+                   '\n'.join([f'`{cogg + "." + __cogs.COGS[cogg].cog.aliases[name]:{width}.{width}}|` ' +
                               command.func.__doc__.splitlines()[0] for cogg, command in commands])
         if type(commands[0][0]) is not tuple:
             cogg, command = commands[0]

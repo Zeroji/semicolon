@@ -209,6 +209,7 @@ def main():
 
     # Load config and finally start logging
     config.load(args.config, CFG)
+    gearbox.update_config(CFG)
     logging.basicConfig(filename=CFG['path']['log'], level=logging.DEBUG,
                         format='%(asctime)s:%(name)s: %(levelname)s %(message)s')
     logging.getLogger('discord').setLevel(logging.WARNING)

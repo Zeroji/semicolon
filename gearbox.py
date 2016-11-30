@@ -3,6 +3,7 @@ import inspect
 import logging
 import re
 import json
+import yaml
 
 
 version = '0.1.4'
@@ -10,6 +11,12 @@ version_dev = True
 SERVER_CONFIG_PATH = 'servers/%s.json'
 SPECIAL_ARGS = ('message', 'author', 'channel', 'server', 'server_ex', 'client', 'flags', '__cogs')
 VALID_NAME = re.compile('[a-z][a-z_.0-9]*$')
+CONFIG_LOADERS = {'json': json, 'yaml': yaml}
+CFG = {}
+
+
+def update_config(cfg):
+    CFG.update(cfg)
 
 
 def is_valid(name):
@@ -154,7 +161,7 @@ class Command:
 class Cog:
     """The cog class containing the decorators."""
 
-    def __init__(self, name=None):
+    def __init__(self, name=None, *, config=None):
         """Initialization."""
         self.on_init = lambda: None
         self.on_exit = lambda: None
@@ -163,6 +170,30 @@ class Cog:
         self.aliases = {}
         self.name = name
         self.react = {}
+        self.config = {}
+        self.config_type = config
+
+    def _get_cfg(self):
+        if self.config_type is None:
+            return None, None
+        module = CONFIG_LOADERS.get(self.config_type)
+        path = CFG['path']['config'] % (self.name, self.config_type)
+        if module is None:
+            logging.warning("Unsupported configuration format '%s' for cog '%s'", self.config_type, self.name)
+        return module, path
+
+    def load_cfg(self):
+        module, path = self._get_cfg()
+        if module is not None:
+            try:
+                self.config = module.load(open(path))
+            except FileNotFoundError:
+                logging.info("No config file at %s for cog %s", path, self.name)
+
+    def save_cfg(self):
+        module, path = self._get_cfg()
+        if module is not None:
+            module.dump(self.config, open(path, 'w'))
 
     def init(self, func):
         """Define a function to call upon loading."""
