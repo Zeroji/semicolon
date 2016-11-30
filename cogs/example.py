@@ -1,7 +1,7 @@
 """Example cog."""
 import asyncio
 import gearbox
-cog = gearbox.Cog('example')
+cog = gearbox.Cog()
 
 
 @cog.command

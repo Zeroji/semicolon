@@ -17,7 +17,7 @@ def load(name):
         if mod.cog.name is not None:
             name = base_name + mod.cog.name
         else:
-            name = base_name + name
+            name = base_name + name.rsplit('.', 1)[-1]
         mod.cog.name = name
         mod.cog.load_cfg()
         logging.info("Loaded cog '%s'.", name)

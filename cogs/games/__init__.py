@@ -1,6 +1,6 @@
 """Games cog"""
 import gearbox
-cog = gearbox.Cog('games')
+cog = gearbox.Cog()
 
 
 @cog.command
