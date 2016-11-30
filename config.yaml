@@ -3,6 +3,7 @@ path:                               # Configuration paths
   token:  data/secret/token             # Bot token
   master: data/master                   # Bot owner Discord ID
   admins: data/admins                   # Admins' Discord IDs, newline-separated
+  banned: data/banned                   # Banned member IDs, newline-separated
   server: data/servers/%s.json          # Server config path
   config: config/%s.%s                  # Config folder (cogs)
   version: version                      # Version number file
