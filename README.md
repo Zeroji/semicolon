@@ -8,11 +8,6 @@ a nice Discord bot with currently very few features.
 
 If you want to add features, feel free to [write a cog](https://github.com/Zeroji/semicolon/blob/master/docs/cogs.md)!
 
-> *A side note about the `data` folder which is ignored*  
-`data/secret/token` contains the bot's token  
-`data/admins` and `data/banned` contain newline-separated IDs  
-`data/master` contains the owner's ID  
-
 #### How to use
 
 Clone this repo, run `pip install -r requirements`, then`./core.py`  

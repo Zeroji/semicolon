@@ -1,0 +1,11 @@
+path:                               # Configuration paths
+  log:    run.log                       # Log file
+  token:  data/secret/token             # Bot token
+  master: data/master                   # Bot owner Discord ID
+  admins: data/admins                   # Admins' Discord IDs, newline-separated
+  server: data/servers/%s.json          # Server config path
+  config: config/%s.%s                  # Config folder (cogs)
+  version: version                      # Version number file
+wheel:                              # Wheel configuration
+  import: true                          # Auto-import new cogs
+  reload: true                          # Auto-reload imported cogs

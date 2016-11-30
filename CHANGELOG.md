@@ -8,10 +8,15 @@ All notable changes to this project will be documented in this file.
 + `info` command with bot / Python / Discord versions
 + Displaying version number in *Playing* status
 + Cog-specific configuration files (yaml or json)
++ Default `config.yaml` file uploaded
 
 #### Fixed
 
 * Not naming a sub-cog explicitly may crash the bot
+
+#### Removed
+
+- Default configuration file generation with `--generate`
 
 ### [[v0.1.3](https://github.com/Zeroji/semicolon/releases/tag/v0.1.3)]
 

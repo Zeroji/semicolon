@@ -10,7 +10,6 @@ todo.md
 # Program
 data/
 *.log
-config.yaml
 stop
 
 # Who reads this file anyway

@@ -197,18 +197,13 @@ def main():
                         help='specify the config file')
     parser.add_argument('-l', '--load', action='append', metavar='cog_name',
                         help='load only specific cogs')
-    parser.add_argument('--generate', action='store', metavar='path',
-                        help='generate a default configuration file')
     args = parser.parse_args(sys.argv[1:])
 
-    # Generate a default config file
-    if args.generate:
-        if config.write(args.generate):
-            print(f"Created config file '{args.generate}'")
-        return
-
     # Load config and finally start logging
-    config.load(args.config, CFG)
+    success = config.load(args.config, CFG)
+    if not success:
+        print('FATAL ERROR: cannot continue without configuration')
+        return
     gearbox.update_config(CFG)
     logging.basicConfig(filename=CFG['path']['log'], level=logging.DEBUG,
                         format='%(asctime)s:%(name)s: %(levelname)s %(message)s')

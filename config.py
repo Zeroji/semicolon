@@ -1,19 +1,9 @@
 """Handle ;;'s config."""
 import collections
-import yaml
+import yaml.parser
+
 
 DEFAULT_PATH = 'config.yaml'
-DEFAULT_CONFIG = """
-path:
-    log:    run.log
-    token:  data/secret/token
-    master: data/master
-    admins: data/admins
-    banned: data/banned
-wheel:
-    import: true
-    reload: true
-""".lstrip()
 
 
 def merge(dest, update):
@@ -30,7 +20,6 @@ def merge(dest, update):
 
 def load(given_path, config):
     """Load config from file or default."""
-    config.update(yaml.load(DEFAULT_CONFIG))
     path = given_path or DEFAULT_PATH
 
     try:
@@ -38,10 +27,9 @@ def load(given_path, config):
     except FileNotFoundError:
         if given_path:
             print("Can't find config file: '%s'" % path)
-            print("Use --generate <path> to create one")
+            print("There should be a default '%s' file" % DEFAULT_PATH)
         else:
-            if write(DEFAULT_PATH):
-                print("Created default config file '%s'" % path)
+            print("Cannot default config file '%s'" % path)
     except EnvironmentError as exc:
         print("Couldn't open '%s': %s" % (path, exc))
     else:
@@ -49,20 +37,9 @@ def load(given_path, config):
             try:
                 data = yaml.load(config_file.read())
                 if not isinstance(data, dict):
-                    raise yaml.scanner.ScannerError
+                    raise yaml.parser.ParserError
                 merge(config, data)
-            except yaml.scanner.ScannerError as exc:
+                return True
+            except yaml.parser.ParserError as exc:
                 print("Invalid config file '%s': %s" % (path, exc))
                 return
-
-
-def write(path):
-    """Write default config to a file."""
-    try:
-        config_file = open(path, 'w')
-    except EnvironmentError as exc:
-        print("Couldn't create config file '%s': %s" % (path, exc))
-    else:
-        config_file.write(DEFAULT_CONFIG)
-        config_file.close()
-        return True
