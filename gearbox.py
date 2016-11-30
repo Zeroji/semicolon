@@ -6,8 +6,8 @@ import json
 import yaml
 
 
-version = '0.1.4'
-version_dev = True
+version = 'unknown'
+version_dev = False
 SERVER_CONFIG_PATH = 'servers/%s.json'
 SPECIAL_ARGS = ('message', 'author', 'channel', 'server', 'server_ex', 'client', 'flags', '__cogs')
 VALID_NAME = re.compile('[a-z][a-z_.0-9]*$')
@@ -16,7 +16,14 @@ CFG = {}
 
 
 def update_config(cfg):
+    global version, version_dev
     CFG.update(cfg)
+    try:
+        ver_num, ver_type = open(CFG['path']['version']).read().strip().split()
+        version = ver_num
+        version_dev = ver_type == 'dev'
+    except FileNotFoundError:
+        logging.warning('Version file %s not found' % CFG['path']['version'])
 
 
 def is_valid(name):
