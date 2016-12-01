@@ -32,7 +32,7 @@ def is_valid(name):
     return VALID_NAME.match(name) is not None
 
 
-def pretty(items, formatting='%s'):
+def pretty(items, formatting='%s', final='and'):
     """Prettify a list of strings."""
     if not items:
         return ''
@@ -40,7 +40,7 @@ def pretty(items, formatting='%s'):
         return formatting % items[0]
     else:
         formatted = [formatting % item for item in items]
-        return '%s and %s' % (', '.join(formatted[:-1]), formatted[-1])
+        return f'%s {final} %s' % (', '.join(formatted[:-1]), formatted[-1])
 
 
 def strip_prefix(text, prefixes=';'):
@@ -82,7 +82,7 @@ class Command:
             elif type(permissions) is list:
                 self.permissions.extend([(perm, True) if type(perm) is str else perm for perm in permissions])
         self.annotations = {arg: (None, '') for arg in self.normal}
-        type_types = (type, type(re.compile('')))
+        type_types = (type, type(re.compile('')), set)
         for key, item in func.__annotations__.items():
             if key in self.normal:
                 if type(item) is str:
@@ -139,6 +139,17 @@ class Command:
                         await client.send_message(message.channel,
                                                   f'Argument "{arg}" should be of type `{argtype.__name__}`')
                         return None
+                elif type(argtype) is set:
+                    if arg.lower() not in {value.lower() for value in argtype}:  # Name doesn't match (case insensitive)
+                        await client.send_message(message.channel,
+                                                  f'Argument "{arg}" should have one of the following values: ' +
+                                                  pretty(argtype, "`%s`", "or"))
+                        return None
+                    elif arg not in argtype:  # Name matching but wrong case
+                        for value in argtype:
+                            if arg.lower() == value.lower():
+                                temp_args[key] = value
+                                break
                 else:  # argtype is re.compile
                     if argtype.match(arg) is None:
                         await client.send_message(message.channel, f'Argument "{arg}" should match '

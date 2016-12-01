@@ -135,29 +135,31 @@ def halp(__cogs, server_ex, flags, name: 'Cog or command name'=None):
             (cogg, cname), command = commands[0]
         cname = __cogs.COGS[cogg].cog.aliases[cname]
         complete_name = cogg + '.' + cname
-        output = f'`{complete_name}` - {command.func.__doc__.splitlines()[0]}'
+        output = f'`{complete_name}` - **{command.func.__doc__.splitlines()[0]}**'
         aliases = [alias for alias, res in __cogs.COGS[cogg].cog.aliases.items() if res == cname]
         aliases.remove(cname)
         if aliases:
             output += '\nAlso known as: ' + gearbox.pretty(aliases, '`%s`')
-        output += '\nUsage: `' + complete_name + (' -flags' if command.flags else '')
+        output += '\n**Usage**: `' + complete_name + (' -flags' if command.flags else '')
         for i, arg in enumerate(command.normal):
             output += (' <%s>' if i < command.min_arg else ' [%s]') % arg
         output += '`'
         if command.flags:
-            output += '\nFlags: '
+            output += '\n**Flags**: '
             keys = list(command.flags)
             keys.sort()
             output += gearbox.pretty([f'`-{flag}`' + (f' ({command.flags[flag]})'if command.flags[flag] else '')
                                       for flag in keys])
         if any([arg[0] is not None or len(arg[1]) > 0 for arg in command.annotations.values()]):
-            output += '\nArguments: '
+            output += '\n**Arguments**: '
             arguments = []
             for arg in command.normal:
                 anno = command.annotations[arg]
                 temp = f'`{arg}`'
                 if anno[0] is not None:
-                    if type(anno[0]) is not type:
+                    if type(anno[0]) is set:
+                        temp += f' (must be {gearbox.pretty(anno[0], "`%s`", "or")})'
+                    elif type(anno[0]) is not type:
                         temp += f' (must match `{anno[0].pattern}`'
                     else:
                         temp += f' ({anno[0].__name__})'
@@ -182,7 +184,7 @@ def info():
 
 
 @cog.command(permissions='manage_server')
-def prefix(server_ex, command: 'get/add/del/reset'='get', *args):
+def prefix(server_ex, command: {'get', 'add', 'del', 'reset'}='get', *args):
     """Display or edit prefix settings for the current server.
 
     `get`: show prefixes, `add . ? !`: add prefixes, `del . ? !`: remove prefixes, `reset`: reset back to `;`"""
@@ -228,7 +230,8 @@ def prefix(server_ex, command: 'get/add/del/reset'='get', *args):
 
 
 @cog.command(permissions='manage_server')
-def breaker(server_ex, command: 'get/set'='get', new_breaker=None):
+def breaker(server_ex, command: {'get', 'set'}='get', new_breaker=None):
+    """Display or change breaker character for the current server."""
     command = command.lower()
     if command == 'get':
         return f"The breaker character for this server is `{server_ex.config['breaker']}`"

@@ -171,10 +171,130 @@ async def command(client):
 
 It's that simple. If your command is a coroutine, then `;;` will simply `await` it (if you want to send a message, do it yourself!); and the `client` argument will give you access to the main client. Hint, the loop is at `client.loop`
 
+### Documenting your command
+###### a.k.a. adding a cute little ribbon on it
+
+You may have seen this wonderful `help` command in the `base` cog, which does
+some really neat stuff, like displaying what a command does, which arguments
+to use and all. Sadly, those informations aren't magically generated: you have 
+to add them to your command or it won't work.
+
+#### What your command does
+
+This is done by adding a triple-quote string (`"""like this"""`) at the
+very beginning of your command:
+
+```python
+@cog.command
+def documentation():
+    """Print documentation about how to document.
+    
+    This is an additional **text message**, feel free to use some __fancy__ Discord formatting!
+    Newlines are respected, *don't worry*! You can even put some `code blocks`."""
+```
+
+When calling `help <your_cog>`, only the first line will be displayed (on the right
+side), but with `help <your_command>` it'll display the first line, then arguments
+and related stuff, and finally your additional documentation.  
+It is recommended you avoid using Discord formatting in the first line.
+
+#### Flags documentation
+
+You may have seen flags earlier, they are some kind of one-letter arguments that are
+either present or absent:  
+```python
+@cog.command(flags='abc')
+def show_flags(flags):
+    return f'I got the following flags: {flags}'
+```
+
+Here, the only information `;;` has about this command is that it can take the flags
+`a`, `b` and `c`. But what do these do? Well, let's use a dictionary to define that!
+
+```python
+@cog.command(flags={
+    'a': "Wow that's an A!",
+    'b': 'Execute plan B',
+    'c': ''
+})
+```
+
+With a dictionary, you can write `key:value` couples, with the `key` being your flag
+and the `value` a short description of its use. If you don't want to specify a value
+for a certain flag, set it to `''` (empty string).
+
+#### Arguments documentation
+
+##### Annotations
+
+First of all, any "special" argument to your command will *not* be displayed:
+that's normal, because those are supposed to be internal arguments.  
+Normal arguments can have two values added to them: a *type*, for example
+your `add(x, y)` function generally takes `int` objectss; and a *documentation
+string* which `help` uses to display even more information.  
+Now, both those values are optional, and you can write one without the other,
+but here how it's done:
+
+```python
+@cog.command
+def add(a: int, b: int)
+def add(a: 'An integer', b: 'Another integer')
+def add(a: (int, 'An integer'), b: ('Another integer', int))
+```
+
+As you can see, the syntax is quite modular: you can write either one, or the other,
+or both - in any order. Note that the *preferred* syntax is `(type, 'docstring')`.  
+If you want to have a default value, add it *after* the annotation:
+
+```python
+@cog.command
+def add(a: int, b: int=4)
+def add(a: 'An integer'=2, c: ('This one is a float', float)=3.14)
+```
+
+##### Type annotations
+
+Now, here's something cool about that `type` thingy: it automatically
+converts stuff! In the previous example, if the user were to type `add 2 6`,
+your command wouldn't receive the strings `'2'` and `'6'` but the *integers*
+`2` and `6`! Note that this only works with types that allow casting from a
+string. For convenience, it's implemented for `bool`: any variation of "true",
+"yes" or "1" will be cast to `True` while "false", "no" or "0" will give `False`.  
+If the argument cannot be cast, an error is displayed.
+
+But wait, there's more! If you love regular expression, you can put a regex
+pattern instead of a type, for example to input an email:
+
+```python
+@cog.command
+def send(address: re.compile(r'^[\w.-]*@[\w-]*\.[\w]*$')):
+```
+
+This might look tricky, if you're not used to regular expressions you should
+either discard this information (hint: don't) or learn about them (hint: do).  
+If the argument doesn't match the pattern, an error is displayed.
+
+A last thing you can do: instead of a type, or regexp pattern, you can specify
+a `set` of strings: an example is the command `prefix` which takes `get`, `add`,
+`del` or `reset` as its first argument:
+
+```python
+@cog.command
+def prefix(command: {'get', 'add', 'del', 'reset'}='get'):
+```
+
+This specifies that this argument can only have those values (the check is
+case-insensitive, but if the argument's case will be converted to match yours),
+and defaults to `get` if no value is set by the user. If the value isn't in the
+string set, an error is displayed.
+
+> Note: the {element1, element2, element3} construction is a *set*, like a list
+> except an element cannot be present twice. It's very important that you use
+> a set, and not a list or tuple, otherwise your command just won't work.
+
 ### Decorating your command
 
-No, this isn't about adding a cute little ribbon onto it. *(as of [v0.1.3](https://github.com/Zeroji/semicolon/releases/tag/v0.1.3))*.
-Also, this technically adds functionalities to the cog rather than to the command.
+*Technically, this adds features to the cog rather than to the command.*
 
 You've already used the decorator `@cog.command` to indicate that your function was a `;;` command and not a random function.  
 You can do a bit more, here, have a list:
@@ -201,11 +321,11 @@ def say(text):
 
 If you call `;say Hello world!` it'll repeat it, but if `fulltext` was set to `False` it would have resulted in an `Invalid argument count` error.
 
-`delete_message` (boolean, defaults to `False`)
+##### `delete_message` (boolean, defaults to `False`)
 
 If this option is enabled, `;;` will try to delete the user's message after the command was executed.
 
-`permissions` (string, tuple or list, defaults to `None`)
+##### `permissions` (string, tuple or list, defaults to `None`)
 
 This one is a bit trickier: it allows you to specify that a user needs certain permissions for running a command.
 Say you want only users with `manage_server` permission to use your command, you could use one of the following:
@@ -226,11 +346,14 @@ available only to non-admins who can delete messages?
 > As of [v0.1.3](https://github.com/Zeroji/semicolon/releases/tag/v0.1.), no error message is printed in case of wrong permissions.  
 This is intended behaviour.
 
-`flags` (string, defaults to `''`)
+##### `flags` (string or dictionary, defaults to `''`)
 
 This allows you to tell `;;` which flags can be used by the command.
 An error message will be printed if the user tries to use an invalid flag.
-See the [Special arguments](#special-arguments) section above for more information about flags.
+See the [Special arguments](#special-arguments) section above for more information about flags.  
+You can use a string, like `'ab'`, or a dictionary if you'd like to add information:  
+`{'a': 'Does a certain action', 'b': 'Executes plan B'}`  
+See the [Documenting your command](#documenting-your-command) for details about documentation. 
 
 ### Special functions
 

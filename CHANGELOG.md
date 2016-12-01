@@ -9,6 +9,8 @@ All notable changes to this project will be documented in this file.
 + Displaying version number in *Playing* status
 + Cog-specific configuration files (yaml or json)
 + Default `config.yaml` file uploaded
++ `breaker` command to change the breaker character per server
++ Argument type in annotations can be a set of strings
 
 #### Fixed
 
