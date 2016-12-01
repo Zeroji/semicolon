@@ -13,13 +13,13 @@ def load(name):
         logging.critical("%s while loading '%s': %s", type(exc).__name__, name, exc)
     else:
         base_name = name[:name.rfind('.') + 1]
-        mod.cog.on_init()
         if mod.cog.name is not None:
             name = base_name + mod.cog.name
         else:
             name = base_name + name.rsplit('.', 1)[-1]
         mod.cog.name = name
         mod.cog.load_cfg()
+        mod.cog.on_init()
         logging.info("Loaded cog '%s'.", name)
     COGS[name] = mod
 
@@ -42,6 +42,7 @@ def reload(name, mod):  # Passing name for logging purposes
             logging.info("Reloaded '%s' as '%s'.", name, mod.cog.name)
         else:
             logging.info("Reloaded '%s'.", name)
+    mod.cog.load_cfg()
     mod.cog.on_init()
     mod.cog.subcogs = subcogs
 
