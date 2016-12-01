@@ -5,14 +5,14 @@ which may or may not be implemented in future versions.
 
 ### To be implemented
 
-##### Next things I'll work on
+##### Next things to work on
 
-1. Improved user experience
-2. Bug hunting
+1. Unit tests
+2. Improved user experience
+0. Properly commented code
+0. Bug hunting
 
 ##### Other features that *will* exist
-
-- Properly commented code
 
 ### Might be implemented
 

@@ -1,7 +1,7 @@
 ## Change Log
 All notable changes to this project will be documented in this file.
 
-### [[Unreleased](https://github.com/Zeroji/semicolon)]
+### [[v0.1.4](https://github.com/Zeroji/semicolon/releases/tag/v0.1.4)]
 
 #### Added
 
@@ -12,6 +12,7 @@ All notable changes to this project will be documented in this file.
 + `breaker` command to change the breaker character per server
 + Argument type in annotations can be a set of strings
 + Included default configuration, checks against type mismatches
++ Added very simple installer
 
 #### Fixed
 

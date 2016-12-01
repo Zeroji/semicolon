@@ -83,7 +83,7 @@ def hello(author):
 As you can see, simply putting `author` in the function definition will give you the corresponding object.
 Why? Because `;;` is made in such a way that it'll look at what you want,
 and attempt to provide it to you so you don't need to write extra pieces of code.
-Here's a list of those "special" arguments: *(as of [v0.1.3](https://github.com/Zeroji/semicolon/releases/tag/v0.1.3))*
+Here's a list of those "special" arguments: *(as of [v0.1.4](https://github.com/Zeroji/semicolon/releases/tag/v0.1.4))*
 
 |Argument    | Description
 | ---        | ---
@@ -343,7 +343,7 @@ available only to non-admins who can delete messages?
 @cog.command(permissions=[('manage_server', False), 'manage_messages'])
 ```
 
-> As of [v0.1.3](https://github.com/Zeroji/semicolon/releases/tag/v0.1.), no error message is printed in case of wrong permissions.  
+> As of [v0.1.4](https://github.com/Zeroji/semicolon/releases/tag/v0.1.4), no error message is printed in case of wrong permissions.  
 This is intended behaviour.
 
 ##### `flags` (string or dictionary, defaults to `''`)
