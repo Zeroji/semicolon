@@ -4,14 +4,36 @@ import yaml.parser
 
 
 DEFAULT_PATH = 'config.yaml'
+DEFAULT_CFG = {
+    'path': {
+        'log': 'run.log',
+        'token': 'data/secret/token',
+        'master': 'data/master',
+        'admins': 'data/admins',
+        'banned': 'data/banned',
+        'server': 'data/servers/%s.json',
+        'config': 'config/%s.%s',
+        'version': 'version',
+    }, 'wheel': {
+        'import': True,
+        'reload': True,
+    }
+}
 
 
-def merge(dest, update):
-    """Recursively update a nested dictionnary."""
+def merge(dest, update, *, key_check=False):
+    """Recursively update a nested dictionary."""
     # [From StackOverflow](http://stackoverflow.com/a/3233356)
+    # Modified to raise ValueError in case of type mismatch, and ignore new keys
     for key, value in update.items():
+        if key_check:
+            if key not in dest:
+                print(f"Useless key '{key}' with value '{value}'")
+                continue
+            if not isinstance(value, type(dest[key])):
+                raise ValueError(f"Type mismatch on key '{key}'")
         if isinstance(value, collections.Mapping):
-            temp = merge(dest.get(key, {}), value)
+            temp = merge(dest.get(key, {}), value, key_check=key_check)
             dest[key] = temp
         else:
             dest[key] = update[key]
@@ -38,7 +60,8 @@ def load(given_path, config):
                 data = yaml.load(config_file.read())
                 if not isinstance(data, dict):
                     raise yaml.parser.ParserError
-                merge(config, data)
+                merge(config, DEFAULT_CFG)
+                merge(config, data, key_check=True)
                 return True
             except yaml.parser.ParserError as exc:
                 print("Invalid config file '%s': %s" % (path, exc))

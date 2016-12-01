@@ -11,6 +11,7 @@ All notable changes to this project will be documented in this file.
 + Default `config.yaml` file uploaded
 + `breaker` command to change the breaker character per server
 + Argument type in annotations can be a set of strings
++ Included default configuration, checks against type mismatches
 
 #### Fixed
 
