@@ -4,6 +4,7 @@ import logging
 import re
 import json
 import yaml
+import config
 
 
 version = 'unknown'
@@ -302,6 +303,7 @@ class Cog:
 
 class Server:
     """Custom server class."""
+    default_cfg = {'cogs': {'blacklist': []}, 'prefixes': [';'], 'breaker': '|'}
 
     def __init__(self, sid, path):
         """Initialize."""
@@ -315,8 +317,9 @@ class Server:
     def load(self):
         try:
             self.config = json.load(open(self.path))
+            config.merge(self.config, Server.default_cfg)
         except FileNotFoundError:
-            self.config = {'cogs': {'blacklist': []}, 'prefixes': [';']}
+            self.config = Server.default_cfg
             self._write()
         self.blacklist = self.config['cogs']['blacklist']
         self.prefixes = self.config['prefixes']

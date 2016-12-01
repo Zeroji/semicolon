@@ -225,3 +225,17 @@ def prefix(server_ex, command: 'get/add/del/reset'='get', *args):
         server_ex.prefixes = [';']
         server_ex.write()
         return 'Server prefix reset to `;`.'
+
+
+@cog.command(permissions='manage_server')
+def breaker(server_ex, command: 'get/set'='get', new_breaker=None):
+    command = command.lower()
+    if command == 'get':
+        return f"The breaker character for this server is `{server_ex.config['breaker']}`"
+    elif command == 'set':
+        if new_breaker is None:
+            return "Please use `set <breaker_character>`"
+        if len(new_breaker) != 1:
+            return "The breaker character should be a single character"
+        server_ex.config['breaker'] = new_breaker
+        return f"The breaker character for this server has been set to `{new_breaker}`"

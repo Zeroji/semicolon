@@ -52,7 +52,7 @@ class Bot(discord.Client):
         # Detecting and stripping prefixes
         prefixes = [self.user.mention]
         prefixes.extend(server_ex.prefixes)
-        breaker = '|'  # See README.md
+        breaker = server_ex.config['breaker']  # See README.md
         text = message.content
         commands = []
         command_only = False
