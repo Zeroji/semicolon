@@ -6,7 +6,7 @@ This is the repository for the *new* version of `;;`,
 a nice Discord bot with currently very few features.  
 [Old version here.](http://github.com/Zeroji/semicold)
 
-If you want to add features, feel free to [write a cog](https://github.com/Zeroji/semicolon/blob/master/docs/cogs.md)!
+If you want to add features, feel free to [write a cog](https://github.com/Zeroji/semicolon/blob/master/doc/cogs.md)!
 
 #### How to use
 
