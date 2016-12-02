@@ -177,7 +177,7 @@ def halp(__cogs, server_ex, flags, name: 'Cog or command name'=None):
 @cog.alias('about')
 def info():
     """Display basic version information about me."""
-    ver = 'v' + gearbox.version + (' :warning:' if gearbox.version_dev else '')
+    ver = 'v' + gearbox.version + (' :warning:' if gearbox.version_is_dev else '')
     pver = sys.version.split()[0]
     return f"Hi, I'm `;;`, a Discord bot written by Zeroji | {ver} | Python {pver} | discord.py {discord.__version__}" \
            f"\nMy source code is available on GitHub: <https://github.com/Zeroji/semicolon/releases/latest>"

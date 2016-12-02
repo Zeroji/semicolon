@@ -8,7 +8,7 @@ import config
 
 
 version = 'unknown'
-version_dev = False
+version_is_dev = False
 SERVER_CONFIG_PATH = 'servers/%s.json'
 SPECIAL_ARGS = ('message', 'author', 'channel', 'server', 'server_ex', 'client', 'flags', '__cogs')
 VALID_NAME = re.compile('[a-z][a-z_.0-9]*$')
@@ -17,14 +17,19 @@ CFG = {}
 
 
 def update_config(cfg):
-    global version, version_dev
+    global version, version_is_dev
     CFG.update(cfg)
+    version_path = CFG['path']['version']
     try:
-        ver_num, ver_type = open(CFG['path']['version']).read().strip().split()
+        ver_num, ver_type = open(version_path).read().strip().split()
         version = ver_num
-        version_dev = ver_type == 'dev'
+        version_is_dev = ver_type == 'dev'
+    except ValueError:
+        logging.warning('Wrong version file format! It should be <number> <type>')
     except FileNotFoundError:
-        logging.warning('Version file %s not found' % CFG['path']['version'])
+        logging.warning('Version file %s not found' % version_path)
+    except EnvironmentError as exc:
+        logging.warning("Couldn't open version file '%s': %s", version_path)
 
 
 def is_valid(name):
@@ -172,9 +177,9 @@ class Command:
             except (UnicodeError, UnicodeEncodeError):
                 logging.warning("Unicode error in command '%s' (with arguments %s)",
                                 self.func.__name__, ordered_args)
-            else:
-                if len(output) > 0:
-                    await client.send_message(message.channel, str(output))
+                return
+            if len(output) > 0:
+                await client.send_message(message.channel, str(output))
 
 
 class Cog:
@@ -207,7 +212,7 @@ class Cog:
             try:
                 self.config = module.load(open(path))
             except FileNotFoundError:
-                logging.info("No config file at %s for cog %s", path, self.name)
+                logging.warning("No config file at %s for cog %s", path, self.name)
 
     def save_cfg(self):
         module, path = self._get_cfg()

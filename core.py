@@ -183,7 +183,7 @@ class Bot(discord.Client):
         self.loop.create_task(self.wheel())
         version = discord.Game()
         version.name = 'v' + gearbox.version
-        if gearbox.version_dev:
+        if gearbox.version_is_dev:
             version.name += ' [dev]'
         await super(Bot, self).change_presence(status=discord.Status.idle, game=version)
         logging.info('Client started.')
@@ -200,10 +200,11 @@ def main():
     args = parser.parse_args(sys.argv[1:])
 
     # Load config and finally start logging
-    success = config.load(args.config, CFG)
-    if not success:
+    try:
+        config.load(args.config, CFG)
+    except:
         print('FATAL ERROR: cannot continue without configuration')
-        return
+        raise
     gearbox.update_config(CFG)
     logging.basicConfig(filename=CFG['path']['log'], level=logging.DEBUG,
                         format='%(asctime)s:%(name)s: %(levelname)s %(message)s')

@@ -6,21 +6,21 @@ def load(name):
     """Load a cog given its name (file name without extension)."""
     import importlib
     import logging
-    mod = None
     try:
         mod = importlib.import_module(__name__ + '.' + name)
     except Exception as exc:  # Yes I know it's too general. Just wanna catch 'em all.
         logging.critical("%s while loading '%s': %s", type(exc).__name__, name, exc)
+        COGS[name] = None
+        return
+    base_name = name[:name.rfind('.') + 1]
+    if mod.cog.name is not None:
+        name = base_name + mod.cog.name
     else:
-        base_name = name[:name.rfind('.') + 1]
-        if mod.cog.name is not None:
-            name = base_name + mod.cog.name
-        else:
-            name = base_name + name.rsplit('.', 1)[-1]
-        mod.cog.name = name
-        mod.cog.load_cfg()
-        mod.cog.on_init()
-        logging.info("Loaded cog '%s'.", name)
+        name = base_name + name.rsplit('.', 1)[-1]
+    mod.cog.name = name
+    mod.cog.load_cfg()
+    mod.cog.on_init()
+    logging.info("Loaded cog '%s'.", name)
     COGS[name] = mod
 
 

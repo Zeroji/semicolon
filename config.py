@@ -3,7 +3,9 @@ import collections
 import yaml.parser
 
 
+# If no path is specified, this path is used
 DEFAULT_PATH = 'config.yaml'
+# If config options are missing, those are used
 DEFAULT_CFG = {
     'path': {
         'log': 'run.log',
@@ -33,36 +35,36 @@ def merge(dest, update, *, key_check=False):
             if not isinstance(value, type(dest[key])):
                 raise ValueError(f"Type mismatch on key '{key}'")
         if isinstance(value, collections.Mapping):
-            temp = merge(dest.get(key, {}), value, key_check=key_check)
+            temp = merge(dest.get(key, {}), value, key_check=key_check)  # Recursively merge internal dictionary
             dest[key] = temp
         else:
-            dest[key] = update[key]
+            dest[key] = update[key]  # Regular key update
     return dest
 
 
 def load(given_path, config):
-    """Load config from file or default."""
+    """Populate config from default settings or configuration file."""
     path = given_path or DEFAULT_PATH
-
     try:
         config_file = open(path, mode='r')
     except FileNotFoundError:
         if given_path:
             print("Can't find config file: '%s'" % path)
             print("There should be a default '%s' file" % DEFAULT_PATH)
-        else:
+        else:  # Missing default config file, shouldn't happen
             print("Cannot default config file '%s'" % path)
+        raise
     except EnvironmentError as exc:
         print("Couldn't open '%s': %s" % (path, exc))
-    else:
-        with config_file:
-            try:
-                data = yaml.load(config_file.read())
-                if not isinstance(data, dict):
-                    raise yaml.parser.ParserError
-                merge(config, DEFAULT_CFG)
-                merge(config, data, key_check=True)
-                return True
-            except yaml.parser.ParserError as exc:
-                print("Invalid config file '%s': %s" % (path, exc))
-                return
+        raise
+    try:
+        data = yaml.load(config_file.read())
+        if not isinstance(data, dict):
+            raise ValueError('Not a valid dictionary')
+        # Update given configuration with defaults
+        merge(config, DEFAULT_CFG)
+        # Overwrite defaults with parsed data
+        merge(config, data, key_check=True)
+    except (yaml.parser.ParserError, ValueError) as exc:
+        print("Invalid config file '%s': %s" % (path, exc))
+        raise
