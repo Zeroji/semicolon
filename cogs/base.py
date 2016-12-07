@@ -13,7 +13,7 @@ def enable(__cogs, server_ex, *cogs: 'Name of cogs to enable'):
 
     If called with no cogs, displays enabled cogs. Use `*` to enable all cogs."""
     if not cogs:
-        return 'Enabled cogs: ' + gearbox.pretty([c for c in __cogs.COGS if c not in server_ex.blacklist], '`%s`')
+        return 'Enabled cogs: ' + gearbox.pretty([c for c in __cogs.COGS if server_ex.is_allowed(c)], '`%s`')
     print(cogs)
     if cogs == ('*',):
         cogs = server_ex.blacklist[::]
@@ -96,8 +96,8 @@ def halp(__cogs, server_ex, flags, name: 'Cog or command name'=None):
         else:
             return markdown_parser(open(f'{doc_path}/{name}.md').read())
     width = cog.config['help']['width']
-    active_cogs = [cogg for cogg in __cogs.COGS if cogg not in server_ex.blacklist]
-    commands = __cogs.command(name, server_ex.blacklist)
+    active_cogs = [cogg for cogg in __cogs.COGS if server_ex.is_allowed(cogg)]
+    commands = __cogs.command(name, server_ex)
     if name is not None and '.' in name:
         cogg, temp_name = name.rsplit('.', 1)
         if cogg in active_cogs and __cogs.COGS[cogg].cog.get(temp_name):

@@ -44,89 +44,74 @@ class Bot(discord.Client):
         if message.author == self.user:
             return
 
+        # Getting server information
         server_ex_id = message.channel.id if message.channel.is_private else message.server.id
         if server_ex_id not in self.server:
             self.server[server_ex_id] = gearbox.Server(server_ex_id, CFG['path']['server'])
         server_ex = self.server[server_ex_id]
 
-        # Detecting and stripping prefixes
+        # Loading prefixes and breaker settings
         prefixes = [self.user.mention]
         prefixes.extend(server_ex.prefixes)
-        breaker = server_ex.config['breaker']  # See README.md
-        text = message.content
-        commands = []
-        command_only = False
-        if not message.channel.is_private:
-            text, is_command = gearbox.strip_prefix(text, prefixes)
-            if is_command:
-                commands = [text]
-                command_only = True
-            else:
-                if breaker * 2 in text:
-                    text = text[text.find(breaker * 2) + 2:].lstrip()
-                    text, is_command = gearbox.strip_prefix(text, prefixes)
-                    if is_command:
-                        commands = [text]
-                elif breaker in text:
-                    parts = [part.strip() for part in text.split(breaker)]
-                    commands = []
-                    for part in parts:
-                        part, is_command = gearbox.strip_prefix(part, prefixes)
-                        if is_command:
-                            commands.append(part)
-                    is_command = len(parts) > 0
-                if not is_command:
-                    return
+        breaker = server_ex.config['breaker']
+
+        # Extracting commands
+        commands, command_only = gearbox.read_commands(message.content, prefixes, breaker, message.channel.is_private)
+
+        for command in commands:
+            await self.process(command, command_only, message, server_ex)
+
+    async def process(self, command, command_only, message, server_ex):
+        # Very special commands (reload/restart/shutdown)
+        if command in ('reload', 'restart', 'shutdown'):
+            if message.author.id not in self.admins:
+                return
+            if command == 'reload':
+                logging.info("Reloading all cogs")
+                for name, cog in cogs.COGS.items():
+                    cogs.reload(name, cog)
+            # Admins can restart the bot if it goes wild, but only owner may stop it completely
+            if command == 'restart' or (command == 'shutdown' and message.author.id == self.master):
+                logging.info("%s initiated by %s", command.capitalize(), message.author.name)
+                if command == 'shutdown':
+                    # An external script runs the bot forever unless this file exists
+                    open('stop', 'a').close()
+                for cog in cogs.COGS.values():
+                    cog.cog.on_exit()
+                logging.info("All cogs unloaded.")
+                await self.change_presence(game=None)
+                await self.logout()
+            return
+        # Getting command arguments (or not)
+        if ' ' in command:
+            command, arguments = command.split(' ', 1)
         else:
-            commands = [gearbox.strip_prefix(text, prefixes)[0]]
+            arguments = ''
 
-        for text in commands:
-            # Very special commands (reload/restart/shutdown)
-            if message.author.id in self.admins:
-                if text == 'reload':
-                    logging.info("Reloading all cogs")
-                    for name, cog in cogs.COGS.items():
-                        cogs.reload(name, cog)
-                if text == 'restart' or (text == 'shutdown' and message.author.id == self.master):
-                    logging.info("%s initiated by %s", text.capitalize(), message.author.name)
-                    if text == 'shutdown':
-                        # An external script runs the bot forever unless this file exists
-                        open('stop', 'a').close()
-                    for cog in cogs.COGS.values():
-                        cog.cog.on_exit()
-                    logging.info("All cogs unloaded.")
-                    await self.change_presence(game=None)
-                    await self.logout()
-            # Getting command arguments (or not)
-            if ' ' in text:
-                command, arguments = text.split(' ', 1)
-            else:
-                command, arguments = text, ''
-
-            if '.' in command:
-                # Getting command from cog when using cog.command
-                cog, cmd = command.rsplit('.', 1)
-                if cog in server_ex.config['cogs']['blacklist']:
-                    return
-                cog = cogs.cog(cog)
-                if not cog:
-                    return
-                func = cog.get(cmd)
-            else:
-                # Checking for command existence / possible duplicates
-                matches = cogs.command(command, server_ex.config['cogs']['blacklist'])
-                if len(matches) > 1:
-                    output = f"The command `{command}` was found in multiple cogs: " \
-                             f"{gearbox.pretty([m[0] for m in matches], '`%s`')}. Use <cog>.{command} to specify."
-                    await self.send_message(message.channel, output)
-                func = matches[0][1] if len(matches) == 1 else None
-            if func is not None and all([permission in message.channel.permissions_for(message.author)
-                                         for permission in func.permissions]):
-                await func.call(self, message, arguments, cogs)
-                if (func.delete_message and command_only and
-                        message.channel.permissions_for(
-                            message.server.get_member(self.user.id)).manage_messages):
-                    await self.delete_message(message)
+        if '.' in command:
+            # Getting command from cog when using cog.command
+            cog, cmd = command.rsplit('.', 1)
+            if not server_ex.is_allowed(cog):
+                return
+            cog = cogs.cog(cog)
+            if not cog:
+                return
+            func = cog.get(cmd)
+        else:
+            # Checking for command existence / possible duplicates
+            matches = cogs.command(command, server_ex)
+            if len(matches) > 1:
+                output = f"The command `{command}` was found in multiple cogs: " \
+                         f"{gearbox.pretty([m[0] for m in matches], '`%s`')}. Use <cog>.{command} to specify."
+                await self.send_message(message.channel, output)
+            func = matches[0][1] if len(matches) == 1 else None
+        if func is not None and all([permission in message.channel.permissions_for(message.author)
+                                     for permission in func.permissions]):
+            await func.call(self, message, arguments, cogs)
+            if (func.delete_message and command_only and
+                    message.channel.permissions_for(
+                        message.server.get_member(self.user.id)).manage_messages):
+                await self.delete_message(message)
 
     async def on_reaction_add(self, reaction, user):
         await self.on_reaction(True, reaction, user)

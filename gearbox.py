@@ -9,7 +9,6 @@ import config
 
 version = 'unknown'
 version_is_dev = False
-SERVER_CONFIG_PATH = 'servers/%s.json'
 SPECIAL_ARGS = ('message', 'author', 'channel', 'server', 'server_ex', 'client', 'flags', '__cogs')
 VALID_NAME = re.compile('[a-z][a-z_.0-9]*$')
 CONFIG_LOADERS = {'json': json, 'yaml': yaml}
@@ -29,7 +28,7 @@ def update_config(cfg):
     except FileNotFoundError:
         logging.warning('Version file %s not found' % version_path)
     except EnvironmentError as exc:
-        logging.warning("Couldn't open version file '%s': %s", version_path)
+        logging.warning("Couldn't open version file '%s': %s", version_path, exc)
 
 
 def is_valid(name):
@@ -48,13 +47,49 @@ def pretty(items, formatting='%s', final='and'):
         return f'%s {final} %s' % (', '.join(formatted[:-1]), formatted[-1])
 
 
-def strip_prefix(text, prefixes=';'):
-    """Strip prefixes from a string and tell if there were none."""
-    # Returns the stripped string, and True if prefixes were stripped.
+def has_prefix(text, prefixes=';'):
+    """Tell if a string has a prefix."""
     for prefix in prefixes:
         if text.startswith(prefix):
-            return text[len(prefix):].lstrip(), True
-    return text, False
+            return True
+    return False
+
+
+def strip_prefix(text, prefixes=';'):
+    """Strip prefixes from a string."""
+    for prefix in prefixes:
+        if text.startswith(prefix):
+            return text[len(prefix):].lstrip()
+    return text
+
+
+def read_commands(text, prefixes, breaker, is_private=False):
+    """Read commands from a string, returns the commands and whether or not the command is the only text.
+
+    ";example" will return (['example'], True) because the message is only a command
+    "Give an |;example" will return (['example'], False) because the message has other information"""
+    if is_private: # Any private message is considered a command
+        return strip_prefix(text), True
+    if has_prefix(text, prefixes): # Regular commands
+        return [strip_prefix(text, prefixes)], True
+    # Here comes the tricky part about the "breaker" character:
+    # Users can type things like `please say |;hi` and that'll call `;hi`
+    # It's also `possible to ||;say things with a | in them` if you use `||`
+    # More info in the readme, but here's the code to parse this
+    index = text.find(breaker*2)
+    if index >= 0:  # If we have a `||` in the text
+        commands = read_commands(text[:index].rstrip(), prefixes, breaker)[0] # We parse what's before it
+        sub = text[index+2:].lstrip()
+        if has_prefix(sub, prefixes):  # If there's a command after it, we add it
+            commands.append(strip_prefix(sub, prefixes))
+        return commands, False
+    elif breaker in text:  # If we have a `|`
+        commands = []
+        for part in text.split(breaker):  # For each part of the message, we check for a command
+            if has_prefix(part.strip(), prefixes):
+                commands.append(strip_prefix(part.strip(), prefixes))
+        return commands, False
+    return (), False  # No command was found
 
 
 class Command:
@@ -329,6 +364,13 @@ class Server:
         self.blacklist = None
         self.prefixes = None
         self.load()
+
+    def is_allowed(self, cog_name):
+        if cog_name in self.blacklist:
+            return False
+        if any([cog_name.startswith(parent + '.') for parent in self.blacklist]):
+            return False
+        return True
 
     def load(self):
         try:

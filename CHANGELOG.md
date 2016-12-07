@@ -1,6 +1,12 @@
 ## Change Log
 All notable changes to this project will be documented in this file.
 
+### [[Unreleased](https://github.com/Zeroji/semicolon/releases/latest)]
+
+#### Added
+
++ Disabling a cog disables its sub-cogs
+
 ### [[v0.1.4](https://github.com/Zeroji/semicolon/releases/tag/v0.1.4)]
 
 #### Added

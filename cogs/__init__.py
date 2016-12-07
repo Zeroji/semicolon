@@ -54,12 +54,11 @@ def cog(name):
     return COGS[name].cog
 
 
-def command(cmd, blacklist=None):
+def command(cmd, server_ex=None):
     """Find a command given its name."""
-    if blacklist is None:
-        blacklist = []
+    allowed = server_ex.is_allowed if server_ex is not None else (lambda _: True)
     matches = []
     for name, _cog in COGS.items():
-        if name not in blacklist and _cog.cog.has(cmd):
+        if allowed(name) and _cog.cog.has(cmd):
             matches.append((name, _cog.cog.get(cmd)))
     return matches
