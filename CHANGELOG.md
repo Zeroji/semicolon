@@ -6,6 +6,7 @@ All notable changes to this project will be documented in this file.
 #### Added
 
 + Disabling a cog disables its sub-cogs
++ Banned users are actually banned
 
 ### [[v0.1.4](https://github.com/Zeroji/semicolon/releases/tag/v0.1.4)]
 

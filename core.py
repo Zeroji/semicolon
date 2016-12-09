@@ -18,17 +18,19 @@ CFG = {}
 class Bot(discord.Client):
     """Client wrapper."""
 
-    def __init__(self, master='', admins=(), banned=()):
+    def __init__(self, master='', admins=None, banned=None):
         """Magic method docstring."""
         super(Bot, self).__init__()
+        if admins is None:
+            admins = []
         if master not in admins:
             admins = (master,) + admins
         self.master = master
         self.admins = admins
-        self.banned = banned
+        self.banned = banned if banned is not None else []
         self.cogs = {}
         self.last_update = time.time()
-        self.server = {}
+        self.servers_ex = {}
 
     def run(self, *args, **kwargs):
         """Start client."""
@@ -40,15 +42,24 @@ class Bot(discord.Client):
         if message.channel.is_private or message.server.id in \
                 ('133648084671528961', '91460936186990592', '211982476745113601'):
             return
+
         # Avoid replying to self [TEMP]
         if message.author == self.user:
             return
 
+        # Forbid banned users from issuing commands
+        if message.author.id in self.banned:
+            return
+
         # Getting server information
+        # The `gearbox.Server` class contains additional information about a server, and is used
+        # to preserve server-specific settings. `server_ex` stands for "server extended" and can
+        # be used as a special argument in a command.
+        # `self.servers_ex` contains a server_id:server_ex mapping to easily access server settings
         server_ex_id = message.channel.id if message.channel.is_private else message.server.id
-        if server_ex_id not in self.server:
-            self.server[server_ex_id] = gearbox.Server(server_ex_id, CFG['path']['server'])
-        server_ex = self.server[server_ex_id]
+        if server_ex_id not in self.servers_ex:
+            self.servers_ex[server_ex_id] = gearbox.Server(server_ex_id, CFG['path']['server'])
+        server_ex = self.servers_ex[server_ex_id]
 
         # Loading prefixes and breaker settings
         prefixes = [self.user.mention]
@@ -90,10 +101,10 @@ class Bot(discord.Client):
 
         if '.' in command:
             # Getting command from cog when using cog.command
-            cog, cmd = command.rsplit('.', 1)
-            if not server_ex.is_allowed(cog):
+            cog_name, cmd = command.rsplit('.', 1)
+            if not server_ex.is_allowed(cog_name):
                 return
-            cog = cogs.cog(cog)
+            cog = cogs.cog(cog_name)
             if not cog:
                 return
             func = cog.get(cmd)
@@ -101,8 +112,8 @@ class Bot(discord.Client):
             # Checking for command existence / possible duplicates
             matches = cogs.command(command, server_ex)
             if len(matches) > 1:
-                output = f"The command `{command}` was found in multiple cogs: " \
-                         f"{gearbox.pretty([m[0] for m in matches], '`%s`')}. Use <cog>.{command} to specify."
+                output = (f"The command `{command}` was found in multiple cogs: "
+                          f"{gearbox.pretty([m[0] for m in matches], '`%s`')}. Use <cog>.{command} to specify.")
                 await self.send_message(message.channel, output)
             func = matches[0][1] if len(matches) == 1 else None
         if func is not None and all([permission in message.channel.permissions_for(message.author)
@@ -126,9 +137,11 @@ class Bot(discord.Client):
     async def wheel(self):  # They see me loading
         """Dynamically update the cogs."""
 
+        # Load cogs in a directory
         def load_dir(path='cogs', base_name='', parent_cog=None):
             for name in os.listdir(path):
                 full = os.path.join(path, name)
+                # If a .py file is found (and valid), try to load it
                 if name.endswith('.py'):
                     name = name[:-3]
                     if gearbox.is_valid(name):
@@ -141,7 +154,8 @@ class Bot(discord.Client):
                             cogs.load(name)
                             if parent_cog is not None:
                                 parent_cog.subcogs[name] = cogs.COGS[name]
-                elif os.path.isdir(full) and gearbox.is_valid(name) and name not in cogs.COGS :
+                # If a directory containing `__init__.py` is found, load the init and the directory
+                elif os.path.isdir(full) and gearbox.is_valid(name) and name not in cogs.COGS:
                     if parent_cog is not None and name in parent_cog.aliases:
                         logging.critical("Sub-cog %s from cog %s couldn't be loaded because "
                                          "a command with the same name exists", name, parent_cog.name)
@@ -210,7 +224,7 @@ def main():
     admins = open(CFG['path']['admins'], 'r').read().splitlines()
     banned = open(CFG['path']['banned'], 'r').read().splitlines()
 
-    bot = Bot(master, tuple(admins), tuple(banned))
+    bot = Bot(master, admins, banned)
     bot.run(token)
     logging.info("Stopped")
 
