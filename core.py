@@ -24,7 +24,7 @@ class Bot(discord.Client):
         if admins is None:
             admins = []
         if master not in admins:
-            admins = (master,) + admins
+            admins.append(master)
         self.master = master
         self.admins = admins
         self.banned = banned if banned is not None else []
