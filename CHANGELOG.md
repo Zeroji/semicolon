@@ -7,6 +7,12 @@ All notable changes to this project will be documented in this file.
 
 + Disabling a cog disables its sub-cogs
 + Banned users are actually banned
++ Internationalization mechanisms
++ Server specific language settings
+
+### Changed
+
+* `prefix` and `breaker` commands are in the `settings` cog
 
 ### [[v0.1.4](https://github.com/Zeroji/semicolon/releases/tag/v0.1.4)]
 

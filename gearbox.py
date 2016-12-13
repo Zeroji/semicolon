@@ -1,10 +1,12 @@
 """More like a toolbox, actually."""
 import inspect
 import logging
+import os
 import re
 import json
 import yaml
 import config
+import gettext
 
 
 version = 'unknown'
@@ -95,7 +97,7 @@ def read_commands(text, prefixes, breaker, is_private=False):
 class Command:
     """Guess what."""
 
-    def __init__(self, func, flags='', fulltext=False, delete_message=False, permissions=None):
+    def __init__(self, func, flags='', fulltext=False, delete_message=False, permissions=None, *, parent=None):
         """Guess."""
         self.params = inspect.signature(func).parameters
         # self.special = [arg for arg in params if arg in SPECIAL_ARGS]
@@ -136,6 +138,7 @@ class Command:
                         self.annotations[key] = item
         if not func.__doc__:
             func.__doc__ = ' '
+        self.parent = parent
 
     async def call(self, client, message, arguments, _cogs=None):
         """Call a command."""
@@ -202,6 +205,7 @@ class Command:
         #     args[-1] = ' '.join(text[len(self.normal) - 1:])
         ordered_args = [args[key] for key in self.params if key in args]
         ordered_args += pos_args
+        self.parent.set_lang(special_args['server_ex'].config['language'])
         if self.iscoroutine:
             output = await self.func(*ordered_args)
         else:
@@ -231,6 +235,8 @@ class Cog:
         self.react = {}
         self.config = {}
         self.config_type = config
+        self.languages = {}
+        self.lang = None
 
     def _get_cfg(self):
         if self.config_type is None:
@@ -242,6 +248,13 @@ class Cog:
         return module, path
 
     def load_cfg(self):
+        available_languages = [lang for lang in os.listdir(CFG['path']['locale'])
+                               if os.path.isfile(os.path.join(CFG['path']['locale'], lang,
+                                                              'LC_MESSAGES', *self.name.split('.')) + '.mo')]
+        self.languages = {lang: gettext.translation(os.path.join(*self.name.split('.')),
+                                                    localedir=CFG['path']['locale'], languages=[lang])
+                          for lang in available_languages}
+        self.set_lang('en')
         module, path = self._get_cfg()
         if module is not None:
             try:
@@ -338,7 +351,7 @@ class Cog:
                 if name in self.aliases:
                     logging.warning("Command '%s' overwrites an alias mapped to '%s'", name, self.aliases[name])
                 self.aliases[name] = name
-            self.commands[name] = Command(function, **kwargs)
+            self.commands[name] = Command(function, parent=self, **kwargs)
             return function
         return decorator if func is None else decorator(func)
 
@@ -351,10 +364,25 @@ class Cog:
         if name in self.aliases:
             return self.commands.get(self.aliases[name])
 
+    def set_lang(self, lang):
+        self.lang = self.languages.get(lang, None)
+
+    def gettext(self, text):
+        if self.lang is None:
+            return text
+        return self.lang.gettext(text)
+
+    def ngettext(self, singular, plural, n):
+        if self.lang is None:
+            if n == 1:
+                return singular
+            return plural
+        return self.lang.ngettext(singular, plural, n)
+
 
 class Server:
     """Custom server class."""
-    default_cfg = {'cogs': {'blacklist': []}, 'prefixes': [';'], 'breaker': '|'}
+    default_cfg = {'cogs': {'blacklist': []}, 'language': 'en', 'prefixes': [';'], 'breaker': '|'}
 
     def __init__(self, sid, path):
         """Initialize."""

@@ -16,6 +16,7 @@ DEFAULT_CFG = {
         'server': 'data/servers/%s.json',
         'config': 'config/%s.%s',
         'version': 'version',
+        'locale': 'locale',
     }, 'wheel': {
         'import': True,
         'reload': True,

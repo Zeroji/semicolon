@@ -7,6 +7,7 @@ path:                               # Configuration paths
   server: data/servers/%s.json          # Server config path
   config: config/%s.%s                  # Config folder (cogs)
   version: version                      # Version number file
+  locale: locale                        # Directory for translations
 wheel:                              # Wheel configuration
   import: true                          # Auto-import new cogs
   reload: true                          # Auto-reload imported cogs
