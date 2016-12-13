@@ -112,9 +112,8 @@ class Bot(discord.Client):
             # Checking for command existence / possible duplicates
             matches = cogs.command(command, server_ex)
             if len(matches) > 1:
-                output = (f"The command `{command}` was found in multiple cogs: "
-                          f"{gearbox.pretty([m[0] for m in matches], '`%s`')}. Use <cog>.{command} to specify.")
-                await self.send_message(message.channel, output)
+                await self.send_message(message.channel, gearbox.duplicate_command_message(
+                    command, matches, server_ex.config['language']))
             func = matches[0][1] if len(matches) == 1 else None
         if func is not None and all([permission in message.channel.permissions_for(message.author)
                                      for permission in func.permissions]):

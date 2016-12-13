@@ -14,6 +14,10 @@ All notable changes to this project will be documented in this file.
 
 * `prefix` and `breaker` commands are in the `settings` cog
 
+### Fixed
+
+* Server configuration not being loaded properly
+
 ### [[v0.1.4](https://github.com/Zeroji/semicolon/releases/tag/v0.1.4)]
 
 #### Added

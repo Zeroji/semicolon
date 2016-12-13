@@ -15,10 +15,11 @@ SPECIAL_ARGS = ('message', 'author', 'channel', 'server', 'server_ex', 'client',
 VALID_NAME = re.compile('[a-z][a-z_.0-9]*$')
 CONFIG_LOADERS = {'json': json, 'yaml': yaml}
 CFG = {}
+LANGUAGES = {}
 
 
 def update_config(cfg):
-    global version, version_is_dev
+    global version, version_is_dev, LANGUAGES
     CFG.update(cfg)
     version_path = CFG['path']['version']
     try:
@@ -31,6 +32,10 @@ def update_config(cfg):
         logging.warning('Version file %s not found' % version_path)
     except EnvironmentError as exc:
         logging.warning("Couldn't open version file '%s': %s", version_path, exc)
+    for lang in os.listdir(CFG['path']['locale']):
+        print(os.path.join(CFG['path']['locale'], lang, 'LC_MESSAGES', 'gearbox.mo'))
+        if os.path.isfile(os.path.join(CFG['path']['locale'], lang, 'LC_MESSAGES', 'gearbox.mo')):
+            LANGUAGES[lang] = gettext.translation('gearbox', localedir=CFG['path']['locale'], languages=[lang])
 
 
 def is_valid(name):
@@ -94,6 +99,12 @@ def read_commands(text, prefixes, breaker, is_private=False):
     return (), False  # No command was found
 
 
+def duplicate_command_message(command, matches, language):
+    _ = (lambda s: s) if language not in LANGUAGES else LANGUAGES[language].gettext
+    return _('The command `{command}` was found in multiple cogs: {matches}. Use <cog>.{command} to specify.').format(
+        command=command, matches=pretty([m[0] for m in matches], '`%s`', final=_('and')))
+
+
 class Command:
     """Guess what."""
 
@@ -146,11 +157,13 @@ class Command:
                         'channel': message.channel, 'server': message.server,
                         'server_ex': client.servers_ex[message.channel.id if message.channel.is_private else
                                                        message.server.id], 'flags': '', '__cogs': _cogs}
+        language = special_args['server_ex'].config['language']
+        _ = (lambda s: s) if language not in LANGUAGES else LANGUAGES[language].gettext
         while arguments.startswith('-') and self.flags:
             for flag in arguments.split(' ')[0][1:]:
                 if flag != '-':
                     if flag not in self.flags:
-                        await client.send_message(message.channel, f'Invalid flag: -{flag}')
+                        await client.send_message(message.channel, _('Invalid flag: -{flag}').format(flag=flag))
                         return
                     special_args['flags'] += flag
             arguments = arguments[arguments.find(' ') + 1:] if ' ' in arguments else ''
@@ -161,7 +174,7 @@ class Command:
         text = [arg for arg in text if len(arg) > 0]
         if (len(text) < self.min_arg or len(text) > max_args or
                 (self.last_arg_mode == 0 and len(text) > 0 and ' ' in text[-1])):
-            await client.send_message(message.channel, 'Invalid argument count!')
+            await client.send_message(message.channel, _('Invalid argument count!'))
             return None
         if len(text) == max_args and self.last_arg_mode == 2:
             pos_args = text[-1].split()
@@ -180,13 +193,14 @@ class Command:
                             temp_args[key] = self.annotations[key][0](arg)
                     except ValueError:
                         await client.send_message(message.channel,
-                                                  f'Argument "{arg}" should be of type `{argtype.__name__}`')
+                                                  _('Argument "{arg}" should be of type {typename}').format(
+                                                      arg=arg, typename=argtype.__name__))
                         return None
                 elif type(argtype) is set:
                     if arg.lower() not in {value.lower() for value in argtype}:  # Name doesn't match (case insensitive)
                         await client.send_message(message.channel,
-                                                  f'Argument "{arg}" should have one of the following values: ' +
-                                                  pretty(argtype, "`%s`", "or"))
+                                                  _('Argument "{arg}" should have one of the following values: {values}').format(
+                                                    arg=arg, values=pretty(argtype, '`%s`', _('or'))))
                         return None
                     elif arg not in argtype:  # Name matching but wrong case
                         for value in argtype:
@@ -195,8 +209,9 @@ class Command:
                                 break
                 else:  # argtype is re.compile
                     if argtype.match(arg) is None:
-                        await client.send_message(message.channel, f'Argument "{arg}" should match '
-                                                                   f'the following regex: `{argtype.pattern}`')
+                        await client.send_message(message.channel,
+                                                  _('Argument "{arg}" should match the following regex: `{pattern}`').format(
+                                                    arg=arg, pattern=argtype.pattern))
                         return None
         args.update(temp_args)
         # if self.multiple:
@@ -402,8 +417,9 @@ class Server:
 
     def load(self):
         try:
-            self.config = json.load(open(self.path))
-            config.merge(self.config, Server.default_cfg)
+            self.config = {}
+            self.config.update(Server.default_cfg)
+            config.merge(self.config, json.load(open(self.path)))
         except FileNotFoundError:
             self.config = Server.default_cfg
             self._write()
