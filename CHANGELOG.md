@@ -17,6 +17,7 @@ All notable changes to this project will be documented in this file.
 ### Fixed
 
 * Server configuration not being loaded properly
+* Fixed `enable *` and `disable *` output when nothing is changed 
 
 ### [[v0.1.4](https://github.com/Zeroji/semicolon/releases/tag/v0.1.4)]
 

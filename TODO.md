@@ -14,6 +14,8 @@ which may or may not be implemented in future versions.
 
 ##### Other features that *will* exist
 
+- Server-specific timezone settings
+
 ### Might be implemented
 
 ##### Miscellaneous

@@ -14,9 +14,10 @@ def enable(__cogs, server_ex, *cogs: 'Name of cogs to enable'):
     If called with no cogs, displays enabled cogs. Use `*` to enable all cogs."""
     if not cogs:
         return 'Enabled cogs: ' + gearbox.pretty([c for c in __cogs.COGS if server_ex.is_allowed(c)], '`%s`')
-    print(cogs)
     if cogs == ('*',):
         cogs = server_ex.blacklist[::]
+        if not cogs:
+            return 'No cogs are disabled.'
     not_found = [c for c in cogs if c not in __cogs.COGS]
     if not_found:
         return gearbox.pretty(not_found, '`%s`') + f" do{'es' * (len(not_found) == 1)}n't exist"
@@ -41,6 +42,8 @@ def disable(__cogs, server_ex, *cogs: 'Name of cogs to enable'):
         return 'Disabled cogs: ' + gearbox.pretty(server_ex.blacklist, '`%s`')
     if cogs == ('*',):
         cogs = [c for c in __cogs.COGS if c != __name__.split('.')[-1] and c not in server_ex.blacklist]
+        if not cogs:
+            return 'No cogs are enabled.'
     not_found = [c for c in cogs if c not in __cogs.COGS]
     if not_found:
         return gearbox.pretty(not_found, '`%s`') + f" do{'es' * (len(not_found) == 1)}n't exist"
