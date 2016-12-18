@@ -149,12 +149,12 @@ class Bot(discord.Client):
                                              "a command with the same name exists", name, parent_cog.name)
                             continue
                         name = base_name + name
-                        if name not in cogs.COGS:
+                        if name not in cogs.COGS and name not in cogs.FAIL:
                             cogs.load(name)
                             if parent_cog is not None:
                                 parent_cog.subcogs[name] = cogs.COGS[name]
                 # If a directory containing `__init__.py` is found, load the init and the directory
-                elif os.path.isdir(full) and gearbox.is_valid(name) and name not in cogs.COGS:
+                elif os.path.isdir(full) and gearbox.is_valid(name) and name not in cogs.COGS and name not in cogs.FAIL:
                     if parent_cog is not None and name in parent_cog.aliases:
                         logging.critical("Sub-cog %s from cog %s couldn't be loaded because "
                                          "a command with the same name exists", name, parent_cog.name)
@@ -174,6 +174,16 @@ class Bot(discord.Client):
                     if os.path.getmtime(cog.__file__) > self.last_update:
                         cogs.reload(name, cog)
                         self.last_update = time.time()
+                valid_cogs = set()
+                for name in cogs.FAIL:
+                    if os.path.getmtime(os.path.join('cogs', *name.split('.')) + '.py') > self.last_update:
+                        cogs.load(name)
+                        self.last_update = time.time()
+                        if name in cogs.COGS:
+                            valid_cogs.add(name)
+                for name in valid_cogs:
+                    cogs.FAIL.remove(name)
+
             await asyncio.sleep(2)
 
     async def on_ready(self):

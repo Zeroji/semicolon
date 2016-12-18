@@ -17,7 +17,9 @@ All notable changes to this project will be documented in this file.
 ### Fixed
 
 * Server configuration not being loaded properly
-* Fixed `enable *` and `disable *` output when nothing is changed 
+* Fixed `enable *` and `disable *` output when nothing is changed
+* Bot breaking when one cog fails to load
+* Proper error message when `cog` isn't defined
 
 ### [[v0.1.4](https://github.com/Zeroji/semicolon/releases/tag/v0.1.4)]
 

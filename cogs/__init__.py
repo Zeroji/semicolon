@@ -1,5 +1,7 @@
 """Importing all cogs."""
-COGS = {}
+COGS = {}       # name:module mapping of properly loaded cogs
+FAIL = set()    # names of cogs that failed to load
+NO_COG = {}     # name:module mapping of properly loaded cogs that don't have `cog`
 
 
 def load(name):
@@ -7,10 +9,19 @@ def load(name):
     import importlib
     import logging
     try:
-        mod = importlib.import_module(__name__ + '.' + name)
+        if name in NO_COG:  # if the module was properly loaded but didn't have `cog`
+            mod = NO_COG.pop(name)
+            importlib.reload(mod)
+        else:  # regular loading
+            mod = importlib.import_module(__name__ + '.' + name)
     except Exception as exc:  # Yes I know it's too general. Just wanna catch 'em all.
         logging.critical("%s while loading '%s': %s", type(exc).__name__, name, exc)
-        COGS[name] = None
+        FAIL.add(name)
+        return
+    if not hasattr(mod, 'cog'):  # if mod.cog does not exist, cog isn't considered as properly loaded
+        logging.critical("Cog '%s' does not have the `cog` variable", name)
+        FAIL.add(name)
+        NO_COG[name] = mod
         return
     base_name = name[:name.rfind('.') + 1]
     if mod.cog.name is not None:
