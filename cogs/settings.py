@@ -2,6 +2,11 @@
 import os
 import gearbox
 cog = gearbox.Cog()
+_ = cog.gettext
+ngettext = cog.ngettext
+
+
+DEFAULT_PREFIX = ';'
 
 
 @cog.command(permissions='manage_server')
@@ -10,18 +15,19 @@ def prefix(server_ex, command: {'get', 'add', 'del', 'reset'}='get', *args):
 
     `get`: show prefixes, `add . ? !`: add prefixes, `del . ? !`: remove prefixes, `reset`: reset back to `;`"""
     command = command.lower()
-    plur = len(server_ex.prefixes) > 1
     if command == 'get':
         if len(server_ex.prefixes) == 0:
-            return 'This server has no prefix. Use `prefix add` to add some!'
-        return f"The prefix{'es' if plur else ''} for this server {'are' if plur else 'is'} " \
-               f"{gearbox.pretty(server_ex.prefixes, '`%s`')}"
+            return _('This server has no prefix. Use `prefix add` to add some!')
+        return ngettext("The prefix for this server is {prefixes}",
+                        "The prefixes for this server are {prefixes}", len(server_ex.prefixes)).format(
+            prefixes=gearbox.pretty(server_ex.prefixes, '`%s`', final=_('and')))
     elif command == 'add':
         if not args:
-            return 'Please specify which prefix(es) should be added.'
+            return _('Please specify which prefix(es) should be added.')
         overlap = [pref for pref in args if pref in server_ex.prefixes]
         if overlap:
-            return f"{gearbox.pretty(overlap, '`%s`')} {'are' if len(overlap)>1 else 'is'} already used"
+            return ngettext("{prefixes} is already used", "{prefixes} are already used", len(overlap)).format(
+                prefixes=gearbox.pretty(overlap, '`%s`', final=_('and')))
         else:
             n = 0
             for pref in args:  # Not using .extend() in case of duplicates in args
@@ -29,13 +35,14 @@ def prefix(server_ex, command: {'get', 'add', 'del', 'reset'}='get', *args):
                     server_ex.prefixes.append(pref)
                     n += 1
             server_ex.write()
-            return f"Added {n} prefix{'es' if n>1 else ''}."
+            return ngettext("Added {n} prefix.", "Added {n} prefixes.", n).format(n=n)
     elif command == 'del':
         if not args:
-            return 'Please specify which prefix(es) should be deleted.'
+            return _('Please specify which prefix(es) should be deleted.')
         unused = [pref for pref in args if pref not in server_ex.prefixes]
         if unused:
-            return f"{gearbox.pretty(unused, '`%s`')} {'are' if len(unused)>1 else 'is'}""n't used"
+            return ngettext("{prefixes} isn't used", "{prefixes} aren't used", len(unused)).format(
+                prefixes=gearbox.pretty(unused, '`%s`', final=_('and')))
         else:
             n = 0
             for pref in args:
@@ -43,11 +50,11 @@ def prefix(server_ex, command: {'get', 'add', 'del', 'reset'}='get', *args):
                     server_ex.prefixes.remove(pref)
                     n += 1
             server_ex.write()
-            return f"Removed {n} prefix{'es' if n>1 else ''}."
+            return ngettext("Removed {n} prefix.", "Removed {n} prefixes.", n).format(n=n)
     elif command == 'reset':
-        server_ex.prefixes = [';']
+        server_ex.prefixes = [DEFAULT_PREFIX]
         server_ex.write()
-        return 'Server prefix reset to `;`.'
+        return _('Server prefix reset to `{default}`.').format(default=DEFAULT_PREFIX)
 
 
 @cog.command(permissions='manage_server')
@@ -55,14 +62,14 @@ def breaker(server_ex, command: {'get', 'set'}='get', new_breaker=None):
     """Display or change breaker character for the current server."""
     command = command.lower()
     if command == 'get':
-        return f"The breaker character for this server is `{server_ex.config['breaker']}`"
+        return _("The breaker character for this server is `{breaker}`").format(breaker=server_ex.config['breaker'])
     elif command == 'set':
         if new_breaker is None:
-            return "Please use `set <breaker_character>`"
+            return _("Please use `set <breaker_character>`")
         if len(new_breaker) != 1:
-            return "The breaker character should be a single character"
+            return _("The breaker character should be a single character")
         server_ex.config['breaker'] = new_breaker
-        return f"The breaker character for this server has been set to `{new_breaker}`"
+        return _("The breaker character for this server has been set to `{breaker}`").format(breaker=new_breaker)
 
 
 @cog.command(permissions='manage_server')
@@ -74,11 +81,17 @@ def lang(server_ex, language=None):
     except ValueError:
         pass
     if language is None or language not in available_languages:
-        output = f"Current server language: {server_ex.config['language']}\n" if language is None else ''
-        output += ('Available languages: ' + gearbox.pretty(available_languages, '`%s`') +
-                   '\nPlease note that full support is not guaranteed at all.')
+        output = ''
+        if language is None:
+            output = _("Current server language: {language}").format(language=server_ex.config['language']) + "\n"
+        output += (_('Available languages: {languages}').format(languages=gearbox.pretty(available_languages,
+                                                                                         '`%s`', final=_('and'))) +
+                   '\n' + _('Please note that full support is not guaranteed at all.'))
         return output
     else:
         server_ex.config['language'] = language
         server_ex.write()
-        return f"Server language has been set to `{language}`!"
+        output = _("Server language has been set to `{language}`!").format(language=language)
+        if '_' in language:
+            output += f' :flag_{language.split("_")[-1].lower()}:'
+        return output

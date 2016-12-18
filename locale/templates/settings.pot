@@ -1,0 +1,113 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2016-12-18 16:10+0100\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=CHARSET\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=INTEGER; plural=EXPRESSION;\n"
+
+#: cogs/settings.py:20
+msgid "This server has no prefix. Use `prefix add` to add some!"
+msgstr ""
+
+#: cogs/settings.py:21
+#, python-brace-format
+msgid "The prefix for this server is {prefixes}"
+msgid_plural "The prefixes for this server are {prefixes}"
+msgstr[0] ""
+msgstr[1] ""
+
+#: cogs/settings.py:23 cogs/settings.py:30 cogs/settings.py:45
+#: cogs/settings.py:88
+msgid "and"
+msgstr ""
+
+#: cogs/settings.py:26
+msgid "Please specify which prefix(es) should be added."
+msgstr ""
+
+#: cogs/settings.py:29
+#, python-brace-format
+msgid "{prefixes} is already used"
+msgid_plural "{prefixes} are already used"
+msgstr[0] ""
+msgstr[1] ""
+
+#: cogs/settings.py:38
+#, python-brace-format
+msgid "Added {n} prefix."
+msgid_plural "Added {n} prefixes."
+msgstr[0] ""
+msgstr[1] ""
+
+#: cogs/settings.py:41
+msgid "Please specify which prefix(es) should be deleted."
+msgstr ""
+
+#: cogs/settings.py:44
+#, python-brace-format
+msgid "{prefixes} isn't used"
+msgid_plural "{prefixes} aren't used"
+msgstr[0] ""
+msgstr[1] ""
+
+#: cogs/settings.py:53
+#, python-brace-format
+msgid "Removed {n} prefix."
+msgid_plural "Removed {n} prefixes."
+msgstr[0] ""
+msgstr[1] ""
+
+#: cogs/settings.py:57
+#, python-brace-format
+msgid "Server prefix reset to `{default}`."
+msgstr ""
+
+#: cogs/settings.py:65
+#, python-brace-format
+msgid "The breaker character for this server is `{breaker}`"
+msgstr ""
+
+#: cogs/settings.py:68
+msgid "Please use `set <breaker_character>`"
+msgstr ""
+
+#: cogs/settings.py:70
+msgid "The breaker character should be a single character"
+msgstr ""
+
+#: cogs/settings.py:72
+#, python-brace-format
+msgid "The breaker character for this server has been set to `{breaker}`"
+msgstr ""
+
+#: cogs/settings.py:86
+#, python-brace-format
+msgid "Current server language: {language}"
+msgstr ""
+
+#: cogs/settings.py:87
+#, python-brace-format
+msgid "Available languages: {languages}"
+msgstr ""
+
+#: cogs/settings.py:89
+msgid "Please note that full support is not guaranteed at all."
+msgstr ""
+
+#: cogs/settings.py:94
+#, python-brace-format
+msgid "Server language has been set to `{language}`!"
+msgstr ""
