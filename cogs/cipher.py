@@ -5,6 +5,7 @@ import string
 import gearbox
 import os
 cog = gearbox.Cog()
+_ = cog.gettext
 
 BIGRAMS = {}
 NGRAMS_PATH = 'data/cipher.ngrams/'
@@ -271,7 +272,7 @@ def caesar(offset: int, text, flags):
 
     Use an offset of 0 for automatic detection."""
     if 'd' in flags and 'e' in flags:
-        return 'Mutually exclusive flags: -d and -e'
+        return _('Mutually exclusive flags: -d and -e')
     if offset:
         return encode_rot(text, offset, reverse='d' in flags)
     else:
@@ -287,7 +288,7 @@ def caesar(offset: int, text, flags):
 def rot7879(text, flags):
     """Encode text using 7879's custom cipher."""
     if 'd' in flags and 'e' in flags:
-        return 'Mutually exclusive flags: -d and -e'
+        return _('Mutually exclusive flags: -d and -e')
     return encode_7879(text, reverse='d' in flags)
 
 
@@ -296,7 +297,7 @@ def rot7879(text, flags):
 def vigenere(key: 'Vigenere encryption key', text, flags):
     """Encode a text with Vigenere cipher."""
     if 'd' in flags and 'e' in flags:
-        return 'Mutually exclusive flags: -d and -e'
+        return _('Mutually exclusive flags: -d and -e')
     return encode_vigenere(text, key, reverse='d' in flags)
 
 
@@ -304,7 +305,7 @@ def vigenere(key: 'Vigenere encryption key', text, flags):
 def morse(text, flags):
     """Encode text into Morse code."""
     if 'd' in flags and 'e' in flags:
-        return 'Mutually exclusive flags: -d and -e'
+        return _('Mutually exclusive flags: -d and -e')
     return encode_morse(text, reverse='d' in flags)
 
 
@@ -327,7 +328,7 @@ def null(pattern: 'Comma-separated list of numbers (default 0)', text=''):
 def box(size: 'Box size', flags, text=''):
     """Encode text using cipher boxes."""
     if 'd' in flags and 'e' in flags:
-        return 'Mutually exclusive flags: -d and -e'
+        return _('Mutually exclusive flags: -d and -e')
     try:
         size = int(size)
     except ValueError:
@@ -350,7 +351,7 @@ def pad_block(size: '"word" size', text):
 def mixed(key: 'Alphabet key (no duplicate letters)', text, flags):
     """Encode using a mixed alphabet (ZEBRAS-like)."""
     if 'd' in flags and 'e' in flags:
-        return 'Mutually exclusive flags: -d and -e'
+        return _('Mutually exclusive flags: -d and -e')
     return encode_mixed_alphabet(key, text, reverse='d' in flags)
 
 
@@ -358,7 +359,7 @@ def mixed(key: 'Alphabet key (no duplicate letters)', text, flags):
 def subs(alphabet: 'Substitute alphabet (all 26 letters)', text, flags):
     """Encode using alphabet substitution."""
     if 'd' in flags and 'e' in flags:
-        return 'Mutually exclusive flags: -d and -e'
+        return _('Mutually exclusive flags: -d and -e')
     return encode_substitute(alphabet, text)
 
 
@@ -366,7 +367,7 @@ def subs(alphabet: 'Substitute alphabet (all 26 letters)', text, flags):
 def taptap(text, flags):
     """Encode text using the tap code."""
     if 'd' in flags and 'e' in flags:
-        return 'Mutually exclusive flags: -d and -e'
+        return _('Mutually exclusive flags: -d and -e')
     return encode_tap_code(text, reverse='d' in flags)
 
 
@@ -377,11 +378,12 @@ def language(text):
     upper = distances[0][0] + (distances[-1][0] - distances[0][0]) / 10
     langs = [lang for dist, lang in distances if dist <= upper]
     if len(langs) == 1:
-        return f"This message is most likely in {langs[0]}"
+        return _("This message is most likely in {language}").format(language=langs[0])
     elif len(langs) < 3:
-        return f"This message seems to be in {langs[0]}, or maybe in {langs[1]}"
+        return _("This message seems to be in {language}, or maybe in {language2}").format(language=langs[0],
+                                                                                           language2=langs[1])
     else:
-        return f"Multiple languages have been detected: {gearbox.pretty(langs)}"
+        return _("Multiple languages have been detected: {languages}").format(gearbox.pretty(langs, final=_('and')))
 
 
 # TODO hash functions (md5, sha1/224/256/384/512)

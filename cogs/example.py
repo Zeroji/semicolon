@@ -2,6 +2,7 @@
 import asyncio
 import gearbox
 cog = gearbox.Cog()
+_ = cog.gettext
 
 
 @cog.command
@@ -10,7 +11,7 @@ def hello(author):
     """Say hello.
 
     Basic test command to check that the main parts are working."""
-    return f'Hello, {author.name}!'
+    return _('Hello, {name}!').format(name=author.name)
 
 
 @cog.command(fulltext=True)
@@ -48,4 +49,4 @@ async def timer(client, channel, author, delay: (int, 'in seconds'), text):
 @cog.command(flags='abc')
 def flag(flags):
     """Flag test function."""
-    return f'I got the following flags: {flags}'
+    return _('I got the following flags: {flags}').format(flags=flags)

@@ -69,6 +69,10 @@ def breaker(server_ex, command: {'get', 'set'}='get', new_breaker=None):
 def lang(server_ex, language=None):
     """Display or change server language."""
     available_languages = os.listdir(gearbox.CFG['path']['locale'])
+    try:  # Hide the 'templates' directory containing .pot files
+        available_languages.remove('templates')
+    except ValueError:
+        pass
     if language is None or language not in available_languages:
         output = f"Current server language: {server_ex.config['language']}\n" if language is None else ''
         output += ('Available languages: ' + gearbox.pretty(available_languages, '`%s`') +
