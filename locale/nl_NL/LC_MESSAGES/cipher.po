@@ -1,0 +1,43 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: \n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2016-12-18 14:36+0100\n"
+"PO-Revision-Date: 2016-12-18 14:37+0100\n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: Poedit 1.8.11\n"
+"Last-Translator: \n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"Language: nl_NL\n"
+
+#: cogs/cipher.py:275 cogs/cipher.py:291 cogs/cipher.py:300 cogs/cipher.py:308
+#: cogs/cipher.py:331 cogs/cipher.py:354 cogs/cipher.py:362 cogs/cipher.py:370
+msgid "Mutually exclusive flags: -d and -e"
+msgstr "Elkaar uitsluitende vlaggen: -d en -e"
+
+#: cogs/cipher.py:381
+#, python-brace-format
+msgid "This message is most likely in {language}"
+msgstr "Dit bericht is het meest waarschijnlijk in {language}"
+
+#: cogs/cipher.py:383
+#, python-brace-format
+msgid "This message seems to be in {language}, or maybe in {language2}"
+msgstr "Deze boodschap lijkt te zijn in {language}, of misschien in {language2}"
+
+#: cogs/cipher.py:386
+#, python-brace-format
+msgid "Multiple languages have been detected: {languages}"
+msgstr "Meerdere talen zijn gedetecteerd: {languages}"
+
+#: cogs/cipher.py:386
+msgid "and"
+msgstr "en"
