@@ -16,7 +16,3 @@ stop
 # Test/joke cogs
 cogs/kinky.py
 cogs/vote.py
-
-# Translations
-locale/*
-!locale/templates
