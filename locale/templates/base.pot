@@ -1,0 +1,163 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2016-12-18 14:16+0100\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=CHARSET\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=INTEGER; plural=EXPRESSION;\n"
+
+#: cogs/base.py:18
+#, python-brace-format
+msgid "Enabled cogs: {enabled_cogs}"
+msgstr ""
+
+#: cogs/base.py:19 cogs/base.py:27 cogs/base.py:31 cogs/base.py:36
+#: cogs/base.py:48 cogs/base.py:56 cogs/base.py:62 cogs/base.py:66
+#: cogs/base.py:107 cogs/base.py:121 cogs/base.py:139 cogs/base.py:157
+#: cogs/base.py:184
+msgid "and"
+msgstr ""
+
+#: cogs/base.py:23 cogs/base.py:46
+msgid "No cogs are disabled."
+msgstr ""
+
+#: cogs/base.py:26 cogs/base.py:55
+#, python-brace-format
+msgid "{cogs_not_found} doesn't exist"
+msgid_plural "{cogs_not_found} don't exist"
+msgstr[0] ""
+msgstr[1] ""
+
+#: cogs/base.py:30
+#, python-brace-format
+msgid "{enabled_cogs} is already enabled"
+msgid_plural "{enabled_cogs} are already enabled"
+msgstr[0] ""
+msgstr[1] ""
+
+#: cogs/base.py:36
+#, python-brace-format
+msgid "Enabled {enabled_cogs}"
+msgstr ""
+
+#: cogs/base.py:47
+#, python-brace-format
+msgid "Disabled cogs: {disabled_cogs}"
+msgstr ""
+
+#: cogs/base.py:52
+msgid "No cogs are enabled."
+msgstr ""
+
+#: cogs/base.py:58
+msgid "Error: cannot disable self"
+msgstr ""
+
+#: cogs/base.py:61
+#, python-brace-format
+msgid "{disabled_cogs} is already disabled"
+msgid_plural "{disabled_cogs} are already disabled"
+msgstr[0] ""
+msgstr[1] ""
+
+#: cogs/base.py:66
+#, python-brace-format
+msgid "Disabled {disabled_cogs}"
+msgstr ""
+
+#: cogs/base.py:105
+#, python-brace-format
+msgid ""
+"The following special documentation page is available:\n"
+"{pages}"
+msgid_plural ""
+"The following special documentation pages are available:\n"
+"{pages}"
+msgstr[0] ""
+msgstr[1] ""
+
+#: cogs/base.py:118
+msgid ""
+"Hi, I'm `;;` :no_mouth: I'm split into several cogs, type `;help <cog>` for "
+"more information\n"
+msgstr ""
+
+#: cogs/base.py:119
+#, python-brace-format
+msgid "The following cog is currently enabled: {active_cogs}"
+msgid_plural "The following cogs are currently enabled: {active_cogs}"
+msgstr[0] ""
+msgstr[1] ""
+
+#: cogs/base.py:131
+msgid "The following subcog is available:"
+msgid_plural "The following subcogs are available:"
+msgstr[0] ""
+msgstr[1] ""
+
+#: cogs/base.py:136
+#, python-brace-format
+msgid "The following command also exists: {commands}"
+msgid_plural "The following commands also exist: {commands}"
+msgstr[0] ""
+msgstr[1] ""
+
+#: cogs/base.py:143
+msgid "There are commands in multiple cogs with that name:"
+msgstr ""
+
+#: cogs/base.py:157
+#, python-brace-format
+msgid "Also known as: {alias}"
+msgstr ""
+
+#: cogs/base.py:158
+msgid "Usage"
+msgstr ""
+
+#: cogs/base.py:163
+msgid "Flags"
+msgstr ""
+
+#: cogs/base.py:169
+msgid "Arguments"
+msgstr ""
+
+#: cogs/base.py:176
+#, python-brace-format
+msgid "must be {list}"
+msgstr ""
+
+#: cogs/base.py:176
+msgid "or"
+msgstr ""
+
+#: cogs/base.py:178
+#, python-brace-format
+msgid "must match `{pattern}`"
+msgstr ""
+
+#: cogs/base.py:188
+msgid "Unknown cog or command."
+msgstr ""
+
+#: cogs/base.py:197
+#, python-brace-format
+msgid ""
+"Hi, I'm `{name}`, a Discord bot written by {author} | {ver} | Python {pver} "
+"| discord.py {dver}\n"
+"My source code is available on GitHub: <{link}>"
+msgstr ""

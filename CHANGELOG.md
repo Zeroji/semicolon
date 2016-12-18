@@ -9,6 +9,7 @@ All notable changes to this project will be documented in this file.
 + Banned users are actually banned
 + Internationalization mechanisms
 + Server specific language settings
++ Small (bash) script to generate translation templates
 
 ### Changed
 

@@ -1,4 +1,4 @@
-# Temporary
+# Temporary files
 __pycache__/
 *.swp
 
@@ -6,11 +6,17 @@ __pycache__/
 .idea
 .python-version
 todo.md
+notes
 
 # Program
 data/
 *.log
 stop
 
-# Who reads this file anyway
+# Test/joke cogs
 cogs/kinky.py
+cogs/vote.py
+
+# Translations
+locale/*
+!locale/templates
