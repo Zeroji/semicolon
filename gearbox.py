@@ -11,7 +11,7 @@ import gettext
 
 version = 'unknown'
 version_is_dev = False
-SPECIAL_ARGS = ('message', 'author', 'channel', 'server', 'server_ex', 'client', 'flags', '__cogs')
+SPECIAL_ARGS = ('message', 'author', 'channel', 'server', 'server_ex', 'client', 'flags', '__cogs', 'permissions')
 VALID_NAME = re.compile('[a-z][a-z_.0-9]*$')
 CONFIG_LOADERS = {'json': json, 'yaml': yaml}
 CFG = {}
@@ -33,7 +33,6 @@ def update_config(cfg):
     except EnvironmentError as exc:
         logging.warning("Couldn't open version file '%s': %s", version_path, exc)
     for lang in os.listdir(CFG['path']['locale']):
-        print(os.path.join(CFG['path']['locale'], lang, 'LC_MESSAGES', 'gearbox.mo'))
         if os.path.isfile(os.path.join(CFG['path']['locale'], lang, 'LC_MESSAGES', 'gearbox.mo')):
             LANGUAGES[lang] = gettext.translation('gearbox', localedir=CFG['path']['locale'], languages=[lang])
 
@@ -108,7 +107,8 @@ def duplicate_command_message(command, matches, language):
 class Command:
     """Guess what."""
 
-    def __init__(self, func, flags='', fulltext=False, delete_message=False, permissions=None, *, parent=None):
+    def __init__(self, func, flags='', *, fulltext=False, delete_message=False, permissions=None,
+                 parent=None, fallback=None):
         """Guess."""
         self.params = inspect.signature(func).parameters
         # self.special = [arg for arg in params if arg in SPECIAL_ARGS]
@@ -150,13 +150,21 @@ class Command:
         if not func.__doc__:
             func.__doc__ = ' '
         self.parent = parent
+        self.fallback = fallback
+
+    def allows(self, permissions):
+        """Determine if a command can be called by someone having certain permissions."""
+        if permissions is None or self.permissions is None:
+            return True
+        return all([permission in permissions for permission in self.permissions])
 
     async def call(self, client, message, arguments, _cogs=None):
         """Call a command."""
         special_args = {'client': client, 'message': message, 'author': message.author,
                         'channel': message.channel, 'server': message.server,
                         'server_ex': client.servers_ex[message.channel.id if message.channel.is_private else
-                                                       message.server.id], 'flags': '', '__cogs': _cogs}
+                                                       message.server.id], 'flags': '', '__cogs': _cogs,
+                        'permissions': message.channel.permissions_for(message.author)}
         language = special_args['server_ex'].config['language']
         _ = (lambda s: s) if language not in LANGUAGES else LANGUAGES[language].gettext
         while arguments.startswith('-') and self.flags:
@@ -246,6 +254,7 @@ class Cog:
         self.subcogs = {}
         self.commands = {}
         self.aliases = {}
+        self.hidden = []
         self.name = name
         self.react = {}
         self.config = {}
@@ -312,6 +321,13 @@ class Cog:
         for func in calls:
             await func(client, added, reaction, user)
 
+    def hide(self, function=None):
+        """Hide a command."""
+        def decorate(func):
+            self.hidden.append(func.__name__)
+            return func
+        return decorate(function) if function is not None else decorate
+
     def alias(self, *aliases):
         """Add aliases to a command."""
         def decorate(func):
@@ -370,14 +386,30 @@ class Cog:
             return function
         return decorator if func is None else decorator(func)
 
-    def has(self, name):
+    def has(self, name, permissions=None):
         """Check if a cog has a command."""
-        return name in self.aliases
+        if name not in self.aliases:
+            return False
+        if permissions is None:
+            return True
+        return self.get(name, permissions) is not None
 
-    def get(self, name):
+    def get(self, name, permissions=None):
         """Return the command needed."""
         if name in self.aliases:
-            return self.commands.get(self.aliases[name])
+            command = self.commands.get(self.aliases[name])
+            if permissions is None or command.allows(permissions):
+                return command
+            if command.fallback is not None:
+                return self.get(command.fallback, permissions)
+            return None
+
+    def get_all(self, permissions=None):
+        """Return all commands available for certain permissions, as a dictionary."""
+        if permissions is None:
+            return self.commands
+        return {name: self.get(name, permissions) for name, command in self.commands.items()
+                if self.has(name, permissions) and name not in self.hidden}
 
     def set_lang(self, lang):
         self.lang = self.languages.get(lang, None)

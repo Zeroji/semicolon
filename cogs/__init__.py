@@ -65,11 +65,11 @@ def cog(name):
     return COGS[name].cog
 
 
-def command(cmd, server_ex=None):
+def command(cmd, server_ex=None, permissions=None):
     """Find a command given its name."""
     allowed = server_ex.is_allowed if server_ex is not None else (lambda _: True)
     matches = []
     for name, _cog in COGS.items():
-        if allowed(name) and _cog.cog.has(cmd):
-            matches.append((name, _cog.cog.get(cmd)))
+        if allowed(name) and _cog.cog.has(cmd, permissions):
+            matches.append((name, _cog.cog.get(cmd, permissions)))
     return matches

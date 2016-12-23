@@ -10,10 +10,13 @@ All notable changes to this project will be documented in this file.
 + Internationalization mechanisms
 + Server specific language settings
 + Small (bash) script to generate translation templates
++ Fallback commands when permissions aren't met
++ Possibility to hide commands from `help`
 
 ### Changed
 
 * `prefix` and `breaker` commands are in the `settings` cog
+* `help` now only displays commands you have permission to use
 
 ### Fixed
 

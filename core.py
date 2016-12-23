@@ -99,6 +99,7 @@ class Bot(discord.Client):
         else:
             arguments = ''
 
+        permissions = message.channel.permissions_for(message.author)
         if '.' in command:
             # Getting command from cog when using cog.command
             cog_name, cmd = command.rsplit('.', 1)
@@ -107,16 +108,15 @@ class Bot(discord.Client):
             cog = cogs.cog(cog_name)
             if not cog:
                 return
-            func = cog.get(cmd)
+            func = cog.get(cmd, permissions)
         else:
             # Checking for command existence / possible duplicates
-            matches = cogs.command(command, server_ex)
+            matches = cogs.command(command, server_ex, permissions)
             if len(matches) > 1:
                 await self.send_message(message.channel, gearbox.duplicate_command_message(
                     command, matches, server_ex.config['language']))
             func = matches[0][1] if len(matches) == 1 else None
-        if func is not None and all([permission in message.channel.permissions_for(message.author)
-                                     for permission in func.permissions]):
+        if func is not None:
             await func.call(self, message, arguments, cogs)
             if (func.delete_message and command_only and
                     message.channel.permissions_for(

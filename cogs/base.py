@@ -92,7 +92,7 @@ def markdown_parser(data):
 @cog.command(flags={'d': 'Show special documentation'})
 @cog.alias('halp')
 @cog.rename('help')
-def halp(__cogs, server_ex, flags, name: 'Cog or command name'=None):
+def halp(__cogs, server_ex, flags, permissions, name: 'Cog or command name'=None):
     """Display information on a cog or command.
 
     Display general help when called without parameter, or list commands in a cog, or list command information.
@@ -109,11 +109,11 @@ def halp(__cogs, server_ex, flags, name: 'Cog or command name'=None):
             return markdown_parser(open(f'{doc_path}/{name}.md').read())
     width = cog.config['help']['width']
     active_cogs = [cogg for cogg in __cogs.COGS if server_ex.is_allowed(cogg)]
-    commands = __cogs.command(name, server_ex)
+    commands = __cogs.command(name, server_ex, permissions)
     if name is not None and '.' in name:
         cogg, temp_name = name.rsplit('.', 1)
-        if cogg in active_cogs and __cogs.COGS[cogg].cog.get(temp_name):
-            commands = [((cogg, temp_name), __cogs.COGS[cogg].cog.get(temp_name))]
+        if cogg in active_cogs and __cogs.COGS[cogg].cog.get(temp_name, permissions):
+            commands = [((cogg, temp_name), __cogs.COGS[cogg].cog.get(temp_name, permissions))]
     if name is None:
         return _("Hi, I'm `;;` :no_mouth: I'm split into several cogs, type `;help <cog>` for more information\n") + \
                ngettext("The following cog is currently enabled: {active_cogs}",
@@ -122,7 +122,7 @@ def halp(__cogs, server_ex, flags, name: 'Cog or command name'=None):
     elif name in active_cogs:
         cogg = __cogs.COGS[name]
         output = f'`{name}` - ' + cogg.__doc__.replace('\n\n', '\n')
-        for cname, command in cogg.cog.commands.items():
+        for cname, command in cogg.cog.get_all(permissions).items():
             line = cname
             for i, arg in enumerate(command.normal):
                 line += (' <%s>' if i < command.min_arg else ' [%s]') % arg
