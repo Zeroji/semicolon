@@ -9,7 +9,14 @@ ngettext = cog.ngettext
 DEFAULT_PREFIX = ';'
 
 
-@cog.command(permissions='manage_server')
+@cog.command
+@cog.hide
+def prefix_fallback(server_ex):
+    """Display prefix settings for the current server."""
+    return prefix(server_ex, command='get')
+
+
+@cog.command(permissions='manage_server', fallback='prefix_fallback')
 def prefix(server_ex, command: {'get', 'add', 'del', 'reset'}='get', *args):
     """Display or change prefix settings for the current server.
 
@@ -57,7 +64,14 @@ def prefix(server_ex, command: {'get', 'add', 'del', 'reset'}='get', *args):
         return _('Server prefix reset to `{default}`.').format(default=DEFAULT_PREFIX)
 
 
-@cog.command(permissions='manage_server')
+@cog.command
+@cog.hide
+def breaker_fallback(server_ex):
+    """Display breaker settings for the current server."""
+    return breaker(server_ex, command='get')
+
+
+@cog.command(permissions='manage_server', fallback='breaker_fallback')
 def breaker(server_ex, command: {'get', 'set'}='get', new_breaker=None):
     """Display or change breaker character for the current server."""
     command = command.lower()
@@ -72,7 +86,14 @@ def breaker(server_ex, command: {'get', 'set'}='get', new_breaker=None):
         return _("The breaker character for this server has been set to `{breaker}`").format(breaker=new_breaker)
 
 
-@cog.command(permissions='manage_server')
+@cog.command
+@cog.hide
+def lang_fallback(server_ex):
+    """Display server language."""
+    return lang(server_ex)
+
+
+@cog.command(permissions='manage_server', fallback='lang_fallback')
 def lang(server_ex, language=None):
     """Display or change server language."""
     available_languages = os.listdir(gearbox.CFG['path']['locale'])

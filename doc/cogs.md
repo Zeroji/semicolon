@@ -305,6 +305,11 @@ This will change the name of your command. It's useful, for example, if you want
 ##### `@cog.alias(alias, ...)`
 This creates aliases for your command. Let's say you find `encrypt` is a quite long name, just add `@cog.alias('en')` and you'll be able to call your command with `encrypt` *and* `en`.
 
+##### `cog.hide`
+This will simply hide your command. This means that anything which, like `help`,
+gives a list of commands, won't show this one. Very useful for hiding your fallback
+commands (see below).
+
 ### Getting the best out of `@cog.command`
 
 If you've read all the above doc, you saw `@cog.command(fulltext=True)`:
@@ -343,8 +348,28 @@ available only to non-admins who can delete messages?
 @cog.command(permissions=[('manage_server', False), 'manage_messages'])
 ```
 
-> As of [v0.1.4](https://github.com/Zeroji/semicolon/releases/tag/v0.1.4), no error message is printed in case of wrong permissions.  
-This is intended behaviour.
+##### `fallback` (string) (optional)
+
+> Please read the paragraph above about the `permissions` argument if you haven't already.
+
+The `fallback` argument is used to call another command when permissions aren't met:
+for example, the `settings.lang` command requires the "manage_server" permission, but
+it has a fallback command which only displays languages when someone tries to use it
+with insufficient permissions.
+
+```python
+@cog.command(permissions='manage_messages', fallback='delete2')
+def delete(channel, number=1):
+    """This is the main command"""
+    # ...
+
+@cog.command
+def delete2(number=1):
+    """This is the fallback"""
+    return "Insufficient permissions to delete messages"
+```
+
+> You can use `@cog.hide` to prevent `delete2` from being listed.
 
 ##### `flags` (string or dictionary, defaults to `''`)
 
