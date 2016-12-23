@@ -12,6 +12,7 @@ All notable changes to this project will be documented in this file.
 + Small (bash) script to generate translation templates
 + Fallback commands when permissions aren't met
 + Possibility to hide commands from `help`
++ `prefix set` allows removing old prefixes and adding new ones
 
 ### Changed
 

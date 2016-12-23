@@ -17,10 +17,10 @@ def prefix_fallback(server_ex):
 
 
 @cog.command(permissions='manage_server', fallback='prefix_fallback')
-def prefix(server_ex, command: {'get', 'add', 'del', 'reset'}='get', *args):
+def prefix(server_ex, command: {'get', 'set', 'add', 'del', 'reset'}='get', *args):
     """Display or change prefix settings for the current server.
 
-    `get`: show prefixes, `add . ? !`: add prefixes, `del . ? !`: remove prefixes, `reset`: reset back to `;`"""
+    `get`: show prefixes, `set . ? !`: remove prefixes and set new ones, `add . ? !`: add prefixes, `del . ? !`: remove prefixes, `reset`: reset back to `;`"""
     command = command.lower()
     if command == 'get':
         if len(server_ex.prefixes) == 0:
@@ -28,9 +28,12 @@ def prefix(server_ex, command: {'get', 'add', 'del', 'reset'}='get', *args):
         return ngettext("The prefix for this server is {prefixes}",
                         "The prefixes for this server are {prefixes}", len(server_ex.prefixes)).format(
             prefixes=gearbox.pretty(server_ex.prefixes, '`%s`', final=_('and')))
-    elif command == 'add':
+    elif command == 'add' or command == 'set':
         if not args:
             return _('Please specify which prefix(es) should be added.')
+        if command == 'set':
+            for pref in server_ex.prefixes[::]:
+                server_ex.prefixes.remove(pref)
         overlap = [pref for pref in args if pref in server_ex.prefixes]
         if overlap:
             return ngettext("{prefixes} is already used", "{prefixes} are already used", len(overlap)).format(
