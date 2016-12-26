@@ -12,10 +12,24 @@ fi
 
 dest=$dest"/templates/"
 
+# generate translation file, update only if different
+gen () { # gen(input, output)
+  tmp="/tmp/`basename $2`.temp"
+  # generate temporary translation
+  xgettext $FLAGS -o "$tmp" "$1"
+  # check file existence and non-emptiness, compare with original, ignore POT-Creation-Date tag
+  if [[ -s "$tmp" ]] && ! diff -I "POT-Creation-Date" "$tmp" "$2" > /dev/null ; then
+    cp "$tmp" "$2"
+    echo "Generated translation file $2"
+  fi
+  # remove temporary file
+  rm -f "$tmp"
+}
+
 for cog in `find cogs -name "*.py"`; do
   cutpath=`echo $cog | cut -d/ -f2- | rev | cut -d. -f2- | rev`
   mkdir -p $dest`dirname $cutpath`
-  xgettext $FLAGS -o $dest$cutpath".pot" $cog
+  gen $cog $dest$cutpath".pot"
 done
 
-xgettext $FLAGS -o $dest"gearbox.pot" gearbox.py
+gen gearbox.py $dest"gearbox.pot"
