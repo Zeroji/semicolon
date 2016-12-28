@@ -18,6 +18,7 @@ All notable changes to this project will be documented in this file.
 
 * `prefix` and `breaker` commands are in the `settings` cog
 * `help` now only displays commands you have permission to use
+* More helpful "Invalid argument count" message
 
 ### Fixed
 

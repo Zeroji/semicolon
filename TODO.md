@@ -15,6 +15,7 @@ which may or may not be implemented in future versions.
 ##### Other features that *will* exist
 
 - Server-specific timezone settings
+- More events
 
 ### Might be implemented
 
@@ -23,6 +24,8 @@ which may or may not be implemented in future versions.
 Server-specific owner-defined ranks & all  
 Fine-tuning of commands permissions, possible
 blacklist/whitelist of commands/users/roles
+cron-like asynchronous tasks
+webserver to receive webhooks
 
 ##### Commands
 

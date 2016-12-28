@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2016-12-26 23:28+0100\n"
+"POT-Creation-Date: 2016-12-28 20:11+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -28,30 +28,36 @@ msgstr ""
 msgid "and"
 msgstr ""
 
-#: gearbox.py:174
+#: gearbox.py:178
 #, python-brace-format
 msgid "Invalid flag: -{flag}"
 msgstr ""
 
-#: gearbox.py:185
-msgid "Invalid argument count!"
+#: gearbox.py:188
+#, python-brace-format
+msgid "Too few arguments, at least {min_arg_count} expected"
 msgstr ""
 
-#: gearbox.py:204
+#: gearbox.py:192
+#, python-brace-format
+msgid "Too many arguments, at most {max_arg_count} expected"
+msgstr ""
+
+#: gearbox.py:212
 #, python-brace-format
 msgid "Argument \"{arg}\" should be of type {typename}"
 msgstr ""
 
-#: gearbox.py:210
+#: gearbox.py:218
 #, python-brace-format
 msgid "Argument \"{arg}\" should have one of the following values: {values}"
 msgstr ""
 
-#: gearbox.py:211
+#: gearbox.py:219
 msgid "or"
 msgstr ""
 
-#: gearbox.py:221
+#: gearbox.py:229
 #, python-brace-format
 msgid "Argument \"{arg}\" should match the following regex: `{pattern}`"
 msgstr ""

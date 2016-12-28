@@ -107,6 +107,10 @@ def duplicate_command_message(command, matches, language):
 class Command:
     """Guess what."""
 
+    FIXED_COUNT = 0
+    FULL_TEXT = 1
+    POSITIONAL = 2
+
     def __init__(self, func, flags='', *, fulltext=False, delete_message=False, permissions=None,
                  parent=None, fallback=None):
         """Guess."""
@@ -114,11 +118,11 @@ class Command:
         # self.special = [arg for arg in params if arg in SPECIAL_ARGS]
         self.normal = [arg for arg in self.params if arg not in SPECIAL_ARGS]
         if self.normal and self.params[self.normal[-1]].kind.name is 'VAR_POSITIONAL':
-            self.last_arg_mode = 2  # Positional
+            self.last_arg_mode = Command.POSITIONAL
         elif fulltext:
-            self.last_arg_mode = 1  # Full text
+            self.last_arg_mode = Command.FULL_TEXT
         else:
-            self.last_arg_mode = 0  # Fixed argument count
+            self.last_arg_mode = Command.FIXED_COUNT
         self.flags = {c: '' for c in flags} if type(flags) is str else flags
         self.delete_message = delete_message
         self.min_arg = len([arg for arg, val in self.params.items()
@@ -180,17 +184,21 @@ class Command:
         max_args = len(self.normal)
         text = arguments.split(' ', max_args - 1)
         text = [arg for arg in text if len(arg) > 0]
-        if (len(text) < self.min_arg or len(text) > max_args or
-                (self.last_arg_mode == 0 and len(text) > 0 and ' ' in text[-1])):
-            await client.send_message(message.channel, _('Invalid argument count!'))
+        if len(text) < self.min_arg:
+            await client.send_message(message.channel, _('Too few arguments, at least {min_arg_count} expected')
+                                      .format(min_arg_count=self.min_arg))
             return None
-        if len(text) == max_args and self.last_arg_mode == 2:
+        if len(text) > max_args or (self.last_arg_mode == Command.FIXED_COUNT and len(text) > 0 and ' ' in text[-1]):
+            await client.send_message(message.channel, _('Too many arguments, at most {max_arg_count} expected')
+                                      .format(max_arg_count=max_args))
+            return None
+        if len(text) == max_args and self.last_arg_mode == Command.POSITIONAL:
             pos_args = text[-1].split()
             text = text[:-1]
         temp_args = {key: text[i] for i, key in enumerate(self.normal) if i < len(text)}
         for key, arg in temp_args.items():
             argtype = self.annotations[key][0]
-            if argtype is not None and not(self.last_arg_mode == 2 and self.normal[-1] == key):
+            if argtype is not None and not(self.last_arg_mode == Command.POSITIONAL and self.normal[-1] == key):
                 if type(argtype) is type:
                     try:
                         if argtype is bool:
