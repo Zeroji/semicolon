@@ -9,41 +9,52 @@ import config
 import gettext
 
 
-version = 'unknown'
-version_is_dev = False
+# List of possible special arguments that a command can expect
 SPECIAL_ARGS = ('message', 'author', 'channel', 'server', 'server_ex', 'client', 'flags', '__cogs', 'permissions')
-VALID_NAME = re.compile('[a-z][a-z_.0-9]*$')
-CONFIG_LOADERS = {'json': json, 'yaml': yaml}
-CFG = {}
-LANGUAGES = {}
+VALID_NAME = re.compile('[a-z][a-z_.0-9]*$')  # Regular expression all names must match
+CONFIG_LOADERS = {'json': json, 'yaml': yaml}  # name:module mapping of config loaders (for cog-specific config files)
+CFG = {}  # Configuration settings (nested dictionary)
+version = 'unknown'  # version number
+version_is_dev = False  # True if dev version, False if release
+LANGUAGES = {}  # language_code:translation mapping of all available languages for this module (gearbox)
 
 
 def update_config(cfg):
+    """Update local config from variable.
+
+    Used during startup to load version number file properly and load all locale data, if any."""
     global version, version_is_dev, LANGUAGES
+    # Update configuration
     CFG.update(cfg)
+    # Try to load version information
     version_path = CFG['path']['version']
     try:
         ver_num, ver_type = open(version_path).read().strip().split()
-        version = ver_num
-        version_is_dev = ver_type == 'dev'
+        version = ver_num  # String matching [0-9]+(?:\.[0-9]+)* for example 0.3.14
+        version_is_dev = ver_type == 'dev'  # Expected to be either "dev" or "release"
     except ValueError:
         logging.warning('Wrong version file format! It should be <number> <type>')
     except FileNotFoundError:
         logging.warning('Version file %s not found' % version_path)
     except EnvironmentError as exc:
         logging.warning("Couldn't open version file '%s': %s", version_path, exc)
+    # Go through all the directories in the locale folder and load all gearbox.mo translation files
     for lang in os.listdir(CFG['path']['locale']):
         if os.path.isfile(os.path.join(CFG['path']['locale'], lang, 'LC_MESSAGES', 'gearbox.mo')):
             LANGUAGES[lang] = gettext.translation('gearbox', localedir=CFG['path']['locale'], languages=[lang])
 
 
 def is_valid(name):
-    """Check if a name matches `[a-z][a-z_0-9]*`."""
+    """Check if a name matches `[a-z][a-z_.0-9]*`."""
     return VALID_NAME.match(name) is not None
 
 
 def pretty(items, formatting='%s', final='and'):
-    """Prettify a list of strings."""
+    """Prettify a list of strings.
+
+    items:      list of strings to be displayed
+    formatting: formatting string to apply to each string, must contain "%s"
+    final:      linking word of two last strings, typically "and" or "or", should be localized"""
     if not items:
         return ''
     elif len(items) == 1:
@@ -53,7 +64,7 @@ def pretty(items, formatting='%s', final='and'):
         return f'%s {final} %s' % (', '.join(formatted[:-1]), formatted[-1])
 
 
-def has_prefix(text, prefixes=';'):
+def has_prefix(text, prefixes=(';',)):
     """Tell if a string has a prefix."""
     for prefix in prefixes:
         if text.startswith(prefix):
@@ -61,7 +72,7 @@ def has_prefix(text, prefixes=';'):
     return False
 
 
-def strip_prefix(text, prefixes=';'):
+def strip_prefix(text, prefixes=(';',)):
     """Strip prefixes from a string."""
     for prefix in prefixes:
         if text.startswith(prefix):
@@ -99,61 +110,87 @@ def read_commands(text, prefixes, breaker, is_private=False):
 
 
 def duplicate_command_message(command, matches, language):
+    """Simple function returning a localized message for core.py (didn't want a separate translation file)."""
     _ = (lambda s: s) if language not in LANGUAGES else LANGUAGES[language].gettext
     return _('The command `{command}` was found in multiple cogs: {matches}. Use <cog>.{command} to specify.').format(
         command=command, matches=pretty([m[0] for m in matches], '`%s`', final=_('and')))
 
 
 class Command:
-    """Guess what."""
+    """Wrapper for functions considered as commands.
 
-    FIXED_COUNT = 0
-    FULL_TEXT = 1
-    POSITIONAL = 2
+    Contains all information regarding what arguments the command should expect,
+    permissions, documentation and such."""
+
+    # Constant for the command behaviour regarding arguments overflow
+    FIXED_COUNT = 0  # Fixed argument count, throw error
+    FULL_TEXT = 1  # Expecting a string with possible spaces as last argument, put text as is
+    POSITIONAL = 2  # Expecting multiple arguments, send array with them
 
     def __init__(self, func, flags='', *, fulltext=False, delete_message=False, permissions=None,
                  parent=None, fallback=None):
         """Guess."""
+        # Command arguments as expected by the actual function
         self.params = inspect.signature(func).parameters
-        # self.special = [arg for arg in params if arg in SPECIAL_ARGS]
-        self.normal = [arg for arg in self.params if arg not in SPECIAL_ARGS]
-        if self.normal and self.params[self.normal[-1]].kind.name is 'VAR_POSITIONAL':
+        # Command arguments as received from the message
+        self.arguments = [arg for arg in self.params if arg not in SPECIAL_ARGS]
+        if self.arguments and self.params[self.arguments[-1]].kind.name is 'VAR_POSITIONAL':
             self.last_arg_mode = Command.POSITIONAL
         elif fulltext:
             self.last_arg_mode = Command.FULL_TEXT
         else:
             self.last_arg_mode = Command.FIXED_COUNT
+        # Possible flags for the command
+        # If `flags` is a string, convert to a dict with empty docstrings
         self.flags = {c: '' for c in flags} if type(flags) is str else flags
-        self.delete_message = delete_message
+        # Minimum argument count
         self.min_arg = len([arg for arg, val in self.params.items()
                             if arg not in SPECIAL_ARGS and isinstance(val.default, type)
                             and self.params[arg].kind.name is not 'VAR_POSITIONAL'])
+        # Whether or not the function is a coroutine (and shall be awaited)
         self.iscoroutine = inspect.iscoroutinefunction(func)
-        self.func = func
+        # Permissions, can be indicated as a string, (string, bool) tuple, or array of any
+        # Ends up being stored as an array of (string, bool) tuples
         self.permissions = []
         if permissions is not None:
-            if type(permissions) is str:
+            if type(permissions) is str:  # consider a single string as a requirement for that permission
                 self.permissions.append((permissions, True))
             elif type(permissions) is tuple:
                 self.permissions.append(permissions)
             elif type(permissions) is list:
                 self.permissions.extend([(perm, True) if type(perm) is str else perm for perm in permissions])
-        self.annotations = {arg: (None, '') for arg in self.normal}
+        # Python argument annotations (aka Type Hints)
+        # Can be a docstring, a type hint, or a tuple of both (in any order)
+        # A type hint can be either a type, or a `re` pattern (then it is considered a regex that
+        # the argument must match), or a set of strings (then the argument must be one of those)
+        # See more in the doc/cogs.md file, in the section "Type annotations"
+        self.annotations = {arg: (None, '') for arg in self.arguments}
         type_types = (type, type(re.compile('')), set)
         for key, item in func.__annotations__.items():
-            if key in self.normal:
-                if type(item) is str:
+            if key in self.arguments:
+                if type(item) is str:  # No type hint if there's only a docstring
                     self.annotations[key] = (None, item)
-                elif type(item) in type_types:
+                elif type(item) in type_types:  # Empty docstring if there's only a type hint
                     self.annotations[key] = (item, '')
-                elif type(item) is tuple:
+                elif type(item) is tuple:  # If both are present, check in which order
                     if type(item[0]) is str and type(item[1]) in type_types:
                         self.annotations[key] = (item[1], item[0])
                     elif type(item[0]) in type_types and type(item[1]) is str:
                         self.annotations[key] = item
+                    else:  # Warning in case the annotation is a tuple, but of invalid type
+                        logging.warning("Invalid annotation tuple for argument %s in function %s", key, func.__name__)
+                else:
+                    logging.warning("Invalid annotation type for argument %s in function %s", key, func.__name__)
+        # Generate empty docstring if none is present
         if not func.__doc__:
             func.__doc__ = ' '
+        # Whether the message should be deleted after command execution (only for single-command messages)
+        self.delete_message = delete_message
+        # Function to be called
+        self.func = func
+        # Parent cog
         self.parent = parent
+        # In case of denied permission, name of the fallback command - must be a string
         self.fallback = fallback
 
     def allows(self, permissions):
@@ -164,13 +201,16 @@ class Command:
 
     async def call(self, client, message, arguments, _cogs=None):
         """Call a command."""
+        # Compute values of special arguments
         special_args = {'client': client, 'message': message, 'author': message.author,
                         'channel': message.channel, 'server': message.server,
                         'server_ex': client.servers_ex[message.channel.id if message.channel.is_private else
                                                        message.server.id], 'flags': '', '__cogs': _cogs,
                         'permissions': message.channel.permissions_for(message.author)}
+        # Get translation function for error messages, according to server settings
         language = special_args['server_ex'].config['language']
         _ = (lambda s: s) if language not in LANGUAGES else LANGUAGES[language].gettext
+        # Strip flags from the list of arguments
         while arguments.startswith('-') and self.flags:
             for flag in arguments.split(' ')[0][1:]:
                 if flag != '-':
@@ -179,11 +219,12 @@ class Command:
                         return
                     special_args['flags'] += flag
             arguments = arguments[arguments.find(' ') + 1:] if ' ' in arguments else ''
-        pos_args = []
+        # Extract arguments from message
+        pos_args = []  # Positional arguments, none by default
         args = {key: value for key, value in special_args.items() if key in self.params}
-        max_args = len(self.normal)
-        text = arguments.split(' ', max_args - 1)
-        text = [arg for arg in text if len(arg) > 0]
+        max_args = len(self.arguments)
+        text = arguments.split(None, max_args - 1)
+        # Display errors in case of invalid argument count
         if len(text) < self.min_arg:
             await client.send_message(message.channel, _('Too few arguments, at least {min_arg_count} expected')
                                       .format(min_arg_count=self.min_arg))
@@ -192,56 +233,59 @@ class Command:
             await client.send_message(message.channel, _('Too many arguments, at most {max_arg_count} expected')
                                       .format(max_arg_count=max_args))
             return None
+        # If positional arguments are expected, store them
         if len(text) == max_args and self.last_arg_mode == Command.POSITIONAL:
             pos_args = text[-1].split()
             text = text[:-1]
-        temp_args = {key: text[i] for i, key in enumerate(self.normal) if i < len(text)}
+        # Type checking code
+        temp_args = {key: text[i] for i, key in enumerate(self.arguments) if i < len(text)}
         for key, arg in temp_args.items():
             argtype = self.annotations[key][0]
-            if argtype is not None and not(self.last_arg_mode == Command.POSITIONAL and self.normal[-1] == key):
-                if type(argtype) is type:
+            # Check type for all annotated parameters, unless positional
+            if argtype is not None and not(self.last_arg_mode == Command.POSITIONAL and self.arguments[-1] == key):
+                if type(argtype) is type:  # If a certain type is expected, cast to it
                     try:
-                        if argtype is bool:
+                        if argtype is bool:  # Custom casting for booleans
                             if arg.lower() not in ('true', 'yes', '1', 'false', 'no', '0'):
                                 raise ValueError
                             temp_args[key] = arg.lower() in ('true', 'yes', '1')
-                        else:
+                        else:  # Regular casting for all other types
                             temp_args[key] = self.annotations[key][0](arg)
                     except ValueError:
                         await client.send_message(message.channel,
                                                   _('Argument "{arg}" should be of type {typename}').format(
                                                       arg=arg, typename=argtype.__name__))
                         return None
-                elif type(argtype) is set:
+                elif type(argtype) is set:  # Checking if the argument has one of the required values
                     if arg.lower() not in {value.lower() for value in argtype}:  # Name doesn't match (case insensitive)
                         await client.send_message(message.channel,
                                                   _('Argument "{arg}" should have one of the following values: {values}').format(
                                                     arg=arg, values=pretty(argtype, '`%s`', _('or'))))
                         return None
-                    elif arg not in argtype:  # Name matching but wrong case
+                    elif arg not in argtype:  # If only the case isn't matching, convert to expected case
                         for value in argtype:
                             if arg.lower() == value.lower():
                                 temp_args[key] = value
                                 break
                 else:  # argtype is re.compile
-                    if argtype.match(arg) is None:
+                    if argtype.match(arg) is None:  # Checking that the argument matches the expected pattern
                         await client.send_message(message.channel,
                                                   _('Argument "{arg}" should match the following regex: `{pattern}`').format(
                                                     arg=arg, pattern=argtype.pattern))
                         return None
+        # Update after type checking
         args.update(temp_args)
-        # if self.multiple:
-        #     args = args[:-1] + text[len(self.normal) - 1:]
-        # elif self.normal:
-        #     args[-1] = ' '.join(text[len(self.normal) - 1:])
+        # Sort arguments into expected order
         ordered_args = [args[key] for key in self.params if key in args]
         ordered_args += pos_args
+        # Update language settings for parent cog (localization)
         self.parent.set_lang(special_args['server_ex'].config['language'])
+        # Run the function with expected arguments and grab its output
         if self.iscoroutine:
             output = await self.func(*ordered_args)
         else:
             output = self.func(*ordered_args)
-        if output is not None:
+        if output is not None:  # If the output can be casted to a string, send it to Discord
             try:
                 output = str(output)
             except (UnicodeError, UnicodeEncodeError):
