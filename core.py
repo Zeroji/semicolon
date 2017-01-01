@@ -12,14 +12,14 @@ import config
 import gearbox
 
 
+# Global variable for configuration
 CFG = {}
 
 
 class Bot(discord.Client):
-    """Client wrapper."""
+    """Wrapper for the discord.Client class."""
 
     def __init__(self, master='', admins=None, banned=None):
-        """Magic method docstring."""
         super(Bot, self).__init__()
         if admins is None:
             admins = []
@@ -28,8 +28,11 @@ class Bot(discord.Client):
         self.master = master
         self.admins = admins
         self.banned = banned if banned is not None else []
+        # name:gearbox.Cog mapping of cogs
         self.cogs = {}
+        # last time the cogs file were checked for modifications
         self.last_update = time.time()
+        # id:gearbox.Server mapping of servers (PMs use the channel ID)
         self.servers_ex = {}
 
     def run(self, *args, **kwargs):
@@ -130,6 +133,7 @@ class Bot(discord.Client):
         await self.on_reaction(False, reaction, user)
 
     async def on_reaction(self, added, reaction, user):
+        """Propagate reaction events to the cogs."""
         for cog in cogs.COGS:
             await cogs.COGS.get(cog).cog.on_reaction_any(self, added, reaction, user)
 

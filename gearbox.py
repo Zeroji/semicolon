@@ -129,7 +129,7 @@ class Command:
 
     def __init__(self, func, flags='', *, fulltext=False, delete_message=False, permissions=None,
                  parent=None, fallback=None):
-        """Guess."""
+        """Initialize."""
         # Command arguments as expected by the actual function
         self.params = inspect.signature(func).parameters
         # Command arguments as received from the message
@@ -297,24 +297,38 @@ class Command:
 
 
 class Cog:
-    """The cog class containing the decorators."""
+    """Cog class, containing commands, settings and such.
+
+    Contains the decorators required to declare a function."""
 
     def __init__(self, name=None, *, config=None):
-        """Initialization."""
+        """Initialize."""
+        # Functions (not commands!) to be called when cog is loaded/unloaded (typically bot startup/shutdown)
         self.on_init = lambda: None
         self.on_exit = lambda: None
+        # name:module mapping of sub-cogs
         self.subcogs = {}
+        # name:Command mapping of commands
         self.commands = {}
+        # alias:name mapping of aliases, contains name:name
         self.aliases = {}
+        # list of names which should not be displayed
         self.hidden = []
+        # cog name
         self.name = name
+        # emoji:commands(array) mapping of which commands should be called on certain reactions
         self.react = {}
+        # cog configuration
         self.config = {}
+        # config file type, currently either json or yaml
         self.config_type = config
+        # language_code:translation mapping of available languages for this cog
         self.languages = {}
+        # current language
         self.lang = None
 
     def _get_cfg(self):
+        """Return a (module, str) tuple containing the config loader and the config file path."""
         if self.config_type is None:
             return None, None
         module = CONFIG_LOADERS.get(self.config_type)
@@ -323,7 +337,9 @@ class Cog:
             logging.warning("Unsupported configuration format '%s' for cog '%s'", self.config_type, self.name)
         return module, path
 
-    def load_cfg(self):
+    def load_cfg(self):  # Called before cog init
+        """Read the cog's config from its config file (in the specified format)."""
+        # Update the language:translation mapping accordingly
         available_languages = [lang for lang in os.listdir(CFG['path']['locale'])
                                if os.path.isfile(os.path.join(CFG['path']['locale'], lang,
                                                               'LC_MESSAGES', *self.name.split('.')) + '.mo')]
@@ -331,6 +347,7 @@ class Cog:
                                                     localedir=CFG['path']['locale'], languages=[lang])
                           for lang in available_languages}
         self.set_lang('en')
+        # Get config loader and path, and read the file
         module, path = self._get_cfg()
         if module is not None:
             try:
@@ -338,20 +355,25 @@ class Cog:
             except FileNotFoundError:
                 logging.warning("No config file at %s for cog %s", path, self.name)
 
-    def save_cfg(self):
+    def save_cfg(self):  # Called after cog exit
+        """Write the cog's config to its config file (in the specified format)."""
         module, path = self._get_cfg()
         if module is not None:
             module.dump(self.config, open(path, 'w'))
 
-    def init(self, func):
+    def init(self, func):  # Decorator
         """Define a function to call upon loading."""
         self.on_init = func
 
-    def exit(self, func):
+    def exit(self, func):  # Decorator
         """Define a function to call upon exiting."""
         self.on_exit = func
 
-    def on_reaction(self, arg):
+    def on_reaction(self, arg):  # Decorator
+        """Mark a function to be awaited when a reaction is added or deleted.
+
+        It is possible to specify only specific reaction, by passing a string or a
+        tuple of strings to the decorator. Only those will then trigger the call."""
         func = None
         if type(arg) is str:
             arg = (arg,)
@@ -367,13 +389,14 @@ class Cog:
             return function
         return decorator if func is None else decorator(func)
 
-    async def on_reaction_any(self, client, added, reaction, user):
+    async def on_reaction_any(self, client, added, reaction, user):  # Called by core
+        """Propagate the reaction event to functions."""
         calls = self.react.get(0, [])
         calls.extend(self.react.get(reaction.emoji.id if reaction.custom_emoji else reaction.emoji, []))
         for func in calls:
             await func(client, added, reaction, user)
 
-    def hide(self, function=None):
+    def hide(self, function=None):  # Decorator
         """Hide a command."""
         def decorate(func):
             self.hidden.append(func.__name__)
@@ -383,7 +406,6 @@ class Cog:
     def alias(self, *aliases):
         """Add aliases to a command."""
         def decorate(func):
-            """Decorator to add an alias."""
             for alias in aliases:
                 if is_valid(alias):
                     if alias not in self.aliases:
@@ -402,7 +424,6 @@ class Cog:
     def rename(self, name):
         """Rename a command."""
         def decorate(func):
-            """Decorator to rename."""
             if not is_valid(name):
                 logging.error("Couldn't rename '%s' to '%s': invalid name", func.__name__, name)
             elif name in self.commands:
@@ -419,9 +440,10 @@ class Cog:
         return decorate
 
     def command(self, func=None, **kwargs):
-        """Command decorator."""
+        """Decorator used to declare a command.
+
+        See Command.__init__ for documentation about the keyword arguments."""
         def decorator(function):
-            """Command decorator."""
             name = function.__name__
             if name in self.commands:
                 real_name = self.commands[name]
@@ -464,14 +486,17 @@ class Cog:
                 if self.has(name, permissions) and name not in self.hidden}
 
     def set_lang(self, lang):
+        """Change the current language. Used for per-server localization."""
         self.lang = self.languages.get(lang, None)
 
     def gettext(self, text):
+        """`gettext` wrapper for the current language."""
         if self.lang is None:
             return text
         return self.lang.gettext(text)
 
     def ngettext(self, singular, plural, n):
+        """`ngettext` wrapper for the current language."""
         if self.lang is None:
             if n == 1:
                 return singular
@@ -480,7 +505,7 @@ class Cog:
 
 
 class Server:
-    """Custom server class."""
+    """Custom server class, used to store additional information."""
     default_cfg = {'cogs': {'blacklist': []}, 'language': 'en', 'prefixes': [';'], 'breaker': '|'}
 
     def __init__(self, sid, path):
@@ -493,6 +518,7 @@ class Server:
         self.load()
 
     def is_allowed(self, cog_name):
+        """Whether or not a cog can be used on the server."""
         if cog_name in self.blacklist:
             return False
         if any([cog_name.startswith(parent + '.') for parent in self.blacklist]):
@@ -500,6 +526,7 @@ class Server:
         return True
 
     def load(self):
+        """Load server-specific configuration file, create default if non-existent."""
         try:
             self.config = {}
             self.config.update(Server.default_cfg)
@@ -511,6 +538,7 @@ class Server:
         self.prefixes = self.config['prefixes']
 
     def write(self):
+        """Write server-specific configuration file."""
         self.config['cogs']['blacklist'] = self.blacklist
         self.config['prefixes'] = self.prefixes
         self._write()
