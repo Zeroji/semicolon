@@ -8,8 +8,6 @@ which may or may not be implemented in future versions.
 ##### Next things to work on
 
 1. Unit tests
-2. Improved user experience
-0. Properly commented code
 0. Bug hunting
 
 ##### Other features that *will* exist

@@ -7,6 +7,39 @@ import json
 import yaml
 import config
 import gettext
+import unittest
+
+
+class TestGearbox(unittest.TestCase):
+    def test_is_valid(self):
+        self.assertTrue(is_valid("base"))
+        self.assertTrue(is_valid("cog.sub"))
+        self.assertTrue(is_valid("under_score"))
+        self.assertFalse(is_valid("Base"))
+        self.assertFalse(is_valid("cog/sub"))
+
+    def test_pretty(self):
+        self.assertEqual(pretty(()), "")
+        self.assertEqual(pretty([]), "")
+        self.assertEqual(pretty(["a"]), "a")
+        self.assertEqual(pretty(["a"], "*%s*"), "*a*")
+        self.assertEqual(pretty(["a", "b"], final="and"), "a and b")
+        self.assertEqual(pretty(["a", "b", "c"], final="and"), "a, b and c")
+        self.assertEqual(pretty(["a", "b", "c"], "*%s*", final="and"), "*a*, *b* and *c*")
+
+    def test_has_prefix(self):
+        self.assertTrue(has_prefix(";hi", (';',)))
+        self.assertFalse(has_prefix("hi", (';',)))
+        self.assertTrue(has_prefix(";hi", (';', '!')))
+        self.assertTrue(has_prefix("!hi", (';', '!')))
+        self.assertFalse(has_prefix(";hi", ('!',)))
+
+    def test_strip_prefix(self):
+        self.assertEqual(strip_prefix(";hi", (';',)), "hi")
+        self.assertEqual(strip_prefix("hi", (';',)), "hi")
+        self.assertEqual(strip_prefix(";hi", (';', '!')), "hi")
+        self.assertEqual(strip_prefix("!hi", (';', '!')), "hi")
+        self.assertEqual(strip_prefix(";hi", ('!',)), ";hi")
 
 
 # List of possible special arguments that a command can expect
@@ -142,7 +175,7 @@ class Command:
             self.last_arg_mode = Command.FIXED_COUNT
         # Possible flags for the command
         # If `flags` is a string, convert to a dict with empty docstrings
-        self.flags = {c: '' for c in flags} if type(flags) is str else flags
+        self.flags = {c: '' for c in flags} if isinstance(flags, str) else flags
         # Minimum argument count
         self.min_arg = len([arg for arg, val in self.params.items()
                             if arg not in SPECIAL_ARGS and isinstance(val.default, type)
@@ -153,29 +186,31 @@ class Command:
         # Ends up being stored as an array of (string, bool) tuples
         self.permissions = []
         if permissions is not None:
-            if type(permissions) is str:  # consider a single string as a requirement for that permission
+            if isinstance(permissions, str):  # consider a single string as a requirement for that permission
                 self.permissions.append((permissions, True))
-            elif type(permissions) is tuple:
+            elif isinstance(permissions, tuple):
                 self.permissions.append(permissions)
-            elif type(permissions) is list:
-                self.permissions.extend([(perm, True) if type(perm) is str else perm for perm in permissions])
+            elif isinstance(permissions, list):
+                self.permissions.extend([(perm, True) if isinstance(perm, str) else perm for perm in permissions])
         # Python argument annotations (aka Type Hints)
         # Can be a docstring, a type hint, or a tuple of both (in any order)
         # A type hint can be either a type, or a `re` pattern (then it is considered a regex that
         # the argument must match), or a set of strings (then the argument must be one of those)
         # See more in the doc/cogs.md file, in the section "Type annotations"
+        # argument_name:(type, docstring) mapping of annotations
         self.annotations = {arg: (None, '') for arg in self.arguments}
+        # List of types accepted as type hints
         type_types = (type, type(re.compile('')), set)
         for key, item in func.__annotations__.items():
             if key in self.arguments:
-                if type(item) is str:  # No type hint if there's only a docstring
+                if isinstance(item, str):  # No type hint if there's only a docstring
                     self.annotations[key] = (None, item)
-                elif type(item) in type_types:  # Empty docstring if there's only a type hint
+                elif any([isinstance(item, t) for t in type_types]):  # Empty docstring if there's only a type hint
                     self.annotations[key] = (item, '')
-                elif type(item) is tuple:  # If both are present, check in which order
-                    if type(item[0]) is str and type(item[1]) in type_types:
+                elif isinstance(item, tuple):  # If both are present, check in which order
+                    if isinstance(item[0], str) and any([isinstance(item[1], t) for t in type_types]):
                         self.annotations[key] = (item[1], item[0])
-                    elif type(item[0]) in type_types and type(item[1]) is str:
+                    elif any([isinstance(item[0], t) for t in type_types]) and isinstance(item[1], str):
                         self.annotations[key] = item
                     else:  # Warning in case the annotation is a tuple, but of invalid type
                         logging.warning("Invalid annotation tuple for argument %s in function %s", key, func.__name__)
@@ -207,6 +242,7 @@ class Command:
                         'server_ex': client.servers_ex[message.channel.id if message.channel.is_private else
                                                        message.server.id], 'flags': '', '__cogs': _cogs,
                         'permissions': message.channel.permissions_for(message.author)}
+        assert [arg in SPECIAL_ARGS for arg in special_args] and [arg in special_args for arg in SPECIAL_ARGS]
         # Get translation function for error messages, according to server settings
         language = special_args['server_ex'].config['language']
         _ = (lambda s: s) if language not in LANGUAGES else LANGUAGES[language].gettext
@@ -228,11 +264,11 @@ class Command:
         if len(text) < self.min_arg:
             await client.send_message(message.channel, _('Too few arguments, at least {min_arg_count} expected')
                                       .format(min_arg_count=self.min_arg))
-            return None
+            return
         if len(text) > max_args or (self.last_arg_mode == Command.FIXED_COUNT and len(text) > 0 and ' ' in text[-1]):
             await client.send_message(message.channel, _('Too many arguments, at most {max_arg_count} expected')
                                       .format(max_arg_count=max_args))
-            return None
+            return
         # If positional arguments are expected, store them
         if len(text) == max_args and self.last_arg_mode == Command.POSITIONAL:
             pos_args = text[-1].split()
@@ -243,7 +279,7 @@ class Command:
             argtype = self.annotations[key][0]
             # Check type for all annotated parameters, unless positional
             if argtype is not None and not(self.last_arg_mode == Command.POSITIONAL and self.arguments[-1] == key):
-                if type(argtype) is type:  # If a certain type is expected, cast to it
+                if isinstance(argtype, type):  # If a certain type is expected, cast to it
                     try:
                         if argtype is bool:  # Custom casting for booleans
                             if arg.lower() not in ('true', 'yes', '1', 'false', 'no', '0'):
@@ -255,13 +291,13 @@ class Command:
                         await client.send_message(message.channel,
                                                   _('Argument "{arg}" should be of type {typename}').format(
                                                       arg=arg, typename=argtype.__name__))
-                        return None
-                elif type(argtype) is set:  # Checking if the argument has one of the required values
+                        return
+                elif isinstance(argtype, set):  # Checking if the argument has one of the required values
                     if arg.lower() not in {value.lower() for value in argtype}:  # Name doesn't match (case insensitive)
                         await client.send_message(message.channel,
                                                   _('Argument "{arg}" should have one of the following values: {values}').format(
                                                     arg=arg, values=pretty(argtype, '`%s`', _('or'))))
-                        return None
+                        return
                     elif arg not in argtype:  # If only the case isn't matching, convert to expected case
                         for value in argtype:
                             if arg.lower() == value.lower():
@@ -272,7 +308,7 @@ class Command:
                         await client.send_message(message.channel,
                                                   _('Argument "{arg}" should match the following regex: `{pattern}`').format(
                                                     arg=arg, pattern=argtype.pattern))
-                        return None
+                        return
         # Update after type checking
         args.update(temp_args)
         # Sort arguments into expected order
@@ -375,9 +411,9 @@ class Cog:
         It is possible to specify only specific reaction, by passing a string or a
         tuple of strings to the decorator. Only those will then trigger the call."""
         func = None
-        if type(arg) is str:
+        if isinstance(arg, str):
             arg = (arg,)
-        elif type(arg) is not tuple:
+        elif not isinstance(arg, tuple):
             func = arg
             arg = (0,)
 
@@ -409,7 +445,7 @@ class Cog:
             for alias in aliases:
                 if is_valid(alias):
                     if alias not in self.aliases:
-                        if func.__name__ in self.commands and type(self.commands[func.__name__]) is str:
+                        if func.__name__ in self.commands and isinstance(self.commands[func.__name__], str):
                             self.aliases[alias] = self.commands[func.__name__]
                         else:
                             self.aliases[alias] = func.__name__
