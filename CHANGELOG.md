@@ -13,7 +13,7 @@ All notable changes to this project will be documented in this file.
 + Fallback commands when permissions aren't met
 + Possibility to hide commands from `help`
 + `prefix set` allows removing old prefixes and adding new ones
-+ Added unit tests to `gearbox`
++ Added unit tests to `gearbox` and `config`
 
 ### Changed
 
@@ -27,6 +27,7 @@ All notable changes to this project will be documented in this file.
 * Fixed `enable *` and `disable *` output when nothing is changed
 * Bot breaking when one cog fails to load
 * Proper error message when `cog` isn't defined
+* Possible failure on malformed config files
 
 ### [[v0.1.4](https://github.com/Zeroji/semicolon/releases/tag/v0.1.4)]
 
