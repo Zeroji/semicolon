@@ -14,6 +14,8 @@ NGRAMS_PATH = 'data/cipher.ngrams/'
 @cog.init
 def load_files():
     """Load bigram files."""
+    if not os.path.exists(NGRAMS_PATH):
+        return
 
     # Files are text files named `language_bigrams.txt` in folder `data/cipher.ngrams`
     # They contain one ngram per line, followed by a space then its count or frequency
