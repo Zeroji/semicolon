@@ -41,6 +41,12 @@ class TestGearbox(unittest.TestCase):
         self.assertEqual(strip_prefix("!hi", (';', '!')), "hi")
         self.assertEqual(strip_prefix(";hi", ('!',)), ";hi")
 
+    def test_read_commands(self):
+        self.assertEqual(read_commands(";a b c", [';'], '|', False), (['a b c'], True))
+        self.assertEqual(read_commands("|;a b|;c", [';'], '|', False), (['a b', 'c'], False))
+        self.assertEqual(read_commands("a b", [';'], '|', True), (['a b'], True))
+        self.assertNotEqual(read_commands("a b", [';'], '|', False), (['a b'], True))
+
 
 # List of possible special arguments that a command can expect
 SPECIAL_ARGS = ('message', 'author', 'channel', 'server', 'server_ex', 'client', 'flags', '__cogs', 'permissions')
@@ -118,9 +124,9 @@ def read_commands(text, prefixes, breaker, is_private=False):
 
     ";example" will return (['example'], True) because the message is only a command
     "Give an |;example" will return (['example'], False) because the message has other information"""
-    if is_private: # Any private message is considered a command
-        return strip_prefix(text), True
-    if has_prefix(text, prefixes): # Regular commands
+    if is_private:  # Any private message is considered a command
+        return [strip_prefix(text)], True
+    if has_prefix(text, prefixes):  # Regular commands
         return [strip_prefix(text, prefixes)], True
     # Here comes the tricky part about the "breaker" character:
     # Users can type things like `please say |;hi` and that'll call `;hi`
@@ -128,7 +134,7 @@ def read_commands(text, prefixes, breaker, is_private=False):
     # More info in the readme, but here's the code to parse this
     index = text.find(breaker*2)
     if index >= 0:  # If we have a `||` in the text
-        commands = read_commands(text[:index].rstrip(), prefixes, breaker)[0] # We parse what's before it
+        commands = read_commands(text[:index].rstrip(), prefixes, breaker)[0]  # We parse what's before it
         sub = text[index+2:].lstrip()
         if has_prefix(sub, prefixes):  # If there's a command after it, we add it
             commands.append(strip_prefix(sub, prefixes))
