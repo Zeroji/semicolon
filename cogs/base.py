@@ -1,6 +1,7 @@
 """Base module."""
 import os
 import discord
+import socket
 import sys
 
 import gearbox
@@ -124,7 +125,7 @@ def halp(__cogs, server_ex, flags, permissions, name: 'Cog or command name'=None
         output = f'`{name}` - ' + cogg.__doc__.replace('\n\n', '\n')
         for cname, command in cogg.cog.get_all(permissions).items():
             line = cname
-            for i, arg in enumerate(command.normal):
+            for i, arg in enumerate(command.arguments):
                 line += (' <%s>' if i < command.min_arg else ' [%s]') % arg
             output += f'\n`{line:{width}.{width}}|` {command.func.__doc__.splitlines()[0]}'
         if cogg.cog.subcogs:
@@ -156,7 +157,7 @@ def halp(__cogs, server_ex, flags, permissions, name: 'Cog or command name'=None
         if aliases:
             output += '\n' + _('Also known as: {alias}').format(alias=gearbox.pretty(aliases, '`%s`', final=_('and')))
         output += '\n**' + _('Usage') + '**: `' + complete_name + (' -flags' if command.flags else '')
-        for i, arg in enumerate(command.normal):
+        for i, arg in enumerate(command.arguments):
             output += (' <%s>' if i < command.min_arg else ' [%s]') % arg
         output += '`'
         if command.flags:
@@ -168,7 +169,7 @@ def halp(__cogs, server_ex, flags, permissions, name: 'Cog or command name'=None
         if any([arg[0] is not None or len(arg[1]) > 0 for arg in command.annotations.values()]):
             output += '\n**' + _('Arguments') + '**: '
             arguments = []
-            for arg in command.normal:
+            for arg in command.arguments:
                 anno = command.annotations[arg]
                 temp = f'`{arg}`'
                 if anno[0] is not None:
@@ -195,7 +196,7 @@ def info():
     ver = 'v' + gearbox.version + (' :warning:' if gearbox.version_is_dev else '')
     pver = sys.version.split()[0]
     return _("Hi, I'm `{name}`, a Discord bot written by {author} | {ver} | Python {pver} | discord.py {dver}" \
-             "\nMy source code is available on GitHub: <{link}>").format(
+             " | running on {hostname}\nMy source code is available on GitHub: <{link}>").format(
         name=';;', author='Zeroji', link='https://github.com/Zeroji/semicolon/releases/latest',
-        ver=ver, pver=pver, dver=discord.__version__
+        ver=ver, pver=pver, dver=discord.__version__, hostname=socket.gethostname()
     )

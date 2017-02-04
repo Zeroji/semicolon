@@ -41,11 +41,6 @@ class Bot(discord.Client):
 
     async def on_message(self, message):
         """Handle messages."""
-        # Avoid non-dev servers [TEMP] (Imgur ARGs & Nightcore Reality)
-        if message.channel.is_private or message.server.id in \
-                ('133648084671528961', '91460936186990592', '211982476745113601'):
-            return
-
         # Avoid replying to self [TEMP]
         if message.author == self.user:
             return
@@ -225,7 +220,7 @@ def main():
     logging.getLogger('websockets').setLevel(logging.WARNING)
     logging.info('Starting...')
 
-    # When in debug mode, load speficic cogs and prevent dynamic import
+    # When in debug mode, load specific cogs and prevent dynamic import
     if args.load is not None:
         for name in args.load:
             cogs.load(name)
