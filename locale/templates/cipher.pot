@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2016-12-18 14:16+0100\n"
+"POT-Creation-Date: 2017-02-05 00:44+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,26 +17,26 @@ msgstr ""
 "Content-Type: text/plain; charset=CHARSET\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: cogs/cipher.py:275 cogs/cipher.py:291 cogs/cipher.py:300 cogs/cipher.py:308
-#: cogs/cipher.py:331 cogs/cipher.py:354 cogs/cipher.py:362 cogs/cipher.py:370
+#: cogs/cipher.py:277 cogs/cipher.py:293 cogs/cipher.py:302 cogs/cipher.py:310
+#: cogs/cipher.py:333 cogs/cipher.py:356 cogs/cipher.py:364 cogs/cipher.py:372
 msgid "Mutually exclusive flags: -d and -e"
-msgstr ""
-
-#: cogs/cipher.py:381
-#, python-brace-format
-msgid "This message is most likely in {language}"
 msgstr ""
 
 #: cogs/cipher.py:383
 #, python-brace-format
+msgid "This message is most likely in {language}"
+msgstr ""
+
+#: cogs/cipher.py:385
+#, python-brace-format
 msgid "This message seems to be in {language}, or maybe in {language2}"
 msgstr ""
 
-#: cogs/cipher.py:386
+#: cogs/cipher.py:388
 #, python-brace-format
 msgid "Multiple languages have been detected: {languages}"
 msgstr ""
 
-#: cogs/cipher.py:386
+#: cogs/cipher.py:388
 msgid "and"
 msgstr ""

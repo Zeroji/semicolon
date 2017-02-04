@@ -272,8 +272,11 @@ class Command:
                                       .format(min_arg_count=self.min_arg))
             return
         if len(text) > max_args or (self.last_arg_mode == Command.FIXED_COUNT and len(text) > 0 and ' ' in text[-1]):
-            await client.send_message(message.channel, _('Too many arguments, at most {max_arg_count} expected')
-                                      .format(max_arg_count=max_args))
+            if max_args == 0:
+                await client.send_message(message.channel, _("This command doesn't expect any arguments"))
+            else:
+                await client.send_message(message.channel, _('Too many arguments, at most {max_arg_count} expected')
+                                          .format(max_arg_count=max_args))
             return
         # If positional arguments are expected, store them
         if len(text) == max_args and self.last_arg_mode == Command.POSITIONAL:

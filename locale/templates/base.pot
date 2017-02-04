@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2016-12-18 14:16+0100\n"
+"POT-Creation-Date: 2017-02-05 00:44+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -18,67 +18,67 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=INTEGER; plural=EXPRESSION;\n"
 
-#: cogs/base.py:18
+#: cogs/base.py:19
 #, python-brace-format
 msgid "Enabled cogs: {enabled_cogs}"
 msgstr ""
 
-#: cogs/base.py:19 cogs/base.py:27 cogs/base.py:31 cogs/base.py:36
-#: cogs/base.py:48 cogs/base.py:56 cogs/base.py:62 cogs/base.py:66
-#: cogs/base.py:107 cogs/base.py:121 cogs/base.py:139 cogs/base.py:157
-#: cogs/base.py:184
+#: cogs/base.py:20 cogs/base.py:28 cogs/base.py:32 cogs/base.py:37
+#: cogs/base.py:49 cogs/base.py:57 cogs/base.py:63 cogs/base.py:67
+#: cogs/base.py:108 cogs/base.py:122 cogs/base.py:140 cogs/base.py:158
+#: cogs/base.py:185
 msgid "and"
 msgstr ""
 
-#: cogs/base.py:23 cogs/base.py:46
+#: cogs/base.py:24 cogs/base.py:47
 msgid "No cogs are disabled."
 msgstr ""
 
-#: cogs/base.py:26 cogs/base.py:55
+#: cogs/base.py:27 cogs/base.py:56
 #, python-brace-format
 msgid "{cogs_not_found} doesn't exist"
 msgid_plural "{cogs_not_found} don't exist"
 msgstr[0] ""
 msgstr[1] ""
 
-#: cogs/base.py:30
+#: cogs/base.py:31
 #, python-brace-format
 msgid "{enabled_cogs} is already enabled"
 msgid_plural "{enabled_cogs} are already enabled"
 msgstr[0] ""
 msgstr[1] ""
 
-#: cogs/base.py:36
+#: cogs/base.py:37
 #, python-brace-format
 msgid "Enabled {enabled_cogs}"
 msgstr ""
 
-#: cogs/base.py:47
+#: cogs/base.py:48
 #, python-brace-format
 msgid "Disabled cogs: {disabled_cogs}"
 msgstr ""
 
-#: cogs/base.py:52
+#: cogs/base.py:53
 msgid "No cogs are enabled."
 msgstr ""
 
-#: cogs/base.py:58
+#: cogs/base.py:59
 msgid "Error: cannot disable self"
 msgstr ""
 
-#: cogs/base.py:61
+#: cogs/base.py:62
 #, python-brace-format
 msgid "{disabled_cogs} is already disabled"
 msgid_plural "{disabled_cogs} are already disabled"
 msgstr[0] ""
 msgstr[1] ""
 
-#: cogs/base.py:66
+#: cogs/base.py:67
 #, python-brace-format
 msgid "Disabled {disabled_cogs}"
 msgstr ""
 
-#: cogs/base.py:105
+#: cogs/base.py:106
 #, python-brace-format
 msgid ""
 "The following special documentation page is available:\n"
@@ -89,75 +89,75 @@ msgid_plural ""
 msgstr[0] ""
 msgstr[1] ""
 
-#: cogs/base.py:118
+#: cogs/base.py:119
 msgid ""
 "Hi, I'm `;;` :no_mouth: I'm split into several cogs, type `;help <cog>` for "
 "more information\n"
 msgstr ""
 
-#: cogs/base.py:119
+#: cogs/base.py:120
 #, python-brace-format
 msgid "The following cog is currently enabled: {active_cogs}"
 msgid_plural "The following cogs are currently enabled: {active_cogs}"
 msgstr[0] ""
 msgstr[1] ""
 
-#: cogs/base.py:131
+#: cogs/base.py:132
 msgid "The following subcog is available:"
 msgid_plural "The following subcogs are available:"
 msgstr[0] ""
 msgstr[1] ""
 
-#: cogs/base.py:136
+#: cogs/base.py:137
 #, python-brace-format
 msgid "The following command also exists: {commands}"
 msgid_plural "The following commands also exist: {commands}"
 msgstr[0] ""
 msgstr[1] ""
 
-#: cogs/base.py:143
+#: cogs/base.py:144
 msgid "There are commands in multiple cogs with that name:"
 msgstr ""
 
-#: cogs/base.py:157
+#: cogs/base.py:158
 #, python-brace-format
 msgid "Also known as: {alias}"
 msgstr ""
 
-#: cogs/base.py:158
+#: cogs/base.py:159
 msgid "Usage"
 msgstr ""
 
-#: cogs/base.py:163
+#: cogs/base.py:164
 msgid "Flags"
 msgstr ""
 
-#: cogs/base.py:169
+#: cogs/base.py:170
 msgid "Arguments"
 msgstr ""
 
-#: cogs/base.py:176
+#: cogs/base.py:177
 #, python-brace-format
 msgid "must be {list}"
 msgstr ""
 
-#: cogs/base.py:176
+#: cogs/base.py:177
 msgid "or"
 msgstr ""
 
-#: cogs/base.py:178
+#: cogs/base.py:179
 #, python-brace-format
 msgid "must match `{pattern}`"
 msgstr ""
 
-#: cogs/base.py:188
+#: cogs/base.py:189
 msgid "Unknown cog or command."
 msgstr ""
 
-#: cogs/base.py:197
+#: cogs/base.py:198
 #, python-brace-format
 msgid ""
 "Hi, I'm `{name}`, a Discord bot written by {author} | {ver} | Python {pver} "
-"| discord.py {dver}\n"
+"| discord.py {dver} | running on {hostname}\n"
 "My source code is available on GitHub: <{link}>"
 msgstr ""

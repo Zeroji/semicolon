@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2016-12-26 23:28+0100\n"
+"POT-Creation-Date: 2017-02-05 00:44+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -18,96 +18,116 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=INTEGER; plural=EXPRESSION;\n"
 
-#: cogs/settings.py:27
+#: cogs/settings.py:28
 msgid "This server has no prefix. Use `prefix add` to add some!"
 msgstr ""
 
-#: cogs/settings.py:28
+#: cogs/settings.py:29
 #, python-brace-format
 msgid "The prefix for this server is {prefixes}"
 msgid_plural "The prefixes for this server are {prefixes}"
 msgstr[0] ""
 msgstr[1] ""
 
-#: cogs/settings.py:30 cogs/settings.py:40 cogs/settings.py:55
-#: cogs/settings.py:112
+#: cogs/settings.py:31 cogs/settings.py:41 cogs/settings.py:56
+#: cogs/settings.py:113
 msgid "and"
 msgstr ""
 
-#: cogs/settings.py:33
+#: cogs/settings.py:34
 msgid "Please specify which prefix(es) should be added."
 msgstr ""
 
-#: cogs/settings.py:39
+#: cogs/settings.py:40
 #, python-brace-format
 msgid "{prefixes} is already used"
 msgid_plural "{prefixes} are already used"
 msgstr[0] ""
 msgstr[1] ""
 
-#: cogs/settings.py:48
+#: cogs/settings.py:49
 #, python-brace-format
 msgid "Added {n} prefix."
 msgid_plural "Added {n} prefixes."
 msgstr[0] ""
 msgstr[1] ""
 
-#: cogs/settings.py:51
+#: cogs/settings.py:52
 msgid "Please specify which prefix(es) should be deleted."
 msgstr ""
 
-#: cogs/settings.py:54
+#: cogs/settings.py:55
 #, python-brace-format
 msgid "{prefixes} isn't used"
 msgid_plural "{prefixes} aren't used"
 msgstr[0] ""
 msgstr[1] ""
 
-#: cogs/settings.py:63
+#: cogs/settings.py:64
 #, python-brace-format
 msgid "Removed {n} prefix."
 msgid_plural "Removed {n} prefixes."
 msgstr[0] ""
 msgstr[1] ""
 
-#: cogs/settings.py:67
+#: cogs/settings.py:68
 #, python-brace-format
 msgid "Server prefix reset to `{default}`."
 msgstr ""
 
-#: cogs/settings.py:82
+#: cogs/settings.py:83
 #, python-brace-format
 msgid "The breaker character for this server is `{breaker}`"
 msgstr ""
 
-#: cogs/settings.py:85
+#: cogs/settings.py:86
 msgid "Please use `set <breaker_character>`"
 msgstr ""
 
-#: cogs/settings.py:87
+#: cogs/settings.py:88
 msgid "The breaker character should be a single character"
 msgstr ""
 
-#: cogs/settings.py:89
+#: cogs/settings.py:90
 #, python-brace-format
 msgid "The breaker character for this server has been set to `{breaker}`"
 msgstr ""
 
-#: cogs/settings.py:110
+#: cogs/settings.py:111
 #, python-brace-format
 msgid "Current server language: {language}"
 msgstr ""
 
-#: cogs/settings.py:111
+#: cogs/settings.py:112
 #, python-brace-format
 msgid "Available languages: {languages}"
 msgstr ""
 
-#: cogs/settings.py:113
+#: cogs/settings.py:114
 msgid "Please note that full support is not guaranteed at all."
 msgstr ""
 
-#: cogs/settings.py:118
+#: cogs/settings.py:119
 #, python-brace-format
 msgid "Server language has been set to `{language}`!"
+msgstr ""
+
+#: cogs/settings.py:141
+#, python-brace-format
+msgid "Current server timezone: {timezone}. The current time is {time}."
+msgstr ""
+
+#: cogs/settings.py:142 cogs/settings.py:151
+msgid "HH:mm"
+msgstr ""
+
+#: cogs/settings.py:146
+msgid ""
+"Invalid timezone name! Please use Zone/City format (see here: <https://"
+"timezonedb.com/time-zones>)"
+msgstr ""
+
+#: cogs/settings.py:150
+#, python-brace-format
+msgid "Server timezone has been set to {timezone}. The current time is {time}."
 msgstr ""

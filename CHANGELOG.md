@@ -16,13 +16,13 @@ All notable changes to this project will be documented in this file.
 + Added unit tests to `gearbox` and `config`
 + Server specific timezone settings
 
-### Changed
+#### Changed
 
 * `prefix` and `breaker` commands are in the `settings` cog
 * `help` now only displays commands you have permission to use
 * More helpful "Invalid argument count" message
 
-### Fixed
+#### Fixed
 
 * Server configuration not being loaded properly
 * Fixed `enable *` and `disable *` output when nothing is changed

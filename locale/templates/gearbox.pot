@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2016-12-28 20:11+0100\n"
+"POT-Creation-Date: 2017-02-05 00:44+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,47 +17,51 @@ msgstr ""
 "Content-Type: text/plain; charset=CHARSET\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: gearbox.py:103
+#: gearbox.py:154
 #, python-brace-format
 msgid ""
 "The command `{command}` was found in multiple cogs: {matches}. Use <cog>."
 "{command} to specify."
 msgstr ""
 
-#: gearbox.py:104
+#: gearbox.py:155
 msgid "and"
 msgstr ""
 
-#: gearbox.py:178
+#: gearbox.py:260
 #, python-brace-format
 msgid "Invalid flag: -{flag}"
 msgstr ""
 
-#: gearbox.py:188
+#: gearbox.py:271
 #, python-brace-format
 msgid "Too few arguments, at least {min_arg_count} expected"
 msgstr ""
 
-#: gearbox.py:192
+#: gearbox.py:276
+msgid "This command doesn't expect any arguments"
+msgstr ""
+
+#: gearbox.py:278
 #, python-brace-format
 msgid "Too many arguments, at most {max_arg_count} expected"
 msgstr ""
 
-#: gearbox.py:212
+#: gearbox.py:301
 #, python-brace-format
 msgid "Argument \"{arg}\" should be of type {typename}"
 msgstr ""
 
-#: gearbox.py:218
+#: gearbox.py:307
 #, python-brace-format
 msgid "Argument \"{arg}\" should have one of the following values: {values}"
 msgstr ""
 
-#: gearbox.py:219
+#: gearbox.py:308
 msgid "or"
 msgstr ""
 
-#: gearbox.py:229
+#: gearbox.py:318
 #, python-brace-format
 msgid "Argument \"{arg}\" should match the following regex: `{pattern}`"
 msgstr ""
