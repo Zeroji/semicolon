@@ -1,6 +1,7 @@
 """Server settings cog."""
 import os
 import gearbox
+import arrow
 cog = gearbox.Cog()
 _ = cog.gettext
 ngettext = cog.ngettext
@@ -119,3 +120,32 @@ def lang(server_ex, language=None):
         if '_' in language:
             output += f' :flag_{language.split("_")[-1].lower()}:'
         return output
+
+
+@cog.command
+@cog.hide
+def timezone_fallback(server_ex):
+    """Display server timezone."""
+    return timezone(server_ex)
+
+
+@cog.command(permissions='manage_server', fallback='timezone_fallback')
+def timezone(server_ex, timezone_code: 'for example Europe/Paris or GMT+1'=None):
+    """Display or change server timezone.
+
+    Timezone names should be either in the Zone/City format, for example Europe/Paris or Pacific/Auckland);
+    or in the GMT format, for example GMT+1 or GMT-6. Full list at <https://timezonedb.com/time-zones>."""
+    utc_now = arrow.utcnow()
+    zone = server_ex.config['timezone']
+    if timezone_code is None:
+        return _("Current server timezone: {timezone}. The current time is {time}.").format(
+            timezone=zone, time=utc_now.to(zone).format(_("HH:mm")))
+    try:
+        local_now = utc_now.to(timezone_code)
+    except arrow.parser.ParserError:
+        return _("Invalid timezone name! Please use Zone/City format (see here: <https://timezonedb.com/time-zones>)")
+    else:
+        server_ex.config['timezone'] = timezone_code
+        server_ex.write()
+        return _("Server timezone has been set to {timezone}. The current time is {time}.").format(
+            timezone=timezone_code, time=local_now.format(_('HH:mm')))

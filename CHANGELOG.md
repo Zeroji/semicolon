@@ -14,6 +14,7 @@ All notable changes to this project will be documented in this file.
 + Possibility to hide commands from `help`
 + `prefix set` allows removing old prefixes and adding new ones
 + Added unit tests to `gearbox` and `config`
++ Server specific timezone settings
 
 ### Changed
 

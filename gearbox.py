@@ -548,7 +548,7 @@ class Cog:
 
 class Server:
     """Custom server class, used to store additional information."""
-    default_cfg = {'cogs': {'blacklist': []}, 'language': 'en', 'prefixes': [';'], 'breaker': '|'}
+    default_cfg = {'cogs': {'blacklist': []}, 'language': 'en', 'timezone': 'UTC', 'prefixes': [';'], 'breaker': '|'}
 
     def __init__(self, sid, path):
         """Initialize."""
