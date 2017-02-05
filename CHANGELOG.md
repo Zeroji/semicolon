@@ -1,7 +1,7 @@
 ## Change Log
 All notable changes to this project will be documented in this file.
 
-### [[Unreleased](https://github.com/Zeroji/semicolon/releases/latest)]
+### [[v0.2.0](https://github.com/Zeroji/semicolon/releases/tag/v0.2.0)]
 
 #### Added
 

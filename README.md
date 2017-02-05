@@ -1,6 +1,6 @@
 ## ;;
 
-> v0.1.4
+> v0.2.0
 
 This is the repository for the *new* version of `;;`,
 a nice Discord bot with currently very few features.  
@@ -17,7 +17,7 @@ Edit `config.yaml` if you need to, or create another config file
 > Alternatively, you can run `./install.py` for a minimalistic setup
 
 To run the bot, type `./core.py` or `./core.py -c your_config.yaml`  
-Since [v0.1.1](https://github.com/Zeroji/semicolon/releases/tag/v0.1.1) you'll need Python 3.6 - currently, 3.6.0b4 is available.
+Since [v0.1.1](https://github.com/Zeroji/semicolon/releases/tag/v0.1.1) you'll need Python 3.6.
 
 #### How to use (Discord side)
 
@@ -28,7 +28,7 @@ Since multiple bots may use the `;` prefix, you can also mention `;;` instead of
 `@;; cog.command arguments`. You can also change the prefix to your liking if you have
 the `Manage Server` permission, check `@;; help prefix`.
 
-#### Fancy new stuff in last version
+#### Fancy ways to use commands
 
 `;;` can now interpret commands inside other messages, if you use a "breaker" character.
 This character defaults to `|` and can be changed with the `breaker` command.  

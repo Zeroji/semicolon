@@ -83,7 +83,7 @@ def hello(author):
 As you can see, simply putting `author` in the function definition will give you the corresponding object.
 Why? Because `;;` is made in such a way that it'll look at what you want,
 and attempt to provide it to you so you don't need to write extra pieces of code.
-Here's a list of those "special" arguments: *(as of [v0.1.4](https://github.com/Zeroji/semicolon/releases/tag/v0.1.4))*
+Here's a list of those "special" arguments: *(as of [v0.2.0](https://github.com/Zeroji/semicolon/releases/tag/v0.2.0))*
 
 |Argument    | Description
 | ---        | ---
@@ -138,7 +138,7 @@ def add(number_a, number_b):
 ```
 
 > *May change in future versions (last changed [v0.1.1](https://github.com/Zeroji/semicolon/releases/tag/v0.1.1))*  
-If the user doesn't provide the arguments you need, for example if they type `add 4`, `;;` will print `Invalid argument count` in the chat, and your command won't be executed.
+If the user doesn't provide the arguments you need, for example if they type `add 4`, `;;` will print an error message in the chat, and your command won't be executed.
 If the user sends too many arguments, for example by typing `add 1 2 3`, the same thing will happen.
 
 Now what if you'd like to have default arguments? Let's say you want `add` to add 1 if `number_b` isn't specified:
