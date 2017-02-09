@@ -46,6 +46,9 @@ class TestGearbox(unittest.TestCase):
         self.assertEqual(read_commands("|;a b|;c", [';'], '|', False), (['a b', 'c'], False))
         self.assertEqual(read_commands("a b", [';'], '|', True), (['a b'], True))
         self.assertNotEqual(read_commands("a b", [';'], '|', False), (['a b'], True))
+        self.assertEqual(read_commands("a b || c", [';'], '|', False), ([], False))
+        self.assertEqual(read_commands("a b ||;c", [';'], '|', False), (['c'], False))
+        self.assertEqual(read_commands("a |;b || ;c | ;d", [';'], '|', False), (['b', 'c | ;d'], False))
 
 
 # List of possible special arguments that a command can expect
@@ -145,7 +148,7 @@ def read_commands(text, prefixes, breaker, is_private=False):
             if has_prefix(part.strip(), prefixes):
                 commands.append(strip_prefix(part.strip(), prefixes))
         return commands, False
-    return (), False  # No command was found
+    return [], False  # No command was found
 
 
 def duplicate_command_message(command, matches, language):
