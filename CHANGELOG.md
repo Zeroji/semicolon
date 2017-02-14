@@ -6,7 +6,7 @@ All notable changes to this project will be documented in this file.
 #### Added
 
 + Websocket management for future integration with webserver
-
++ Sub-cogs now have a `parent` attribute pointing to their parent if any
 #### Fixed
 
 * `text || ;command` syntax didn't work

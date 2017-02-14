@@ -159,6 +159,7 @@ class Bot(discord.Client):
                             cogs.load(name)
                             if parent_cog is not None:
                                 parent_cog.subcogs[name] = cogs.COGS[name]
+                                cogs.COGS[name].cog.parent = parent_cog
                 # If a directory containing `__init__.py` is found, load the init and the directory
                 elif os.path.isdir(full) and gearbox.is_valid(name) and name not in cogs.COGS and name not in cogs.FAIL:
                     if parent_cog is not None and name in parent_cog.aliases:

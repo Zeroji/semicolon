@@ -356,6 +356,8 @@ class Cog:
         self.on_exit = lambda: None
         # name:module mapping of sub-cogs
         self.subcogs = {}
+        # parent cog if any
+        self.parent = None
         # name:Command mapping of commands
         self.commands = {}
         # alias:name mapping of aliases, contains name:name
