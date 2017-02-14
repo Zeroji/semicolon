@@ -158,6 +158,25 @@ def duplicate_command_message(command, matches, language):
         command=command, matches=pretty([m[0] for m in matches], '`%s`', final=_('and')))
 
 
+def str_to_chan(server, channel):
+    """Returns a channel object, given a channel name, ID or <#ID>"""
+    id = None
+    if re.match('[0-9]{18}', channel):
+        id = channel
+    elif re.match('<#[0-9]{18}>', channel):
+        id = channel[2:-1]
+    matches = []
+    for chan in server.channels:
+        if chan.id == id:
+            return chan
+        if channel.lower() in chan.name.lower():
+            matches.append(chan)
+    if len(matches) == 1:
+        return matches[0]
+    else:  # No matches, or too general
+        return None
+
+
 class Command:
     """Wrapper for functions considered as commands.
 
