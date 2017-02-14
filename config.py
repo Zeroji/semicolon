@@ -21,6 +21,8 @@ DEFAULT_CFG = {
     }, 'wheel': {
         'import': True,
         'reload': True,
+    }, 'port': {
+        'websocket': 8765
     }
 }
 

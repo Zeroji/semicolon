@@ -7,6 +7,7 @@ import os.path
 import sys
 import time
 import discord
+import websockets
 import cogs
 import config
 import gearbox
@@ -132,6 +133,12 @@ class Bot(discord.Client):
         for cog in cogs.COGS:
             await cogs.COGS.get(cog).cog.on_reaction_any(self, added, reaction, user)
 
+    async def on_socket(self, socket, path):
+        data = await socket.recv()
+        print(type(data), data)
+        for cog in cogs.COGS:
+            await cogs.COGS.get(cog).cog.on_socket_data(self, data, socket)
+
     async def wheel(self):  # They see me loading
         """Dynamically update the cogs."""
 
@@ -188,6 +195,7 @@ class Bot(discord.Client):
     async def on_ready(self):
         """Initialization."""
         self.loop.create_task(self.wheel())
+        self.loop.create_task(websockets.serve(self.on_socket, 'localhost', CFG['port']['websocket']))
         version = discord.Game()
         version.name = 'v' + gearbox.version
         if gearbox.version_is_dev:

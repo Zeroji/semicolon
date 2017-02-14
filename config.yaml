@@ -11,3 +11,5 @@ path:                               # Configuration paths
 wheel:                              # Wheel configuration
   import: true                          # Auto-import new cogs
   reload: true                          # Auto-reload imported cogs
+port:                               # Ports configuration
+  websocket: 8765                       # Websocket port (localhost)

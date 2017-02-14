@@ -374,6 +374,8 @@ class Cog:
         self.languages = {}
         # current language
         self.lang = None
+        # bytestring:commands(array) mapping of which commands should be called when receiving specific data
+        self.socket_data = {}
 
     def _get_cfg(self):
         """Return a (module, str) tuple containing the config loader and the config file path."""
@@ -443,6 +445,27 @@ class Cog:
         calls.extend(self.react.get(reaction.emoji.id if reaction.custom_emoji else reaction.emoji, []))
         for func in calls:
             await func(client, added, reaction, user)
+
+    def on_socket(self, data):  # Decorator
+        """Mark a function to be awaited when specific data is received through websockets.
+
+        The function will be called whenever the data received starts with the specified data,
+        which must be a bytestring. The function will be called with (client, truncated data, socket)."""
+        def decorator(function):
+            if data not in self.socket_data:
+                self.socket_data[data] = []
+            self.socket_data[data].append(function)
+            return function
+        return decorator
+
+    async def on_socket_data(self, client, data, socket):  # Called by core
+        """Propagate the websocket data to functions."""
+        for start_data, commands in self.socket_data.items():
+            if isinstance(data, str):  # If the websocket somehow sent a string, then okay (make sure to deal with it)
+                start_data = start_data.decode('utf-8')
+            if data.startswith(start_data):
+                for func in commands:
+                    await func(client, data[len(start_data):], socket)
 
     def hide(self, function=None):  # Decorator
         """Hide a command."""

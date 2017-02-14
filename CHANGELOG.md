@@ -3,6 +3,10 @@ All notable changes to this project will be documented in this file.
 
 ### [[Unreleased](https://github.com/Zeroji/semicolon/releases/latest)]
 
+#### Added
+
++ Websocket management for future integration with webserver
+
 #### Fixed
 
 * `text || ;command` syntax didn't work
