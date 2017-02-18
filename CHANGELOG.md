@@ -7,6 +7,8 @@ All notable changes to this project will be documented in this file.
 
 + Websocket management for future integration with webserver
 + Sub-cogs now have a `parent` attribute pointing to their parent if any
++ Cog with esoteric languages interpreter, like Brainf\*ck
+
 #### Fixed
 
 * `text || ;command` syntax didn't work
