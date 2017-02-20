@@ -58,7 +58,7 @@ class Interpreter:
 class Brainfuck(Interpreter):
     """Brainfuck interpreter."""
     MEM_SIZE = 30000
-    CELL_SIZE = 1<<16 # In bits
+    CELL_SIZE = 1<<8 # In bits
     def __init__(self, code, word):
         super().__init__(code, word)
         self.memory = [0] * self.MEM_SIZE
@@ -119,7 +119,7 @@ class Brainfuck(Interpreter):
 class Stacked_Brainfuck(Interpreter):
     """Stacked brainfuck interpreter"""
     MEM_SIZE = 30000
-    CELL_SIZE = 1<<16 # in bits
+    CELL_SIZE = 1<<8 # in bits
     def __init__(self, code, word):
         super().__init__(code, word)
         self.memory = [0] * self.MEM_SIZE
