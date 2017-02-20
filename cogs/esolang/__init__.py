@@ -1,8 +1,7 @@
 """Esoteric languages interpreters."""
 import time
 import gearbox
-#import brainfuck
-#import stacked_brainfuck
+
 cog = gearbox.Cog()
 _ = cog.gettext
 
