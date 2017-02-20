@@ -69,10 +69,10 @@ class Brainfuck(Interpreter):
         c = self.code[self.code_ptr]
         if c == '+':
             self.memory[self.head] += 1
-            self.memory[self.head] %= CELL_SIZE
+            self.memory[self.head] %= self.CELL_SIZE
         elif c == '-':
             self.memory[self.head] -= 1
-            self.memory[self.head] %= CELL_SIZE
+            self.memory[self.head] %= self.CELL_SIZE
         elif c == '>':
             self.head += 1
             self.head %= self.MEM_SIZE
@@ -146,13 +146,13 @@ class Stacked_Brainfuck(Interpreter):
                 self.memory[self.head] ^= self.stack[-1]
             elif c == '&':
                 self.memory[self.head] &= self.stack[-1]
-            self.memory[self.head] %= CELL_SIZE
+            self.memory[self.head] %= self.CELL_SIZE
         if c == '+':
             self.memory[self.head] += 1
-            self.memory[self.head] %= CELL_SIZE
+            self.memory[self.head] %= self.CELL_SIZE
         elif c == '-':
             self.memory[self.head] -= 1
-            self.memory[self.head] %= CELL_SIZE
+            self.memory[self.head] %= self.CELL_SIZE
         elif c == '>':
             head += 1
             head %= self.MEM_SIZE
