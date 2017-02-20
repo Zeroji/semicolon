@@ -1,6 +1,7 @@
 """Esoteric languages interpreters."""
 import time
 import gearbox
+
 cog = gearbox.Cog()
 _ = cog.gettext
 
@@ -54,11 +55,10 @@ class Interpreter:
         self.state = Interpreter.DONE
         return True
 
-
 class Brainfuck(Interpreter):
     """Brainfuck interpreter."""
     MEM_SIZE = 30000
-
+    CELL_SIZE = 1<<8 # In bits
     def __init__(self, code, word):
         super().__init__(code, word)
         self.memory = [0] * self.MEM_SIZE
@@ -69,10 +69,10 @@ class Brainfuck(Interpreter):
         c = self.code[self.code_ptr]
         if c == '+':
             self.memory[self.head] += 1
-            self.memory[self.head] %= 256
+            self.memory[self.head] %= self.CELL_SIZE
         elif c == '-':
             self.memory[self.head] -= 1
-            self.memory[self.head] %= 256
+            self.memory[self.head] %= self.CELL_SIZE
         elif c == '>':
             self.head += 1
             self.head %= self.MEM_SIZE
@@ -115,9 +115,93 @@ class Brainfuck(Interpreter):
         if self.code_ptr >= len(self.code):
             self.state = Interpreter.DONE
         return True
-
-
-LANGS = {'bf': Brainfuck}
+        
+class Stacked_Brainfuck(Interpreter):
+    """Stacked brainfuck interpreter"""
+    MEM_SIZE = 30000
+    CELL_SIZE = 1<<8 # in bits
+    def __init__(self, code, word):
+        super().__init__(code, word)
+        self.memory = [0] * self.MEM_SIZE
+        self.head = 0
+        self.code_ptr = 0
+        self.stack = []
+        
+    def step(self):
+        c = self.code[self.code_ptr]
+        if self.stack:
+            if c == '$':
+                self.stack.pop()
+            elif c == '=':
+                self.memory[self.head] += self.stack[-1]
+            elif c == '_':
+                self.memory[self.head] -= self.stack[-1]
+            elif c == '}':
+                self.memory[self.head] >>= self.stack[-1]
+            elif c == '{':
+                self.memory[self.head] <<= self.stack[-1]
+            elif c == '|':
+                self.memory[self.head] |= self.stack[-1]
+            elif c == '^':
+                self.memory[self.head] ^= self.stack[-1]
+            elif c == '&':
+                self.memory[self.head] &= self.stack[-1]
+            self.memory[self.head] %= self.CELL_SIZE
+        if c == '+':
+            self.memory[self.head] += 1
+            self.memory[self.head] %= self.CELL_SIZE
+        elif c == '-':
+            self.memory[self.head] -= 1
+            self.memory[self.head] %= self.CELL_SIZE
+        elif c == '>':
+            head += 1
+            head %= self.MEM_SIZE
+        elif c == '<':
+            head -= 1
+            head %= self.MEM_SIZE
+        elif c == '.':
+            self.output += chr(self.memory[self.head])
+        elif c == ',':
+            self.memory[self.head] = self.word.read()
+        elif c == '[':
+            if not self.memory[self.head]:
+                nested = 1
+                while nested:
+                    self.code_ptr += 1
+                    if self.code_ptr >= len(self.code):
+                        self.message = _('No matching `]`')
+                        self.state = Interpreter.ERROR
+                        return
+                    if self.code[self.code_ptr] == '[':
+                        nested += 1
+                    if self.code[self.code_ptr] == ']':
+                        nested -= 1
+        elif c == ']':
+            if self.memory[self.head]:
+                nested = 1
+                while nested:
+                    self.code_ptr -= 1
+                    if self.code_ptr < 0:
+                        self.message = _('No matching `[`')
+                        self.state = Interpreter.ERROR
+                        return
+                    if self.code[self.code_ptr] == ']':
+                        nested += 1
+                    if self.code[self.code_ptr] == '[':
+                        nested -= 1
+        elif c == ')':
+            self.stack.append(memory[self.head])
+        elif c == '(':
+            self.memory[self.head] = self.stack.pop() if self.stack else 0
+        elif c == '@':
+            self.memory[self.head] = self.stack[-1] if self.stack else 0
+        self.code_ptr += 1
+        if self.code_ptr >= len(self.code):
+            self.state = Interpreter.DONE
+        return True
+        
+LANGS = {'bf': Brainfuck,
+         'stbf': Stacked_Brainfuck}
 
 
 @cog.command(fulltext=True, flags={'i': 'Specify input'})
