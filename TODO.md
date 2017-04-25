@@ -7,8 +7,8 @@ which may or may not be implemented in future versions.
 
 ##### Next things to work on
 
-1. Unit tests
-0. Bug hunting
+1. Easier integration of embed in responses
+2. Additional permissions (bot owner/admin & bots)
 
 ##### Other features that *will* exist
 
@@ -20,8 +20,8 @@ which may or may not be implemented in future versions.
 
 Server-specific owner-defined ranks & all  
 Fine-tuning of commands permissions, possible
-blacklist/whitelist of commands/users/roles
-cron-like asynchronous tasks
+blacklist/whitelist of commands/users/roles  
+cron-like asynchronous tasks  
 webserver to receive webhooks
 
 ##### Commands

@@ -154,11 +154,11 @@ class Stacked_Brainfuck(Interpreter):
             self.memory[self.head] -= 1
             self.memory[self.head] %= self.CELL_SIZE
         elif c == '>':
-            head += 1
-            head %= self.MEM_SIZE
+            self.head += 1
+            self.head %= self.MEM_SIZE
         elif c == '<':
-            head -= 1
-            head %= self.MEM_SIZE
+            self.head -= 1
+            self.head %= self.MEM_SIZE
         elif c == '.':
             self.output += chr(self.memory[self.head])
         elif c == ',':
@@ -190,7 +190,7 @@ class Stacked_Brainfuck(Interpreter):
                     if self.code[self.code_ptr] == '[':
                         nested -= 1
         elif c == ')':
-            self.stack.append(memory[self.head])
+            self.stack.append(self.memory[self.head])
         elif c == '(':
             self.memory[self.head] = self.stack.pop() if self.stack else 0
         elif c == '@':
