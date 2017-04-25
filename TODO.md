@@ -7,8 +7,7 @@ which may or may not be implemented in future versions.
 
 ##### Next things to work on
 
-1. Easier integration of embed in responses
-2. Additional permissions (bot owner/admin & bots)
+1. Additional permissions (bot owner/admin & bots)
 
 ##### Other features that *will* exist
 

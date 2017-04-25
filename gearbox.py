@@ -4,6 +4,7 @@ import logging
 import os
 import re
 import json
+import discord
 import yaml
 import config
 import gettext
@@ -352,15 +353,18 @@ class Command:
             output = await self.func(*ordered_args)
         else:
             output = self.func(*ordered_args)
-        if output is not None:  # If the output can be casted to a string, send it to Discord
-            try:
-                output = str(output)
-            except (UnicodeError, UnicodeEncodeError):
-                logging.warning("Unicode error in command '%s' (with arguments %s)",
-                                self.func.__name__, ordered_args)
-                return
-            if len(output) > 0:
-                await client.send_message(message.channel, str(output))
+        if output is not None:
+            if isinstance(output, discord.Embed):  # If the output is an embed, send it as such
+                await client.send_message(message.channel, embed=output)
+            else:
+                try:  # If the output can be casted to a string, send it to Discord
+                    output = str(output)
+                except (UnicodeError, UnicodeEncodeError):
+                    logging.warning("Unicode error in command '%s' (with arguments %s)",
+                                    self.func.__name__, ordered_args)
+                    return
+                if len(output) > 0:
+                    await client.send_message(message.channel, str(output))
 
 
 class Cog:

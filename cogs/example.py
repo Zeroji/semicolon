@@ -1,5 +1,6 @@
 """Example cog."""
 import asyncio
+import discord
 import gearbox
 cog = gearbox.Cog()
 _ = cog.gettext
@@ -50,3 +51,9 @@ async def timer(client, channel, author, delay: (int, 'in seconds'), text):
 def flag(flags):
     """Flag test function."""
     return _('I got the following flags: {flags}').format(flags=flags)
+
+
+@cog.command
+def color(red: int, green: int, blue: int):
+    """Embed color test function."""
+    return discord.Embed(title=f'RGB {red}, {green}, {blue}', color=(red*256+green)*256+blue)
