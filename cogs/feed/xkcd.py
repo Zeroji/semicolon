@@ -1,4 +1,5 @@
 """XKCD feed notifier."""
+import html
 import json
 import discord
 import gearbox
@@ -20,6 +21,6 @@ async def display_xkcd(client, data_str, socket):
         alt_text = summary[image_url_end + len('" title="'):image_title_end]
         embed = discord.Embed(title='XKCD #{id}: {title}'.format(id=id, title=title),
                               url=url,
-                              description=alt_text)
+                              description=html.unescape(alt_text))
         embed.set_image(url=image_url)
         await client.send_message(client.get_channel('272463984026976257'), embed=embed)
