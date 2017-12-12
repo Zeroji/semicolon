@@ -8,9 +8,10 @@ import sys
 import time
 import discord
 import websockets
-import cogs
 import config
 import gearbox
+from cogs import Wrapper
+cogs = Wrapper()
 
 
 # Global variable for configuration
@@ -87,7 +88,7 @@ class Bot(discord.Client):
                 return
             if command == 'reload':
                 logging.info("Reloading all cogs")
-                for name, cog in cogs.COGS.items():
+                for name, cog in cogs.cogs:
                     cogs.reload(name, cog)
             # Admins can restart the bot if it goes wild, but only owner may stop it completely
             if command == 'restart' or (command == 'shutdown' and message.author.id == self.master):
@@ -95,8 +96,8 @@ class Bot(discord.Client):
                 if command == 'shutdown':
                     # An external script runs the bot forever unless this file exists
                     open('stop', 'a').close()
-                for cog in cogs.COGS.values():
-                    cog.cog.on_exit()
+                for cog in cogs:
+                    cog.on_exit()
                 logging.info("All cogs unloaded.")
                 await self.change_presence(game=None)
                 await self.logout()
@@ -139,22 +140,22 @@ class Bot(discord.Client):
 
     async def on_reaction(self, added, reaction, user):
         """Propagate reaction events to the cogs."""
-        for cog in cogs.COGS:
-            await cogs.COGS.get(cog).cog.on_reaction_any(self, added, reaction, user)
+        for cog in cogs:
+            await cog.on_reaction_any(self, added, reaction, user)
 
     async def on_socket(self, socket, path):
         data = await socket.recv()
         print(type(data), data)
-        for cog in cogs.COGS:
-            await cogs.COGS.get(cog).cog.on_socket_data(self, data, socket)
+        for cog in cogs:
+            await cog.on_socket_data(self, data, socket)
 
     def dispatch(self, event, *args, **kwargs):
         """Override base event dispatch to call cogs event handlers."""
         super().dispatch(event, *args, **kwargs)
         method = 'on_' + event
-        for cog in cogs.COGS.values():
-            if method in cog.cog.events:
-                self.loop.create_task(cog.cog.events.get(method).exec(self, None, *args, **kwargs))
+        for cog in cogs:
+            if method in cog.events:
+                self.loop.create_task(cog.events.get(method).exec(self, None, *args, **kwargs))
 
     async def wheel(self):  # They see me loading
         """Dynamically update the cogs."""
@@ -172,13 +173,13 @@ class Bot(discord.Client):
                                              "a command with the same name exists", name, parent_cog.name)
                             continue
                         name = base_name + name
-                        if name not in cogs.COGS and name not in cogs.FAIL:
+                        if name not in cogs.cogs and name not in cogs.fail:
                             cogs.load(name)
                             if parent_cog is not None:
-                                parent_cog.subcogs[name] = cogs.COGS[name]
-                                cogs.COGS[name].cog.parent = parent_cog
+                                parent_cog.subcogs[name] = cogs.cogs[name]
+                                cogs.cogs[name].cog.parent = parent_cog
                 # If a directory containing `__init__.py` is found, load the init and the directory
-                elif os.path.isdir(full) and gearbox.is_valid(name) and name not in cogs.COGS and name not in cogs.FAIL:
+                elif os.path.isdir(full) and gearbox.is_valid(name) and name not in cogs.cogs and name not in cogs.fail:
                     if parent_cog is not None and name in parent_cog.aliases:
                         logging.critical("Sub-cog %s from cog %s couldn't be loaded because "
                                          "a command with the same name exists", name, parent_cog.name)
@@ -186,27 +187,27 @@ class Bot(discord.Client):
                     if '__init__.py' in os.listdir(full):
                         cogs.load(name)
                         if parent_cog is not None:
-                            parent_cog.subcogs[name] = cogs.COGS[name]
-                        load_dir(full, base_name + name + '.', cogs.COGS[name].cog)
+                            parent_cog.subcogs[name] = cogs.cogs[name]
+                        load_dir(full, base_name + name + '.', cogs.cogs[name].cog)
 
         logging.info('Wheel rolling.')
         while True:
             if CFG['wheel']['import']:
                 load_dir()
             if CFG['wheel']['reload']:
-                for name, cog in cogs.COGS.items():
+                for name, cog in cogs.cogs.items():
                     if os.path.getmtime(cog.__file__) > self.last_update:
                         cogs.reload(name, cog)
                         self.last_update = time.time()
                 valid_cogs = set()
-                for name in cogs.FAIL:
+                for name in cogs.fail:
                     if os.path.getmtime(os.path.join('cogs', *name.split('.')) + '.py') > self.last_update:
                         cogs.load(name)
                         self.last_update = time.time()
-                        if name in cogs.COGS:
+                        if name in cogs.cogs:
                             valid_cogs.add(name)
                 for name in valid_cogs:
-                    cogs.FAIL.remove(name)
+                    cogs.cogs.remove(name)
 
             await asyncio.sleep(2)
 
