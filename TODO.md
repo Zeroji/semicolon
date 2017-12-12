@@ -9,10 +9,6 @@ which may or may not be implemented in future versions.
 
 1. Additional permissions (bot owner/admin & bots)
 
-##### Other features that *will* exist
-
-- More events
-
 ### Might be implemented
 
 ##### Miscellaneous
