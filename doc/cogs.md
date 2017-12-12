@@ -415,6 +415,25 @@ and must take four arguments, in this order:
   and `reaction.message` to get the associated `Message` object.
 - `user` The `User` who added or removed the reaction.
 
+### Event handlers
+
+You want to do even more stuff? As of [v0.2.1](https://github.com/Zeroji/semicolon/releases/tag/v0.2.1), you can
+write custom event handlers! Those are the same events you can use in a `discord.py` client, except you register
+them using `@cog.event`. The best part is, you can use a bunch of special arguments and it'll likely
+work as intended!
+
+```python
+@cog.event
+def on_typing(user):
+    return 'I see you, ' + user.display_name
+```
+
+The standard `on_typing` event uses `(channel, user, when)` but you can directly ask for whatever you need!
+And just like commands, you can simply return what you want to send.
+
+> Side note: returning a message will only work if the event takes place in a specific channel. For
+> example, on_reaction_add will work but not on_member_update.
+
 ### Using your cog
 
 As written above, you just need to drop it in the `cogs` folder!  

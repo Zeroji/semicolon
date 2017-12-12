@@ -36,8 +36,25 @@ class Bot(discord.Client):
         # id:gearbox.Server mapping of servers (PMs use the channel ID)
         self.servers_ex = {}
 
+    def get_server_ex(self, message_or_id):
+        """Return an extended server object from its ID or a message."""
+        # Getting server information
+        # The `gearbox.Server` class contains additional information about a server, and is used
+        # to preserve server-specific settings. `server_ex` stands for "server extended" and can
+        # be used as a special argument in a command.
+        # `self.servers_ex` contains a server_id:server_ex mapping to easily access server settings
+        if isinstance(message_or_id, discord.Message):
+            server_ex_id = message_or_id.channel.id if message_or_id.channel.is_private else message_or_id.server.id
+        else:
+            server_ex_id = message_or_id
+        if server_ex_id not in self.servers_ex:
+            self.servers_ex[server_ex_id] = gearbox.Server(server_ex_id, CFG['path']['server'])
+        return self.servers_ex[server_ex_id]
+
     def run(self, *args, **kwargs):
         """Start client."""
+        # Load the cogs while starting the bot
+        self.loop.create_task(self.wheel())
         super(Bot, self).run(*args, **kwargs)
 
     async def on_message(self, message):
@@ -50,15 +67,7 @@ class Bot(discord.Client):
         if message.author.id in self.banned:
             return
 
-        # Getting server information
-        # The `gearbox.Server` class contains additional information about a server, and is used
-        # to preserve server-specific settings. `server_ex` stands for "server extended" and can
-        # be used as a special argument in a command.
-        # `self.servers_ex` contains a server_id:server_ex mapping to easily access server settings
-        server_ex_id = message.channel.id if message.channel.is_private else message.server.id
-        if server_ex_id not in self.servers_ex:
-            self.servers_ex[server_ex_id] = gearbox.Server(server_ex_id, CFG['path']['server'])
-        server_ex = self.servers_ex[server_ex_id]
+        server_ex = self.get_server_ex(message)
 
         # Loading prefixes and breaker settings
         prefixes = [self.user.mention]
@@ -139,6 +148,14 @@ class Bot(discord.Client):
         for cog in cogs.COGS:
             await cogs.COGS.get(cog).cog.on_socket_data(self, data, socket)
 
+    def dispatch(self, event, *args, **kwargs):
+        """Override base event dispatch to call cogs event handlers."""
+        super().dispatch(event, *args, **kwargs)
+        method = 'on_' + event
+        for cog in cogs.COGS.values():
+            if method in cog.cog.events:
+                self.loop.create_task(cog.cog.events.get(method).exec(self, None, *args, **kwargs))
+
     async def wheel(self):  # They see me loading
         """Dynamically update the cogs."""
 
@@ -195,7 +212,6 @@ class Bot(discord.Client):
 
     async def on_ready(self):
         """Initialization."""
-        self.loop.create_task(self.wheel())
         self.loop.create_task(websockets.serve(self.on_socket, 'localhost', CFG['port']['websocket']))
         version = discord.Game()
         version.name = 'v' + gearbox.version

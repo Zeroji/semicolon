@@ -4,6 +4,7 @@ import logging
 import os
 import re
 import json
+import datetime
 import discord
 import yaml
 import config
@@ -54,6 +55,9 @@ class TestGearbox(unittest.TestCase):
 
 # List of possible special arguments that a command can expect
 SPECIAL_ARGS = ('message', 'author', 'channel', 'server', 'server_ex', 'client', 'flags', '__cogs', 'permissions')
+SPECIAL_TYPES = {discord.Message: 'message', discord.Channel: 'channel', discord.Member: 'member',
+                 discord.User: 'user', discord.Server: 'server', discord.Reaction: 'reaction',
+                 discord.Role: 'role', datetime.datetime: 'when'}  # type: name mapping for argument detection
 VALID_NAME = re.compile('[a-z][a-z_.0-9]*$')  # Regular expression all names must match
 CONFIG_LOADERS = {'json': json, 'yaml': yaml}  # name:module mapping of config loaders (for cog-specific config files)
 CFG = {}  # Configuration settings (nested dictionary)
@@ -178,7 +182,104 @@ def str_to_chan(server, channel):
         return None
 
 
-class Command:
+class Callable:
+    """Wrapper of commodity methods common to callable objects."""
+
+    def __init__(self, func):
+        self.func = func
+        # Argument list
+        self.args = list(inspect.signature(func).parameters)
+        # Whether or not the function is a coroutine (and shall be awaited)
+        self.is_coroutine = inspect.iscoroutinefunction(func)
+
+    def infer_arguments(self, given, client=None, _cogs=None):
+        """Return a list of arguments extracted from data."""
+        sent = {}
+        # Handle the before/after arguments for update events
+        if 'before' in self.args or 'after' in self.args:
+            for i, arg1 in enumerate(given):
+                for j, arg2 in enumerate(given):
+                    if type(arg1) == type(arg2) and i < j:
+                        sent['before'] = arg1
+                        sent['after'] = arg2
+        # Handle the rest of special arguments
+        special = {}
+        for arg in given:
+            for arg_type, arg_name in SPECIAL_TYPES.items():
+                if isinstance(arg, arg_type):
+                    special[arg_name] = arg
+        sent['client'] = client
+        if 'message' in special:
+            sent['message'] = special['message']
+        elif 'reaction' in special:
+            sent['message'] = special['reaction'].message
+        if 'message' in sent:
+            sent['author'] = sent['message'].author
+            sent['content'] = sent['message'].content
+        if 'channel' in special:
+            sent['channel'] = special['channel']
+        elif 'message' in sent:
+            sent['channel'] = sent['message'].channel
+        if 'member' in special:
+            sent['member'] = special['member']
+        if 'user' in special:
+            sent['user'] = special['user']
+        elif 'member' in sent:
+            sent['user'] = sent['member']
+        elif 'author' in sent:
+            sent['user'] = sent['author']
+        if 'server' in special:
+            sent['server'] = special['server']
+        elif 'message' in sent:
+            sent['server'] = sent['message'].server
+        elif 'channel' in sent:
+            sent['server'] = sent['channel'].server
+        if 'server' in sent:
+            if 'channel' in sent and sent['channel'].is_private:
+                sent['server_ex'] = client.get_server_ex(sent['channel'].id)
+            else:
+                sent['server_ex'] = client.get_server_ex(sent['server'].id)
+        if 'channel' in sent and 'user' in sent:
+            sent['permissions'] = sent['channel'].permissions_for(sent['user'])
+        sent['flags'] = ''
+        sent['__cogs'] = _cogs
+        return sent
+
+    def get_arguments(self, given, client=None, *, inferred=None):
+        """Rearrange arguments to be passed directly to the callable."""
+        if inferred is None:
+            inferred = self.infer_arguments(given, client=client)
+        index = 0
+        result = []
+        for arg in self.args:
+            if arg in inferred:
+                result.append(inferred.get(arg))
+            else:
+                result.append(given[index])
+                index += 1
+        return result
+
+    async def exec(self, client, channel=None, *args, **kwargs):
+        """Execute a callable and handles its output."""
+        if self.is_coroutine:
+            await self.func(*args, **kwargs)
+        else:
+            output = self.func(*args, **kwargs)
+            if output is not None:
+                if isinstance(output, discord.Embed):  # If the output is an embed, send it as such
+                    await client.send_message(channel, embed=output)
+                else:
+                    try:  # If the output can be casted to a string, send it to Discord
+                        output = str(output)
+                    except (UnicodeError, UnicodeEncodeError):
+                        logging.warning("Unicode error in command '%s' (with arguments %s, %s)",
+                                        self.func.__name__, args, kwargs)
+                        return
+                    if len(output) > 0:
+                        await client.send_message(channel, str(output))
+
+
+class Command(Callable):
     """Wrapper for functions considered as commands.
 
     Contains all information regarding what arguments the command should expect,
@@ -192,6 +293,7 @@ class Command:
     def __init__(self, func, flags='', *, fulltext=False, delete_message=False, permissions=None,
                  parent=None, fallback=None):
         """Initialize."""
+        super().__init__(func)
         # Command arguments as expected by the actual function
         self.params = inspect.signature(func).parameters
         # Command arguments as received from the message
@@ -209,8 +311,6 @@ class Command:
         self.min_arg = len([arg for arg, val in self.params.items()
                             if arg not in SPECIAL_ARGS and isinstance(val.default, type)
                             and self.params[arg].kind.name is not 'VAR_POSITIONAL'])
-        # Whether or not the function is a coroutine (and shall be awaited)
-        self.iscoroutine = inspect.iscoroutinefunction(func)
         # Permissions, can be indicated as a string, (string, bool) tuple, or array of any
         # Ends up being stored as an array of (string, bool) tuples
         self.permissions = []
@@ -266,11 +366,7 @@ class Command:
     async def call(self, client, message, arguments, _cogs=None):
         """Call a command."""
         # Compute values of special arguments
-        special_args = {'client': client, 'message': message, 'author': message.author,
-                        'channel': message.channel, 'server': message.server,
-                        'server_ex': client.servers_ex[message.channel.id if message.channel.is_private else
-                                                       message.server.id], 'flags': '', '__cogs': _cogs,
-                        'permissions': message.channel.permissions_for(message.author)}
+        special_args = self.infer_arguments((message,), client, _cogs)
         assert [arg in SPECIAL_ARGS for arg in special_args] and [arg in special_args for arg in SPECIAL_ARGS]
         # Get translation function for error messages, according to server settings
         language = special_args['server_ex'].config['language']
@@ -348,23 +444,19 @@ class Command:
         ordered_args += pos_args
         # Update language settings for parent cog (localization)
         self.parent.set_lang(special_args['server_ex'].config['language'])
-        # Run the function with expected arguments and grab its output
-        if self.iscoroutine:
-            output = await self.func(*ordered_args)
-        else:
-            output = self.func(*ordered_args)
-        if output is not None:
-            if isinstance(output, discord.Embed):  # If the output is an embed, send it as such
-                await client.send_message(message.channel, embed=output)
-            else:
-                try:  # If the output can be casted to a string, send it to Discord
-                    output = str(output)
-                except (UnicodeError, UnicodeEncodeError):
-                    logging.warning("Unicode error in command '%s' (with arguments %s)",
-                                    self.func.__name__, ordered_args)
-                    return
-                if len(output) > 0:
-                    await client.send_message(message.channel, str(output))
+        await self.exec(client, message.channel, *ordered_args)
+
+
+class Event(Callable):
+    """Wrapper for cog event handlers."""
+    def __init__(self, func):
+        super().__init__(func)
+
+    def exec(self, client, channel=None, *args, **kwargs):
+        inferred = self.infer_arguments(args, client=client)
+        if channel is None and 'channel' in inferred:
+            channel = inferred['channel']
+        return super().exec(client, channel, *self.get_arguments(args, client=client, inferred=inferred), **kwargs)
 
 
 class Cog:
@@ -383,6 +475,8 @@ class Cog:
         self.parent = None
         # name:Command mapping of commands
         self.commands = {}
+        # name:function mapping of events
+        self.events = {}
         # alias:name mapping of aliases, contains name:name
         self.aliases = {}
         # list of names which should not be displayed
@@ -534,6 +628,12 @@ class Cog:
                 self.commands[func.__name__] = name
             return func
         return decorate
+
+    def event(self, func):
+        """Decorator used to declare an event."""
+        name = func.__name__
+        self.events[name] = Event(func)
+        return func
 
     def command(self, func=None, **kwargs):
         """Decorator used to declare a command.

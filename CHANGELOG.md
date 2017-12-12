@@ -9,6 +9,7 @@ All notable changes to this project will be documented in this file.
 + Sub-cogs now have a `parent` attribute pointing to their parent if any
 + Cog with esoteric languages interpreter, like Brainf\*ck
 + Commands can now return `Embed` objects
++ Event handlers for cogs!
 
 #### Fixed
 

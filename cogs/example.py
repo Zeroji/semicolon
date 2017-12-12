@@ -57,3 +57,11 @@ def flag(flags):
 def color(red: int, green: int, blue: int):
     """Embed color test function."""
     return discord.Embed(title=f'RGB {red}, {green}, {blue}', color=(red*256+green)*256+blue)
+
+
+@cog.event
+def on_ready():
+    """Example event handler.
+
+    This will execute when the on_ready event is triggered by Discord."""
+    print('Event dispatch is working!')
