@@ -452,11 +452,10 @@ class Event(Callable):
     def __init__(self, func):
         super().__init__(func)
 
-    def exec(self, client, channel=None, *args, **kwargs):
-        inferred = infer_arguments(args, client=client)
+    def call(self, client, args, inferred, channel=None):
         if channel is None and 'channel' in inferred:
             channel = inferred['channel']
-        return super().exec(client, channel, *self.get_arguments(args, client=client, inferred=inferred), **kwargs)
+        return self.exec(client, channel, *self.get_arguments(args, client=client, inferred=inferred))
 
 
 class Cog:
