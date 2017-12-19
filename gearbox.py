@@ -223,6 +223,8 @@ def infer_arguments(given, client=None, _cogs=None):
         sent['server'] = sent['message'].server
     elif 'channel' in sent:
         sent['server'] = sent['channel'].server
+    elif 'member' in sent:
+        sent['server'] = sent['member'].server
     if 'server' in sent:
         if 'channel' in sent and sent['channel'].is_private:
             sent['server_ex'] = client.get_server_ex(sent['channel'].id)
