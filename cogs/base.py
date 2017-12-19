@@ -17,12 +17,12 @@ def enable(__cogs, server_ex, *cogs: 'Name of cogs to enable'):
     If called with no cogs, displays enabled cogs. Use `*` to enable all cogs."""
     if not cogs:
         return _('Enabled cogs: {enabled_cogs}').format(enabled_cogs=gearbox.pretty(
-            [c for c in __cogs.COGS if server_ex.is_allowed(c)], '`%s`', final=_('and')))
+            [c for c in __cogs.cogs if server_ex.is_allowed(c)], '`%s`', final=_('and')))
     if cogs == ('*',):
         cogs = server_ex.blacklist[::]
         if not cogs:
             return _('No cogs are disabled.')
-    not_found = [c for c in cogs if c not in __cogs.COGS]
+    not_found = [c for c in cogs if c not in __cogs.cogs]
     if not_found:
         return ngettext("{cogs_not_found} doesn't exist", "{cogs_not_found} don't exist", len(not_found))\
             .format(cogs_not_found=gearbox.pretty(not_found, '`%s`', final=_('and')))
@@ -48,10 +48,10 @@ def disable(__cogs, server_ex, *cogs: 'Name of cogs to enable'):
         return _('Disabled cogs: {disabled_cogs}').format(disabled_cogs=gearbox.pretty(server_ex.blacklist, '`%s`',
                                                                                        final=_('and')))
     if cogs == ('*',):
-        cogs = [c for c in __cogs.COGS if c != __name__.split('.')[-1] and c not in server_ex.blacklist]
+        cogs = [c for c in __cogs.cogs if c != __name__.split('.')[-1] and c not in server_ex.blacklist]
         if not cogs:
             return _('No cogs are enabled.')
-    not_found = [c for c in cogs if c not in __cogs.COGS]
+    not_found = [c for c in cogs if c not in __cogs.cogs]
     if not_found:
         return ngettext("{cogs_not_found} doesn't exist", "{cogs_not_found} don't exist", len(not_found))\
             .format(cogs_not_found=gearbox.pretty(not_found, '`%s`', final=_('and')))
@@ -109,19 +109,19 @@ def halp(__cogs, server_ex, flags, permissions, name: 'Cog or command name'=None
         else:
             return markdown_parser(open(f'{doc_path}/{name}.md').read())
     width = cog.config['help']['width']
-    active_cogs = [cogg for cogg in __cogs.COGS if server_ex.is_allowed(cogg)]
+    active_cogs = [cogg for cogg in __cogs.cogs if server_ex.is_allowed(cogg)]
     commands = __cogs.command(name, server_ex, permissions)
     if name is not None and '.' in name:
         cogg, temp_name = name.rsplit('.', 1)
-        if cogg in active_cogs and __cogs.COGS[cogg].cog.get(temp_name, permissions):
-            commands = [((cogg, temp_name), __cogs.COGS[cogg].cog.get(temp_name, permissions))]
+        if cogg in active_cogs and __cogs.cogs[cogg].cog.get(temp_name, permissions):
+            commands = [((cogg, temp_name), __cogs.cogs[cogg].cog.get(temp_name, permissions))]
     if name is None:
         return _("Hi, I'm `;;` :no_mouth: I'm split into several cogs, type `;help <cog>` for more information\n") + \
                ngettext("The following cog is currently enabled: {active_cogs}",
                         "The following cogs are currently enabled: {active_cogs}", len(active_cogs)).format(
                    active_cogs=gearbox.pretty(active_cogs, '`%s`', final=_('and')))
     elif name in active_cogs:
-        cogg = __cogs.COGS[name]
+        cogg = __cogs.cogs[name]
         output = f'`{name}` - ' + cogg.__doc__.replace('\n\n', '\n')
         for cname, command in cogg.cog.get_all(permissions).items():
             line = cname
@@ -136,23 +136,23 @@ def halp(__cogs, server_ex, flags, permissions, name: 'Cog or command name'=None
         if commands:
             output += '\n' + ngettext("The following command also exists: {commands}",
                                       "The following commands also exist: {commands}", len(commands)).format(
-                commands=gearbox.pretty([f'{cogg}.{__cogs.COGS[cogg].cog.aliases[name]}' for cogg, _ in commands],
+                commands=gearbox.pretty([f'{cogg}.{__cogs.cogs[cogg].cog.aliases[name]}' for cogg, _ in commands],
                                         '`%s`', final=_('and')))
         return output
     elif commands:
         if len(commands) > 1:
             return _('There are commands in multiple cogs with that name:') + '\n' +\
-                   '\n'.join([f'`{cogg + "." + __cogs.COGS[cogg].cog.aliases[name]:{width}.{width}}|` ' +
+                   '\n'.join([f'`{cogg + "." + __cogs.cogs[cogg].cog.aliases[name]:{width}.{width}}|` ' +
                               command.func.__doc__.splitlines()[0] for cogg, command in commands])
         if type(commands[0][0]) is not tuple:
             cogg, command = commands[0]
             cname = name
         else:
             (cogg, cname), command = commands[0]
-        cname = __cogs.COGS[cogg].cog.aliases[cname]
+        cname = __cogs.cogs[cogg].cog.aliases[cname]
         complete_name = cogg + '.' + cname
         output = f'`{complete_name}` - **{command.func.__doc__.splitlines()[0]}**'
-        aliases = [alias for alias, res in __cogs.COGS[cogg].cog.aliases.items() if res == cname]
+        aliases = [alias for alias, res in __cogs.cogs[cogg].cog.aliases.items() if res == cname]
         aliases.remove(cname)
         if aliases:
             output += '\n' + _('Also known as: {alias}').format(alias=gearbox.pretty(aliases, '`%s`', final=_('and')))
