@@ -182,6 +182,59 @@ def str_to_chan(server, channel):
         return None
 
 
+def infer_arguments(given, client=None, _cogs=None):
+    """Return a list of arguments extracted from data."""
+    sent = {}
+    # Handle the before/after arguments for update events
+    for i, arg1 in enumerate(given):
+        for j, arg2 in enumerate(given):
+            if type(arg1) == type(arg2) and i < j:
+                sent['before'] = arg1
+                sent['after'] = arg2
+    # Handle the rest of special arguments
+    special = {}
+    for arg in given:
+        for arg_type, arg_name in SPECIAL_TYPES.items():
+            if isinstance(arg, arg_type):
+                special[arg_name] = arg
+    sent['client'] = client
+    if 'message' in special:
+        sent['message'] = special['message']
+    elif 'reaction' in special:
+        sent['message'] = special['reaction'].message
+    if 'message' in sent:
+        sent['author'] = sent['message'].author
+        sent['content'] = sent['message'].content
+    if 'channel' in special:
+        sent['channel'] = special['channel']
+    elif 'message' in sent:
+        sent['channel'] = sent['message'].channel
+    if 'member' in special:
+        sent['member'] = special['member']
+    if 'user' in special:
+        sent['user'] = special['user']
+    elif 'member' in sent:
+        sent['user'] = sent['member']
+    elif 'author' in sent:
+        sent['user'] = sent['author']
+    if 'server' in special:
+        sent['server'] = special['server']
+    elif 'message' in sent:
+        sent['server'] = sent['message'].server
+    elif 'channel' in sent:
+        sent['server'] = sent['channel'].server
+    if 'server' in sent:
+        if 'channel' in sent and sent['channel'].is_private:
+            sent['server_ex'] = client.get_server_ex(sent['channel'].id)
+        else:
+            sent['server_ex'] = client.get_server_ex(sent['server'].id)
+    if 'channel' in sent and 'user' in sent:
+        sent['permissions'] = sent['channel'].permissions_for(sent['user'])
+    sent['flags'] = ''
+    sent['__cogs'] = _cogs
+    return sent
+
+
 class Callable:
     """Wrapper of commodity methods common to callable objects."""
 
@@ -192,63 +245,10 @@ class Callable:
         # Whether or not the function is a coroutine (and shall be awaited)
         self.is_coroutine = inspect.iscoroutinefunction(func)
 
-    def infer_arguments(self, given, client=None, _cogs=None):
-        """Return a list of arguments extracted from data."""
-        sent = {}
-        # Handle the before/after arguments for update events
-        if 'before' in self.args or 'after' in self.args:
-            for i, arg1 in enumerate(given):
-                for j, arg2 in enumerate(given):
-                    if type(arg1) == type(arg2) and i < j:
-                        sent['before'] = arg1
-                        sent['after'] = arg2
-        # Handle the rest of special arguments
-        special = {}
-        for arg in given:
-            for arg_type, arg_name in SPECIAL_TYPES.items():
-                if isinstance(arg, arg_type):
-                    special[arg_name] = arg
-        sent['client'] = client
-        if 'message' in special:
-            sent['message'] = special['message']
-        elif 'reaction' in special:
-            sent['message'] = special['reaction'].message
-        if 'message' in sent:
-            sent['author'] = sent['message'].author
-            sent['content'] = sent['message'].content
-        if 'channel' in special:
-            sent['channel'] = special['channel']
-        elif 'message' in sent:
-            sent['channel'] = sent['message'].channel
-        if 'member' in special:
-            sent['member'] = special['member']
-        if 'user' in special:
-            sent['user'] = special['user']
-        elif 'member' in sent:
-            sent['user'] = sent['member']
-        elif 'author' in sent:
-            sent['user'] = sent['author']
-        if 'server' in special:
-            sent['server'] = special['server']
-        elif 'message' in sent:
-            sent['server'] = sent['message'].server
-        elif 'channel' in sent:
-            sent['server'] = sent['channel'].server
-        if 'server' in sent:
-            if 'channel' in sent and sent['channel'].is_private:
-                sent['server_ex'] = client.get_server_ex(sent['channel'].id)
-            else:
-                sent['server_ex'] = client.get_server_ex(sent['server'].id)
-        if 'channel' in sent and 'user' in sent:
-            sent['permissions'] = sent['channel'].permissions_for(sent['user'])
-        sent['flags'] = ''
-        sent['__cogs'] = _cogs
-        return sent
-
     def get_arguments(self, given, client=None, *, inferred=None):
         """Rearrange arguments to be passed directly to the callable."""
         if inferred is None:
-            inferred = self.infer_arguments(given, client=client)
+            inferred = infer_arguments(given, client=client)
         index = 0
         result = []
         for arg in self.args:
@@ -366,7 +366,7 @@ class Command(Callable):
     async def call(self, client, message, arguments, _cogs=None):
         """Call a command."""
         # Compute values of special arguments
-        special_args = self.infer_arguments((message,), client, _cogs)
+        special_args = infer_arguments((message,), client, _cogs)
         assert [arg in SPECIAL_ARGS for arg in special_args] and [arg in special_args for arg in SPECIAL_ARGS]
         # Get translation function for error messages, according to server settings
         language = special_args['server_ex'].config['language']
@@ -453,7 +453,7 @@ class Event(Callable):
         super().__init__(func)
 
     def exec(self, client, channel=None, *args, **kwargs):
-        inferred = self.infer_arguments(args, client=client)
+        inferred = infer_arguments(args, client=client)
         if channel is None and 'channel' in inferred:
             channel = inferred['channel']
         return super().exec(client, channel, *self.get_arguments(args, client=client, inferred=inferred), **kwargs)
