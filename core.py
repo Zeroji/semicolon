@@ -155,7 +155,6 @@ class Bot(discord.Client):
         inferred = gearbox.infer_arguments(args, self, None)
         server_ex = inferred.get('server_ex')
         method = 'on_' + event
-        print(server_ex, event)
         for cog in cogs:
             if server_ex is None or server_ex.is_allowed(cog.name):
                 if method in cog.events:
