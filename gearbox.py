@@ -55,8 +55,9 @@ class TestGearbox(unittest.TestCase):
 
 # List of possible special arguments that a command can expect
 SPECIAL_ARGS = ('message', 'author', 'channel', 'server', 'server_ex', 'client', 'flags', '__cogs', 'permissions')
-SPECIAL_TYPES = {discord.Message: 'message', discord.Channel: 'channel', discord.Member: 'member',
-                 discord.User: 'user', discord.Server: 'server', discord.Reaction: 'reaction',
+SPECIAL_TYPES = {discord.Message: 'message', discord.abc.PrivateChannel: 'private_channel',
+                 discord.abc.GuildChannel: 'guild_channel', discord.Member: 'member', discord.VoiceState: 'voice_state',
+                 discord.User: 'user', discord.Guild: 'guild', discord.Reaction: 'reaction', discord.Emoji: 'emoji',
                  discord.Role: 'role', datetime.datetime: 'when'}  # type: name mapping for argument detection
 VALID_NAME = re.compile('[a-z][a-z_.0-9]*$')  # Regular expression all names must match
 CONFIG_LOADERS = {'json': json, 'yaml': yaml}  # name:module mapping of config loaders (for cog-specific config files)
@@ -205,8 +206,12 @@ def infer_arguments(given, client=None, _cogs=None):
     if 'message' in sent:
         sent['author'] = sent['message'].author
         sent['content'] = sent['message'].content
-    if 'channel' in special:
-        sent['channel'] = special['channel']
+    if 'guild_channel' in special:
+        sent['guild_channel'] = special['guild_channel']
+        sent['channel'] = special['guild_channel']
+    elif 'private_channel' in special:
+        sent['private_channel'] = special['private_channel']
+        sent['channel'] = special['private_channel']
     elif 'message' in sent:
         sent['channel'] = sent['message'].channel
     if 'member' in special:
@@ -217,16 +222,16 @@ def infer_arguments(given, client=None, _cogs=None):
         sent['user'] = sent['member']
     elif 'author' in sent:
         sent['user'] = sent['author']
-    if 'server' in special:
-        sent['server'] = special['server']
+    if 'guild' in special:
+        sent['server'] = special['guild']
     elif 'message' in sent:
-        sent['server'] = sent['message'].server
-    elif 'channel' in sent:
-        sent['server'] = sent['channel'].server
+        sent['server'] = sent['message'].guild
+    elif 'guild_channel' in sent:
+        sent['server'] = sent['guild_channel'].guild
     elif 'member' in sent:
-        sent['server'] = sent['member'].server
+        sent['server'] = sent['member'].guild
     if 'server' in sent:
-        if 'channel' in sent and sent['channel'].is_private:
+        if 'channel' in sent and isinstance(sent['channel'], discord.abc.PrivateChannel):
             sent['server_ex'] = client.get_server_ex(sent['channel'].id)
         else:
             sent['server_ex'] = client.get_server_ex(sent['server'].id)

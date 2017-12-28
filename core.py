@@ -45,7 +45,10 @@ class Bot(discord.Client):
         # be used as a special argument in a command.
         # `self.servers_ex` contains a server_id:server_ex mapping to easily access server settings
         if isinstance(message_or_id, discord.Message):
-            server_ex_id = message_or_id.channel.id if message_or_id.channel.is_private else message_or_id.server.id
+            if isinstance(message_or_id.channel, discord.abc.GuildChannel):
+                server_ex_id = message_or_id.guild.id
+            else:
+                server_ex_id = message_or_id.channel.id
         else:
             server_ex_id = message_or_id
         if server_ex_id not in self.servers_ex:
@@ -76,7 +79,8 @@ class Bot(discord.Client):
         breaker = server_ex.config['breaker']
 
         # Extracting commands
-        commands, command_only = gearbox.read_commands(message.content, prefixes, breaker, message.channel.is_private)
+        commands, command_only = gearbox.read_commands(message.content, prefixes, breaker,
+                                                       isinstance(message.channel, discord.abc.PrivateChannel))
 
         for command in commands:
             await self.process(command, command_only, message, server_ex)
