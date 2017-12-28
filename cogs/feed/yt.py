@@ -21,4 +21,4 @@ async def publish_video(client, data_str, socket):
             author=author, short_url=short_url, time_ago=published.humanize(locale=LANG),
             time=published.to(ZONE).format(_('HH:mm'))
         )
-        await client.send_message(client.get_channel('272463984026976257'), message)
+        await client.get_channel('272463984026976257').send(message)

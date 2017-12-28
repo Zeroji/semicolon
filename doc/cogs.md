@@ -403,8 +403,8 @@ or a tuple of strings for multiple reactions:
 ```python
 @cog.on_reaction(('😃', '❤'))
 async def my_reaction_function(client, added, reaction, user):
-    await client.send_message(reaction.message.channel,
-                              f'User {user.mention} {"added" if added else "removed"} reaction {reaction.emoji}')
+    await reaction.message.channel.send(
+        f'User {user.mention} {"added" if added else "removed"} reaction {reaction.emoji}')
 ```
 
 A reaction function has to be defined as `async`,

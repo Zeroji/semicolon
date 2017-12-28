@@ -274,7 +274,7 @@ class Callable:
             output = self.func(*args, **kwargs)
             if output is not None:
                 if isinstance(output, discord.Embed):  # If the output is an embed, send it as such
-                    await client.send_message(channel, embed=output)
+                    await channel.send(embed=output)
                 else:
                     try:  # If the output can be casted to a string, send it to Discord
                         output = str(output)
@@ -283,7 +283,7 @@ class Callable:
                                         self.func.__name__, args, kwargs)
                         return
                     if len(output) > 0:
-                        await client.send_message(channel, str(output))
+                        await channel.send(str(output))
 
 
 class Command(Callable):
@@ -383,7 +383,7 @@ class Command(Callable):
             for flag in arguments.split(' ')[0][1:]:
                 if flag != '-':
                     if flag not in self.flags:
-                        await client.send_message(message.channel, _('Invalid flag: -{flag}').format(flag=flag))
+                        await message.channel.send(_('Invalid flag: -{flag}').format(flag=flag))
                         return
                     special_args['flags'] += flag
             arguments = arguments[arguments.find(' ') + 1:] if ' ' in arguments else ''
@@ -394,15 +394,15 @@ class Command(Callable):
         text = arguments.split(None, max_args - 1)
         # Display errors in case of invalid argument count
         if len(text) < self.min_arg:
-            await client.send_message(message.channel, _('Too few arguments, at least {min_arg_count} expected')
-                                      .format(min_arg_count=self.min_arg))
+            await message.channel.send(_('Too few arguments, at least {min_arg_count} expected')
+                                       .format(min_arg_count=self.min_arg))
             return
         if len(text) > max_args or (self.last_arg_mode == Command.FIXED_COUNT and len(text) > 0 and ' ' in text[-1]):
             if max_args == 0:
-                await client.send_message(message.channel, _("This command doesn't expect any arguments"))
+                await message.channel.send(_("This command doesn't expect any arguments"))
             else:
-                await client.send_message(message.channel, _('Too many arguments, at most {max_arg_count} expected')
-                                          .format(max_arg_count=max_args))
+                await message.channel.send(_('Too many arguments, at most {max_arg_count} expected')
+                                           .format(max_arg_count=max_args))
             return
         # If positional arguments are expected, store them
         if len(text) == max_args and self.last_arg_mode == Command.POSITIONAL:
@@ -423,15 +423,13 @@ class Command(Callable):
                         else:  # Regular casting for all other types
                             temp_args[key] = self.annotations[key][0](arg)
                     except ValueError:
-                        await client.send_message(message.channel,
-                                                  _('Argument "{arg}" should be of type {typename}').format(
-                                                      arg=arg, typename=argtype.__name__))
+                        await message.channel.send(_('Argument "{arg}" should be of type {typename}').format(
+                                                     arg=arg, typename=argtype.__name__))
                         return
                 elif isinstance(argtype, set):  # Checking if the argument has one of the required values
                     if arg.lower() not in {value.lower() for value in argtype}:  # Name doesn't match (case insensitive)
-                        await client.send_message(message.channel,
-                                                  _('Argument "{arg}" should have one of the following values: {values}').format(
-                                                    arg=arg, values=pretty(argtype, '`%s`', _('or'))))
+                        await message.channel.send(_('Argument "{arg}" should have one of the following values: {values}').format(
+                                                     arg=arg, values=pretty(argtype, '`%s`', _('or'))))
                         return
                     elif arg not in argtype:  # If only the case isn't matching, convert to expected case
                         for value in argtype:
@@ -440,9 +438,8 @@ class Command(Callable):
                                 break
                 else:  # argtype is re.compile
                     if argtype.match(arg) is None:  # Checking that the argument matches the expected pattern
-                        await client.send_message(message.channel,
-                                                  _('Argument "{arg}" should match the following regex: `{pattern}`').format(
-                                                    arg=arg, pattern=argtype.pattern))
+                        await message.channel.send(_('Argument "{arg}" should match the following regex: `{pattern}`').format(
+                                                     arg=arg, pattern=argtype.pattern))
                         return
         # Update after type checking
         args.update(temp_args)

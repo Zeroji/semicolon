@@ -126,7 +126,7 @@ class Bot(discord.Client):
             # Checking for command existence / possible duplicates
             matches = cogs.command(command, server_ex, permissions)
             if len(matches) > 1:
-                await self.send_message(message.channel, gearbox.duplicate_command_message(
+                await message.channel.send(gearbox.duplicate_command_message(
                     command, matches, server_ex.config['language']))
             func = matches[0][1] if len(matches) == 1 else None
         if func is not None:

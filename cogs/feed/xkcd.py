@@ -23,4 +23,4 @@ async def display_xkcd(client, data_str, socket):
                               url=url,
                               description=html.unescape(alt_text))
         embed.set_image(url=image_url)
-        await client.send_message(client.get_channel('272463984026976257'), embed=embed)
+        await client.get_channel('272463984026976257').send(embed=embed)
