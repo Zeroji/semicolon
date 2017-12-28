@@ -66,9 +66,9 @@ class Wrapper:
             return None
         return self.cogs[name].cog
 
-    def command(self, cmd, server_ex=None, permissions=None):
+    def command(self, cmd, guild_ex=None, permissions=None):
         """Find a command given its name."""
-        allowed = server_ex.is_allowed if server_ex is not None else (lambda _: True)
+        allowed = guild_ex.is_allowed if guild_ex is not None else (lambda _: True)
         matches = []
         for name, _cog in self.cogs.items():
             if allowed(name) and _cog.cog.has(cmd, permissions):

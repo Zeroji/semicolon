@@ -15,6 +15,13 @@ All notable changes to this project will be documented in this file.
 
 * `text || ;command` syntax didn't work
 
+#### Changed
+
+* **BREAKING** Renamed `server` to `guild` in the configuration file,
+  you will need to modify manually if you had changed it
+* Configuration files containing string IDs will have to be changed
+  to numeric (integer) IDs
+
 ### [[v0.2.0](https://github.com/Zeroji/semicolon/releases/tag/v0.2.0)]
 
 #### Added

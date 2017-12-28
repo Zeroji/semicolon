@@ -54,7 +54,7 @@ class TestGearbox(unittest.TestCase):
 
 
 # List of possible special arguments that a command can expect
-SPECIAL_ARGS = ('message', 'author', 'channel', 'server', 'server_ex', 'client', 'flags', '__cogs', 'permissions')
+SPECIAL_ARGS = ('message', 'author', 'channel', 'guild', 'guild_ex', 'client', 'flags', '__cogs', 'permissions')
 SPECIAL_TYPES = {discord.Message: 'message', discord.abc.PrivateChannel: 'private_channel',
                  discord.abc.GuildChannel: 'guild_channel', discord.Member: 'member', discord.VoiceState: 'voice_state',
                  discord.User: 'user', discord.Guild: 'guild', discord.Reaction: 'reaction', discord.Emoji: 'emoji',
@@ -164,7 +164,7 @@ def duplicate_command_message(command, matches, language):
         command=command, matches=pretty([m[0] for m in matches], '`%s`', final=_('and')))
 
 
-def str_to_chan(server, channel):
+def str_to_chan(guild, channel):
     """Returns a channel object, given a channel name, ID or <#ID>"""
     id = None
     if re.match('[0-9]{18}', channel):
@@ -172,7 +172,7 @@ def str_to_chan(server, channel):
     elif re.match('<#[0-9]{18}>', channel):
         id = channel[2:-1]
     matches = []
-    for chan in server.channels:
+    for chan in guild.channels:
         if chan.id == id:
             return chan
         if channel.lower() in chan.name.lower():
@@ -223,18 +223,18 @@ def infer_arguments(given, client=None, _cogs=None):
     elif 'author' in sent:
         sent['user'] = sent['author']
     if 'guild' in special:
-        sent['server'] = special['guild']
+        sent['guild'] = special['guild']
     elif 'message' in sent:
-        sent['server'] = sent['message'].guild
+        sent['guild'] = sent['message'].guild
     elif 'guild_channel' in sent:
-        sent['server'] = sent['guild_channel'].guild
+        sent['guild'] = sent['guild_channel'].guild
     elif 'member' in sent:
-        sent['server'] = sent['member'].guild
-    if 'server' in sent:
+        sent['guild'] = sent['member'].guild
+    if 'guild' in sent:
         if 'channel' in sent and isinstance(sent['channel'], discord.abc.PrivateChannel):
-            sent['server_ex'] = client.get_server_ex(sent['channel'].id)
+            sent['guild_ex'] = client.get_guild_ex(sent['channel'].id)
         else:
-            sent['server_ex'] = client.get_server_ex(sent['server'].id)
+            sent['guild_ex'] = client.get_guild_ex(sent['guild'].id)
     if 'channel' in sent and 'user' in sent:
         sent['permissions'] = sent['channel'].permissions_for(sent['user'])
     sent['flags'] = ''
@@ -375,8 +375,8 @@ class Command(Callable):
         # Compute values of special arguments
         special_args = infer_arguments((message,), client, _cogs)
         assert [arg in SPECIAL_ARGS for arg in special_args] and [arg in special_args for arg in SPECIAL_ARGS]
-        # Get translation function for error messages, according to server settings
-        language = special_args['server_ex'].config['language']
+        # Get translation function for error messages, according to guild settings
+        language = special_args['guild_ex'].config['language']
         _ = (lambda s: s) if language not in LANGUAGES else LANGUAGES[language].gettext
         # Strip flags from the list of arguments
         while arguments.startswith('-') and self.flags:
@@ -447,7 +447,7 @@ class Command(Callable):
         ordered_args = [args[key] for key in self.params if key in args]
         ordered_args += pos_args
         # Update language settings for parent cog (localization)
-        self.parent.set_lang(special_args['server_ex'].config['language'])
+        self.parent.set_lang(special_args['guild_ex'].config['language'])
         await self.exec(client, message.channel, *ordered_args)
 
 
@@ -685,7 +685,7 @@ class Cog:
                 if self.has(name, permissions) and name not in self.hidden}
 
     def set_lang(self, lang):
-        """Change the current language. Used for per-server localization."""
+        """Change the current language. Used for per-guild localization."""
         self.lang = self.languages.get(lang, None)
 
     def gettext(self, text):
@@ -703,8 +703,8 @@ class Cog:
         return self.lang.ngettext(singular, plural, n)
 
 
-class Server:
-    """Custom server class, used to store additional information."""
+class Guild:
+    """Custom guild class, used to store additional information."""
     default_cfg = {'cogs': {'blacklist': []}, 'language': 'en', 'timezone': 'UTC', 'prefixes': [';'], 'breaker': '|'}
 
     def __init__(self, sid, path):
@@ -717,7 +717,7 @@ class Server:
         self.load()
 
     def is_allowed(self, cog_name):
-        """Whether or not a cog can be used on the server."""
+        """Whether or not a cog can be used on the guild."""
         if cog_name in self.blacklist:
             return False
         if any([cog_name.startswith(parent + '.') for parent in self.blacklist]):
@@ -725,19 +725,19 @@ class Server:
         return True
 
     def load(self):
-        """Load server-specific configuration file, create default if non-existent."""
+        """Load guild-specific configuration file, create default if non-existent."""
         try:
             self.config = {}
-            self.config.update(Server.default_cfg)
+            self.config.update(Guild.default_cfg)
             config.merge(self.config, json.load(open(self.path)))
         except FileNotFoundError:
-            self.config = Server.default_cfg
+            self.config = Guild.default_cfg
             self._write()
         self.blacklist = self.config['cogs']['blacklist']
         self.prefixes = self.config['prefixes']
 
     def write(self):
-        """Write server-specific configuration file."""
+        """Write guild-specific configuration file."""
         self.config['cogs']['blacklist'] = self.blacklist
         self.config['prefixes'] = self.prefixes
         self._write()

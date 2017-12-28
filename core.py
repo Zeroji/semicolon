@@ -34,26 +34,26 @@ class Bot(discord.Client):
         self.cogs = {}
         # last time the cogs file were checked for modifications
         self.last_update = time.time()
-        # id:gearbox.Server mapping of servers (PMs use the channel ID)
-        self.servers_ex = {}
+        # id:gearbox.Guild mapping of guilds (PMs use the channel ID)
+        self.guilds_ex = {}
 
-    def get_server_ex(self, message_or_id):
-        """Return an extended server object from its ID or a message."""
-        # Getting server information
-        # The `gearbox.Server` class contains additional information about a server, and is used
-        # to preserve server-specific settings. `server_ex` stands for "server extended" and can
+    def get_guild_ex(self, message_or_id):
+        """Return an extended guild object from its ID or a message."""
+        # Getting guild information
+        # The `gearbox.Guild` class contains additional information about a guild, and is used
+        # to preserve guild-specific settings. `guild_ex` stands for "guild extended" and can
         # be used as a special argument in a command.
-        # `self.servers_ex` contains a server_id:server_ex mapping to easily access server settings
+        # `self.guilds_ex` contains a guild_id:guild_ex mapping to easily access guild settings
         if isinstance(message_or_id, discord.Message):
             if isinstance(message_or_id.channel, discord.abc.GuildChannel):
-                server_ex_id = message_or_id.guild.id
+                guild_ex_id = message_or_id.guild.id
             else:
-                server_ex_id = message_or_id.channel.id
+                guild_ex_id = message_or_id.channel.id
         else:
-            server_ex_id = message_or_id
-        if server_ex_id not in self.servers_ex:
-            self.servers_ex[server_ex_id] = gearbox.Server(server_ex_id, CFG['path']['server'])
-        return self.servers_ex[server_ex_id]
+            guild_ex_id = message_or_id
+        if guild_ex_id not in self.guilds_ex:
+            self.guilds_ex[guild_ex_id] = gearbox.Guild(guild_ex_id, CFG['path']['guild'])
+        return self.guilds_ex[guild_ex_id]
 
     def run(self, *args, **kwargs):
         """Start client."""
@@ -71,21 +71,21 @@ class Bot(discord.Client):
         if message.author.id in self.banned:
             return
 
-        server_ex = self.get_server_ex(message)
+        guild_ex = self.get_guild_ex(message)
 
         # Loading prefixes and breaker settings
         prefixes = [self.user.mention]
-        prefixes.extend(server_ex.prefixes)
-        breaker = server_ex.config['breaker']
+        prefixes.extend(guild_ex.prefixes)
+        breaker = guild_ex.config['breaker']
 
         # Extracting commands
         commands, command_only = gearbox.read_commands(message.content, prefixes, breaker,
                                                        isinstance(message.channel, discord.abc.PrivateChannel))
 
         for command in commands:
-            await self.process(command, command_only, message, server_ex)
+            await self.process(command, command_only, message, guild_ex)
 
-    async def process(self, command, command_only, message, server_ex):
+    async def process(self, command, command_only, message, guild_ex):
         # Very special commands (reload/restart/shutdown)
         if command in ('reload', 'restart', 'shutdown'):
             if message.author.id not in self.admins:
@@ -116,7 +116,7 @@ class Bot(discord.Client):
         if '.' in command:
             # Getting command from cog when using cog.command
             cog_name, cmd = command.rsplit('.', 1)
-            if not server_ex.is_allowed(cog_name):
+            if not guild_ex.is_allowed(cog_name):
                 return
             cog = cogs.cog(cog_name)
             if not cog:
@@ -124,16 +124,16 @@ class Bot(discord.Client):
             func = cog.get(cmd, permissions)
         else:
             # Checking for command existence / possible duplicates
-            matches = cogs.command(command, server_ex, permissions)
+            matches = cogs.command(command, guild_ex, permissions)
             if len(matches) > 1:
                 await message.channel.send(gearbox.duplicate_command_message(
-                    command, matches, server_ex.config['language']))
+                    command, matches, guild_ex.config['language']))
             func = matches[0][1] if len(matches) == 1 else None
         if func is not None:
             await func.call(self, message, arguments, cogs)
             if (func.delete_message and command_only and
                     message.channel.permissions_for(
-                        message.server.get_member(self.user.id)).manage_messages):
+                        message.guild.get_member(self.user.id)).manage_messages):
                 await self.delete_message(message)
 
     async def on_reaction_add(self, reaction, user):
@@ -157,10 +157,10 @@ class Bot(discord.Client):
         """Override base event dispatch to call cogs event handlers."""
         super().dispatch(event, *args, **kwargs)
         inferred = gearbox.infer_arguments(args, self, None)
-        server_ex = inferred.get('server_ex')
+        guild_ex = inferred.get('guild_ex')
         method = 'on_' + event
         for cog in cogs:
-            if server_ex is None or server_ex.is_allowed(cog.name):
+            if guild_ex is None or guild_ex.is_allowed(cog.name):
                 if method in cog.events:
                     self.loop.create_task(cog.events.get(method).call(self, args, inferred))
 

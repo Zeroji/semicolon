@@ -10,45 +10,45 @@ _ = cog.gettext
 ngettext = cog.ngettext
 
 
-@cog.command(permissions='manage_server')
-def enable(__cogs, server_ex, *cogs: 'Name of cogs to enable'):
+@cog.command(permissions='manage_guild')
+def enable(__cogs, guild_ex, *cogs: 'Name of cogs to enable'):
     """Enable cogs for the current server.
 
     If called with no cogs, displays enabled cogs. Use `*` to enable all cogs."""
     if not cogs:
         return _('Enabled cogs: {enabled_cogs}').format(enabled_cogs=gearbox.pretty(
-            [c for c in __cogs.cogs if server_ex.is_allowed(c)], '`%s`', final=_('and')))
+            [c for c in __cogs.cogs if guild_ex.is_allowed(c)], '`%s`', final=_('and')))
     if cogs == ('*',):
-        cogs = server_ex.blacklist[::]
+        cogs = guild_ex.blacklist[::]
         if not cogs:
             return _('No cogs are disabled.')
     not_found = [c for c in cogs if c not in __cogs.cogs]
     if not_found:
         return ngettext("{cogs_not_found} doesn't exist", "{cogs_not_found} don't exist", len(not_found))\
             .format(cogs_not_found=gearbox.pretty(not_found, '`%s`', final=_('and')))
-    already = [c for c in cogs if c not in server_ex.blacklist]
+    already = [c for c in cogs if c not in guild_ex.blacklist]
     if already:
         return ngettext("{enabled_cogs} is already enabled", "{enabled_cogs} are already enabled", len(already))\
             .format(enabled_cogs=gearbox.pretty(already, '`%s`', final=_('and')))
     else:
         for c in cogs:
-            server_ex.blacklist.remove(c)
-        server_ex.write()
+            guild_ex.blacklist.remove(c)
+        guild_ex.write()
         return _('Enabled {enabled_cogs}').format(enabled_cogs=gearbox.pretty(cogs, '`%s`', _('and')))
 
 
-@cog.command(permissions='manage_server')
-def disable(__cogs, server_ex, *cogs: 'Name of cogs to enable'):
+@cog.command(permissions='manage_guild')
+def disable(__cogs, guild_ex, *cogs: 'Name of cogs to enable'):
     """Disable cogs for the current server.
 
     If called with no cogs, displays disabled cogs. Use `*` to disable all cogs."""
     if not cogs:
-        if not server_ex.blacklist:
+        if not guild_ex.blacklist:
             return _('No cogs are disabled.')
-        return _('Disabled cogs: {disabled_cogs}').format(disabled_cogs=gearbox.pretty(server_ex.blacklist, '`%s`',
+        return _('Disabled cogs: {disabled_cogs}').format(disabled_cogs=gearbox.pretty(guild_ex.blacklist, '`%s`',
                                                                                        final=_('and')))
     if cogs == ('*',):
-        cogs = [c for c in __cogs.cogs if c != __name__.split('.')[-1] and c not in server_ex.blacklist]
+        cogs = [c for c in __cogs.cogs if c != __name__.split('.')[-1] and c not in guild_ex.blacklist]
         if not cogs:
             return _('No cogs are enabled.')
     not_found = [c for c in cogs if c not in __cogs.cogs]
@@ -57,13 +57,13 @@ def disable(__cogs, server_ex, *cogs: 'Name of cogs to enable'):
             .format(cogs_not_found=gearbox.pretty(not_found, '`%s`', final=_('and')))
     if any([c == __name__.split('.')[-1] for c in cogs]):
         return _('Error: cannot disable self')
-    already = [c for c in cogs if c in server_ex.blacklist]
+    already = [c for c in cogs if c in guild_ex.blacklist]
     if already:
         return ngettext("{disabled_cogs} is already disabled", "{disabled_cogs} are already disabled", len(already))\
             .format(disabled_cogs=gearbox.pretty(already, '`%s`', final=_('and')))
     else:
-        server_ex.blacklist.extend(cogs)
-        server_ex.write()
+        guild_ex.blacklist.extend(cogs)
+        guild_ex.write()
         return _('Disabled {disabled_cogs}').format(disabled_cogs=gearbox.pretty(cogs, '`%s`', final=_('and')))
 
 
@@ -93,7 +93,7 @@ def markdown_parser(data):
 @cog.command(flags={'d': 'Show special documentation'})
 @cog.alias('halp')
 @cog.rename('help')
-def halp(__cogs, server_ex, flags, permissions, name: 'Cog or command name'=None):
+def halp(__cogs, guild_ex, flags, permissions, name: 'Cog or command name'=None):
     """Display information on a cog or command.
 
     Display general help when called without parameter, or list commands in a cog, or list command information.
@@ -109,8 +109,8 @@ def halp(__cogs, server_ex, flags, permissions, name: 'Cog or command name'=None
         else:
             return markdown_parser(open(f'{doc_path}/{name}.md').read())
     width = cog.config['help']['width']
-    active_cogs = [cogg for cogg in __cogs.cogs if server_ex.is_allowed(cogg)]
-    commands = __cogs.command(name, server_ex, permissions)
+    active_cogs = [cogg for cogg in __cogs.cogs if guild_ex.is_allowed(cogg)]
+    commands = __cogs.command(name, guild_ex, permissions)
     if name is not None and '.' in name:
         cogg, temp_name = name.rsplit('.', 1)
         if cogg in active_cogs and __cogs.cogs[cogg].cog.get(temp_name, permissions):

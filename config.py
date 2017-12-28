@@ -14,7 +14,7 @@ DEFAULT_CFG = {
         'master': 'data/master',
         'admins': 'data/admins',
         'banned': 'data/banned',
-        'server': 'data/servers/%s.json',
+        'guild': 'data/guilds/%s.json',
         'config': 'config/%s.%s',
         'version': 'version',
         'locale': 'locale',
