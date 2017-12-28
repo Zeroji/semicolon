@@ -235,8 +235,8 @@ def infer_arguments(given, client=None, _cogs=None):
             sent['guild_ex'] = client.get_guild_ex(sent['channel'].id)
         else:
             sent['guild_ex'] = client.get_guild_ex(sent['guild'].id)
-    if 'channel' in sent and 'user' in sent:
-        sent['permissions'] = sent['channel'].permissions_for(sent['user'])
+    if 'channel' in sent and 'member' in sent:
+        sent['permissions'] = sent['channel'].permissions_for(sent['member'])
     sent['flags'] = ''
     sent['__cogs'] = _cogs
     return sent
