@@ -199,6 +199,8 @@ def infer_arguments(given, client=None, _cogs=None):
             if isinstance(arg, arg_type):
                 special[arg_name] = arg
     sent['client'] = client
+    if 'reaction' in special:
+        sent['reaction'] = special['reaction']
     if 'message' in special:
         sent['message'] = special['message']
     elif 'reaction' in special:
@@ -216,6 +218,8 @@ def infer_arguments(given, client=None, _cogs=None):
         sent['channel'] = sent['message'].channel
     if 'member' in special:
         sent['member'] = special['member']
+    elif 'author' in sent and isinstance(sent['author'], discord.Member):
+        sent['member'] = sent['author']
     if 'user' in special:
         sent['user'] = special['user']
     elif 'member' in sent:
@@ -486,8 +490,6 @@ class Cog:
         self.hidden = []
         # cog name
         self.name = name
-        # emoji:commands(array) mapping of which commands should be called on certain reactions
-        self.react = {}
         # cog configuration
         self.config = {}
         # config file type, currently either json or yaml
@@ -540,33 +542,6 @@ class Cog:
     def exit(self, func):  # Decorator
         """Define a function to call upon exiting."""
         self.on_exit = func
-
-    def on_reaction(self, arg):  # Decorator
-        """Mark a function to be awaited when a reaction is added or deleted.
-
-        It is possible to specify only specific reaction, by passing a string or a
-        tuple of strings to the decorator. Only those will then trigger the call."""
-        func = None
-        if isinstance(arg, str):
-            arg = (arg,)
-        elif not isinstance(arg, tuple):
-            func = arg
-            arg = (0,)
-
-        def decorator(function):
-            for a in arg:
-                if a not in self.react:
-                    self.react[a] = []
-                self.react[a].append(function)
-            return function
-        return decorator if func is None else decorator(func)
-
-    async def on_reaction_any(self, client, added, reaction, user):  # Called by core
-        """Propagate the reaction event to functions."""
-        calls = self.react.get(0, [])
-        calls.extend(self.react.get(reaction.emoji.id if reaction.custom_emoji else reaction.emoji, []))
-        for func in calls:
-            await func(client, added, reaction, user)
 
     def on_socket(self, data):  # Decorator
         """Mark a function to be awaited when specific data is received through websockets.

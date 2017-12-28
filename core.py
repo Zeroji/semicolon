@@ -136,17 +136,6 @@ class Bot(discord.Client):
                         message.guild.get_member(self.user.id)).manage_messages):
                 await message.delete()
 
-    async def on_reaction_add(self, reaction, user):
-        await self.on_reaction(True, reaction, user)
-
-    async def on_reaction_remove(self, reaction, user):
-        await self.on_reaction(False, reaction, user)
-
-    async def on_reaction(self, added, reaction, user):
-        """Propagate reaction events to the cogs."""
-        for cog in cogs:
-            await cog.on_reaction_any(self, added, reaction, user)
-
     async def on_socket(self, socket, path):
         data = await socket.recv()
         print(type(data), data)

@@ -22,6 +22,11 @@ All notable changes to this project will be documented in this file.
 * Configuration files containing string IDs will have to be changed
   to numeric (integer) IDs
 
+#### Removed
+
+- Reaction handling with special cog decorators has been removed to the
+  preference of the new event dispatch capabilities.
+
 ### [[v0.2.0](https://github.com/Zeroji/semicolon/releases/tag/v0.2.0)]
 
 #### Added
