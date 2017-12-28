@@ -156,12 +156,15 @@ class Bot(discord.Client):
     def dispatch(self, event, *args, **kwargs):
         """Override base event dispatch to call cogs event handlers."""
         super().dispatch(event, *args, **kwargs)
-        inferred = gearbox.infer_arguments(args, self, None)
-        guild_ex = inferred.get('guild_ex')
+        inferred = None
+        guild_ex = None
         method = 'on_' + event
         for cog in cogs:
-            if guild_ex is None or guild_ex.is_allowed(cog.name):
-                if method in cog.events:
+            if method in cog.events:
+                if inferred is None:
+                    inferred = gearbox.infer_arguments(args, self, None)
+                    guild_ex = inferred.get('guild_ex')
+                if guild_ex is None or guild_ex.is_allowed(cog.name):
                     self.loop.create_task(cog.events.get(method).call(self, args, inferred))
 
     async def wheel(self):  # They see me loading
