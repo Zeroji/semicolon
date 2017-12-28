@@ -134,7 +134,7 @@ class Bot(discord.Client):
             if (func.delete_message and command_only and
                     message.channel.permissions_for(
                         message.guild.get_member(self.user.id)).manage_messages):
-                await self.delete_message(message)
+                await message.delete()
 
     async def on_reaction_add(self, reaction, user):
         await self.on_reaction(True, reaction, user)
