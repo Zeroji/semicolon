@@ -5,6 +5,7 @@ __pycache__/
 # Environment
 .idea
 .python-version
+.vscode
 todo.md
 notes
 

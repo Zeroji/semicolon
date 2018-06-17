@@ -1,6 +1,6 @@
 ## Installation
 
-#### Which version to choose
+### Which version to choose
 
 If you want to have a copy of `;;` for yourself to run on your own server,
 it's recommended you download a *stable release*, see for example the
@@ -10,7 +10,7 @@ If you'd rather have the latest update, no matter the possible bugs, and you
 like to tinker around and play with the new stuff, you'll prefer the
 [direct Github link](https://github.com/Zeroji/semicolon), aka dev version.
 
-#### Requirements
+### Requirements
 
 - Python 3.6 (a virtual environment is recommended)
 - PIP for Python
@@ -20,24 +20,25 @@ like to tinker around and play with the new stuff, you'll prefer the
 > active effort towards the support of it. Reported issues will be taken
 > care of, but with a low priority level.
 
-#### Downloading the code
+### Downloading the code
 
 To get the source code, you can either download it from Github or use
-`git` to clone it locally (this is the recommended way).  
+`git` to clone it locally (this is the recommended way).
+
 - Download the [latest stable build](https://github.com/Zeroji/semicolon/releases/latest)
-  (just click the "Download ZIP" button)  
-- Download the [latest source code](https://github.com/Zeroji/semicolon/archive/master.zip)  
-- Clone a specific version: `git clone --branch v0.1.0 https://github.com/Zeroji/semicolon.git`  
+  (just click the "Download ZIP" button)
+- Download the [latest source code](https://github.com/Zeroji/semicolon/archive/master.zip)
+- Clone a specific version: `git clone --branch v0.1.0 https://github.com/Zeroji/semicolon.git`
 - Clone the latest version: `git clone https://github.com/Zeroji/semicolon.git`
 
-#### Installation
+### Installation
 
 Start by navigating to the directory where you downloaded the source code.
 
 Install the required Python packages:
 `pip install -r requirements`
 
-#### Required files
+### Required files
 
 You'll need to create a `data` folder to store some required information.
 
@@ -60,7 +61,7 @@ Inside the `data` folder, create the following folder and files:
 - If you want `;;` to completely ignore some users, put their IDs in the
   `banned` file, separated by newlines.
   
-#### Running `;;`
+### Running `;;`
 
 Assuming you have done everything correctly, you should be able to run the
 bot by simply typing `python core.py` from the `semicolon` folder.

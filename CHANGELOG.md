@@ -1,4 +1,5 @@
 ## Change Log
+
 All notable changes to this project will be documented in this file.
 
 ### [[Unreleased](https://github.com/Zeroji/semicolon/releases/latest)]
@@ -21,6 +22,7 @@ All notable changes to this project will be documented in this file.
   you will need to modify manually if you had changed it
 * Configuration files containing string IDs will have to be changed
   to numeric (integer) IDs
+* Cleaner Markdown doc files
 
 #### Removed
 
@@ -110,17 +112,20 @@ All notable changes to this project will be documented in this file.
 + Changelog file ;)
 + Added type checking on command arguments, done with type hints
 + Possibility to to regex checks on arguments
-+ Added basic support for argument documentation (you can add it without errors, but it's not used yet)
++ Added basic support for argument documentation (you can add it without errors,
+  but it's not used yet)
 + Added reaction support via `@cog.on_reaction` (more in doc)
 + `help` command, finally!
 
 #### Changed
 
-* Flags in `@cog.command` can now be either a string or a dictionary `{flag: description}` (for future documentation)
+* Flags in `@cog.command` can now be either a string or a dictionary
+  `{flag: description}` (for future documentation)
 
 #### Fixed
 
-* `Invalid argument count` when passing no arguments to a command using positional arguments
+* `Invalid argument count` when passing no arguments to a command using
+  positional arguments
 * Private message channels are now considered as servers (regarding settings)
 
 ### [[v0.1.1](https://github.com/Zeroji/semicolon/releases/tag/v0.1.1)]
@@ -144,8 +149,10 @@ All notable changes to this project will be documented in this file.
 * Switched from Python 3.5 to 3.6
 * Improved logging
 * Argument parsing system
-  * Commands needing all the message as one argument (like `;say`) must be declared with `@cog.command(fulltext=True)`
-  * Commands can be passed positional arguments if they are declared like `def function(*pos_args)`
+  * Commands needing all the message as one argument (like `;say`) must be
+    declared with `@cog.command(fulltext=True)`
+  * Commands can be passed positional arguments if they are declared like
+    `def function(*pos_args)`
   * Command arguments can have default values
   * Commands can be passed bash-like flags
 
