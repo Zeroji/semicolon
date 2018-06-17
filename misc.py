@@ -56,7 +56,6 @@ def check_token(path):
         response = urllib.request.urlopen(req)
         data = json.load(response)
         log.info('Token verified: %(username)s#%(discriminator)s (ID %(id)s)', data)
-        # print('Token verified: {username}#{discriminator} (ID {id})'.format(**data))
     except urllib.error.HTTPError as exc:
         log.warning('HTTP Error %d happened during token verification:', exc.code)
         log.warning(exc.msg)
@@ -64,7 +63,51 @@ def check_token(path):
         log.warning('Error during decoding of JSON response')
 
 
-COMMANDS = {'check': check}
+def run(args, config):
+    """Run semicolon"""
+    if args.args and args.args[0] == '--':
+        args.args = args.args[1:]
+    log.info('Running semicolon core' + (' once' if args.once else ''))
+
+    import subprocess
+    import time
+    delay = 2
+
+    command = ['python', 'core.py']
+    command.extend(args.args)
+
+    while True:
+        launch = time.time()
+        proc = subprocess.Popen(command)
+        code = proc.wait()
+        elapsed = time.time() - launch
+        log.debug('Stopped after %d seconds', elapsed)
+
+        # Handle exit codes
+        if code == 69:
+            log.info('Received exit code, stopping')
+            break
+        elif code == 82:
+            if not args.once:
+                log.info('Received restart code, restarting')
+                continue
+        else:
+            log.warn('Unplanned shutdown with exit code %d', code)
+
+        if args.once:
+            log.debug('Stopping due to --once flag')
+            break
+
+        # Wait a bit before restarting in case we're spamming the API
+        # If the bot didn't last 5 minutes, progressively increase wait time
+        if elapsed > 300:
+            delay = 2
+        elif delay < 120:
+            delay *= 2
+        log.debug('Restarting semicolon in %d seconds', delay)
+        time.sleep(delay)
+
+COMMANDS = {'check': check, 'run': run}
 
 
 def main():
@@ -74,6 +117,10 @@ def main():
 
     # Main argument parser
     parser = argparse.ArgumentParser(description='MISC tool to help setup semicolon')
+    parser.add_argument('-v', '--verbose', action='store_const', const=True,
+                        default=False, help='Display debug-level information')
+    parser.add_argument('-q', '--quiet', action='store_const', const=True,
+                        default=False, help='Only display errors')
     parser.add_argument('-c', '--config', action='store', metavar='file',
                         default='config.yaml', help='specify the config file')
     sub = parser.add_subparsers(dest='command')
@@ -83,10 +130,20 @@ def main():
     parser_check.add_argument('-t', '--token', action='store_const', const=True,
                               default=False, help='Check token validity')
 
+    parser_run = sub.add_parser('run', help='Run semicolon')
+    parser_run.add_argument('--once', action='store_const', const=True,
+                            default=False, help='Run only once (disable restart)')
+    parser_run.add_argument('args', nargs=argparse.REMAINDER, help='Semicolon args')
+
     args = parser.parse_args()
     if args.command is None:
         log.error('Expected a command, use --help for more information')
         return
+
+    if args.verbose:
+        log.setLevel(logging.DEBUG)
+    if args.quiet:
+        log.setLevel(logging.ERROR)
 
     # Read config from file if available
     config = DEFAULT_CONFIG

@@ -6,7 +6,8 @@ All notable changes to this project will be documented in this file.
 
 #### Added
 
-+ MISC (Installs Semicolon Cogs) configuration / installation tool
++ MISC (Installs Semicolon Cogs) configuration / installation tool  
+  Also works as a launcher, effectively replacing the old `run.sh`
 
 ### [[v0.2.1](https://github.com/Zeroji/semicolon/releases/tag/v0.2.1)]
 

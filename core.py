@@ -58,8 +58,10 @@ class Bot(discord.Client):
     def run(self, *args, **kwargs):
         """Start client."""
         # Load the cogs while starting the bot
+        self.exit_status = 0
         self.loop.create_task(self.wheel())
         super(Bot, self).run(*args, **kwargs)
+        return self.exit_status
 
     async def on_message(self, message):
         """Handle messages."""
@@ -98,8 +100,9 @@ class Bot(discord.Client):
             if command == 'restart' or (command == 'shutdown' and message.author.id == self.master):
                 logging.info("%s initiated by %s", command.capitalize(), message.author.name)
                 if command == 'shutdown':
-                    # An external script runs the bot forever unless this file exists
-                    open('stop', 'a').close()
+                    self.exit_status = 69  # Exit
+                else:
+                    self.exit_status = 82  # Restart
                 for cog in cogs:
                     cog.on_exit()
                 logging.info("All cogs unloaded.")
@@ -258,8 +261,9 @@ def main():
     banned = list(map(int, open(CFG['path']['banned'], 'r').read().splitlines()))
 
     bot = Bot(master, admins, banned)
-    bot.run(token)
+    status = bot.run(token)
     logging.info("Stopped")
+    exit(status)
 
 if __name__ == '__main__':
     main()
