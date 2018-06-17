@@ -22,7 +22,7 @@ All notable changes to this project will be documented in this file.
   you will need to modify manually if you had changed it
 * Configuration files containing string IDs will have to be changed
   to numeric (integer) IDs
-* Cleaner Markdown doc files
+* Better convention compliance for Python and Markdown files
 
 #### Removed
 

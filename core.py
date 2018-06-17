@@ -103,7 +103,7 @@ class Bot(discord.Client):
                 for cog in cogs:
                     cog.on_exit()
                 logging.info("All cogs unloaded.")
-                await self.change_presence(game=None)
+                await self.change_presence(activity=None)
                 await self.logout()
             return
         # Getting command arguments (or not)
@@ -178,7 +178,7 @@ class Bot(discord.Client):
                                 parent_cog.subcogs[name] = cogs.cogs[name]
                                 cogs.cogs[name].cog.parent = parent_cog
                 # If a directory containing `__init__.py` is found, load the init and the directory
-                elif os.path.isdir(full) and gearbox.is_valid(name) and name not in cogs.cogs and name not in cogs.fail:
+                elif os.path.isdir(full) and gearbox.is_valid(name) and not (name in cogs.cogs or name in cogs.fail):
                     if parent_cog is not None and name in parent_cog.aliases:
                         logging.critical("Sub-cog %s from cog %s couldn't be loaded because "
                                          "a command with the same name exists", name, parent_cog.name)
@@ -206,18 +206,18 @@ class Bot(discord.Client):
                         if name in cogs.cogs:
                             valid_cogs.add(name)
                 for name in valid_cogs:
-                    cogs.cogs.remove(name)
+                    cogs.cogs.pop(name, None)
 
             await asyncio.sleep(2)
 
     async def on_ready(self):
         """Initialization."""
         self.loop.create_task(websockets.serve(self.on_socket, 'localhost', CFG['port']['websocket']))
-        version = discord.Game()
-        version.name = 'v' + gearbox.version
+        version = 'v' + gearbox.version
         if gearbox.version_is_dev:
-            version.name += ' [dev]'
-        await super(Bot, self).change_presence(status=discord.Status.idle, game=version)
+            version += ' [dev]'
+        game = discord.Game(version)
+        await super(Bot, self).change_presence(status=discord.Status.idle, activity=game)
         logging.info('Client started.')
 
 
@@ -253,9 +253,9 @@ def main():
 
     token = open(CFG['path']['token'], 'r').read().strip()
 
-    master = open(CFG['path']['master'], 'r').read().strip()
-    admins = open(CFG['path']['admins'], 'r').read().splitlines()
-    banned = open(CFG['path']['banned'], 'r').read().splitlines()
+    master = int(open(CFG['path']['master'], 'r').read().strip())
+    admins = list(map(int, open(CFG['path']['admins'], 'r').read().splitlines()))
+    banned = list(map(int, open(CFG['path']['banned'], 'r').read().splitlines()))
 
     bot = Bot(master, admins, banned)
     bot.run(token)

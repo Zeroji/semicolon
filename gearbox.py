@@ -320,8 +320,8 @@ class Command(Callable):
         self.flags = {c: '' for c in flags} if isinstance(flags, str) else flags
         # Minimum argument count
         self.min_arg = len([arg for arg, val in self.params.items()
-                            if arg not in SPECIAL_ARGS and isinstance(val.default, type)
-                            and self.params[arg].kind.name is not 'VAR_POSITIONAL'])
+                            if arg not in SPECIAL_ARGS and isinstance(val.default, type) and
+                            self.params[arg].kind.name is not 'VAR_POSITIONAL'])
         # Permissions, can be indicated as a string, (string, bool) tuple, or array of any
         # Ends up being stored as an array of (string, bool) tuples
         self.permissions = []

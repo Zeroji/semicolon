@@ -7,8 +7,7 @@ which may or may not be implemented in future versions.
 
 #### Next things to work on
 
-1. Better PEP8/Pylint correctness
-2. Additional permissions (bot owner/admin & bots)
+1. Additional permissions (bot owner/admin & bots)
 
 ### Might be implemented
 
