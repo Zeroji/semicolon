@@ -2,7 +2,7 @@
 
 All notable changes to this project will be documented in this file.
 
-### [[Unreleased](https://github.com/Zeroji/semicolon/releases/latest)]
+### [[v0.2.1](https://github.com/Zeroji/semicolon/releases/tag/v0.2.1)]
 
 #### Added
 
@@ -18,6 +18,7 @@ All notable changes to this project will be documented in this file.
 
 #### Changed
 
+* **Switched to discord.py\[rewrite\]**
 * **BREAKING** Renamed `server` to `guild` in the configuration file,
   you will need to modify manually if you had changed it
 * Configuration files containing string IDs will have to be changed
