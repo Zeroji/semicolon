@@ -543,26 +543,26 @@ class Cog:
         """Define a function to call upon exiting."""
         self.on_exit = func
 
-    def on_socket(self, data):  # Decorator
-        """Mark a function to be awaited when specific data is received through websockets.
+    def on_socket(self, start_path):  # Decorator
+        """Mark a function to be awaited when data is received through specific websockets.
 
-        The function will be called whenever the data received starts with the specified data,
-        which must be a bytestring. The function will be called with (client, truncated data, socket)."""
+        The function will be called whenever the path the data was received on
+        starts with the specified path, which must be a string and should start
+        with a single slash (/). The function will be called with the following
+        arguments: (client, data, socket, path remainder)."""
         def decorator(function):
-            if data not in self.socket_data:
-                self.socket_data[data] = []
-            self.socket_data[data].append(function)
+            if start_path not in self.socket_data:
+                self.socket_data[start_path] = []
+            self.socket_data[start_path].append(function)
             return function
         return decorator
 
-    async def on_socket_data(self, client, data, socket):  # Called by core
+    async def on_socket_data(self, client, data, socket, path):  # Called by core
         """Propagate the websocket data to functions."""
-        for start_data, commands in self.socket_data.items():
-            if isinstance(data, str):  # If the websocket somehow sent a string, then okay (make sure to deal with it)
-                start_data = start_data.decode('utf-8')
-            if data.startswith(start_data):
+        for start_path, commands in self.socket_data.items():
+            if path.startswith(start_path):
                 for func in commands:
-                    await func(client, data[len(start_data):], socket)
+                    await func(client, data, socket, path[len(start_path):])
 
     def hide(self, function=None):  # Decorator
         """Hide a command."""

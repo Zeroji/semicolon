@@ -106,6 +106,7 @@ class Bot(discord.Client):
                 for cog in cogs:
                     cog.on_exit()
                 logging.info("All cogs unloaded.")
+                self.ws_server.close()
                 await self.change_presence(activity=None)
                 await self.logout()
             return
@@ -140,10 +141,9 @@ class Bot(discord.Client):
                 await message.delete()
 
     async def on_socket(self, socket, path):
-        data = await socket.recv()
-        print(type(data), data)
-        for cog in cogs:
-            await cog.on_socket_data(self, data, socket)
+        async for data in socket:
+            for cog in cogs:
+                await cog.on_socket_data(self, data, socket, path)
 
     def dispatch(self, event, *args, **kwargs):
         """Override base event dispatch to call cogs event handlers."""
@@ -215,7 +215,7 @@ class Bot(discord.Client):
 
     async def on_ready(self):
         """Initialization."""
-        self.loop.create_task(websockets.serve(self.on_socket, 'localhost', CFG['port']['websocket']))
+        self.ws_server = await websockets.serve(self.on_socket, 'localhost', CFG['port']['websocket'])
         version = 'v' + gearbox.version
         if gearbox.version_is_dev:
             version += ' [dev]'

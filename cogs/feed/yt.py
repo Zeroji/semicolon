@@ -10,8 +10,8 @@ ZONE = 'Europe/Paris'
 _ = lambda s: s
 
 
-@cog.on_socket(b'hook/youtube/')
-async def publish_video(client, data_str, socket):
+@cog.on_socket('/hook/youtube')
+async def publish_video(client, data_str, socket, path):
     data = json.loads(data_str)
     for video in data['items']:
         author = video['actor']['displayName']
@@ -21,4 +21,4 @@ async def publish_video(client, data_str, socket):
             author=author, short_url=short_url, time_ago=published.humanize(locale=LANG),
             time=published.to(ZONE).format(_('HH:mm'))
         )
-        await client.get_channel('272463984026976257').send(message)
+        await client.get_channel(272463984026976257).send(message)

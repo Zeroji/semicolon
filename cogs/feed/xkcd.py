@@ -6,8 +6,8 @@ import gearbox
 cog = gearbox.Cog()
 
 
-@cog.on_socket(b'hook/xkcd/')
-async def display_xkcd(client, data_str, socket):
+@cog.on_socket('/hook/xkcd')
+async def display_xkcd(client, data_str, socket, path):
     data = json.loads(data_str)
     for xkcd in data['items']:
         id = xkcd['id'].split('/')[3]
@@ -23,4 +23,4 @@ async def display_xkcd(client, data_str, socket):
                               url=url,
                               description=html.unescape(alt_text))
         embed.set_image(url=image_url)
-        await client.get_channel('272463984026976257').send(embed=embed)
+        await client.get_channel(272463984026976257).send(embed=embed)
