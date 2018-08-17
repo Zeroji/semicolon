@@ -1,6 +1,6 @@
 ## ;;
 
-> v0.2.0
+> v0.2.2
 
 This is the repository for the *new* version of `;;`,
 a nice Discord bot with currently very few features.  

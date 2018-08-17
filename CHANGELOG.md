@@ -2,12 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
-### [[Unreleased](https://github.com/Zeroji/semicolon/releases/latest)]
+### [[v0.2.2](https://github.com/Zeroji/semicolon/releases/tag/v0.2.2)]
 
 #### Added
 
 + MISC (Installs Semicolon Cogs) configuration / installation tool  
   Also works as a launcher, effectively replacing the old `run.sh`
++ Python 3.7 support
 
 ### [[v0.2.1](https://github.com/Zeroji/semicolon/releases/tag/v0.2.1)]
 
