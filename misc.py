@@ -92,7 +92,7 @@ def run(args, config):
                 log.info('Received restart code, restarting')
                 continue
         else:
-            log.warn('Unplanned shutdown with exit code %d', code)
+            log.warning('Unplanned shutdown with exit code %d', code)
 
         if args.once:
             log.debug('Stopping due to --once flag')
