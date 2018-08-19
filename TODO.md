@@ -1,40 +1,73 @@
-## TODO
+# Planned features and future possibilities
 
-This file contains a list of features
-which may or may not be implemented in future versions.
+This file contains a list of features and things which may or may not be
+present in future versions. Stuff under the [Soon](#soon) category will be
+done at some point in the future, items in other sections might be discarded
+or heavily modified.
 
-### To be implemented
+## Soon
 
-#### Next things to work on
+This is currently empty because I haven't decided what to work on.
 
-1. Additional permissions (bot owner/admin & bots)
+## Project management
 
-### Might be implemented
+- Clean-up TODO list
+- Possible reStructuredText documentation
+- `.editorconfig` file
 
-#### Miscellaneous
+## Implementation
 
-Server-specific owner-defined ranks & all  
-Fine-tuning of commands permissions, possible
-blacklist/whitelist of commands/users/roles  
-cron-like asynchronous tasks  
-webserver to receive webhooks  
-possible rST documentation  
+### Main features
 
-#### Commands
+#### Installation [misc.py]
 
-- Private only
-- Channel B/W list (per server)
-- Hidden
+- Auto-detection of cog requirements
+- Cog loading list in configuration file
+
+#### Guild management
+
+- Grant / restrict access to commands to certain users / roles
+- Change default permissions of commands
+- Blacklist / whitelist commands
+- Blacklist / whitelist commands in channels
+- Blacklist / whitelist users / roles
+
+### Command API
+
+- DM-only commands
+- Hide commands from `;help`
 
 #### Arguments
-  
-Special arguments:
 
-- private (message.channel.is_private)
-- rank (server-specific author rank)
+- `is_private` to determine if it's a DM
+- `rank` if ever implemented server-side
 
-#### Cogs
+#### Permissions
 
-- annotation for pip requirements
-- ability to hide from a server (func->bool)
-- per server/channel data/config files (FDs)
+- Bot owner (from configuration file)
+- Bot admins (from configuration file)
+- Bot users (generally disallowed)
+- Server-side bot admins (custom role)
+
+### Cog API
+
+- Cog-wide permissions (hides cog if disallowed)
+- Cron-like scheduled tasks
+- Websocket-triggered functions
+  - Possibility of a webserver to receive webhooks
+- Annotation for `pip` requirements
+- Possibility to hide cog from guilds except whitelist
+- Possibility to be disabled by default
+- Per guild / channel / user configuration files (file descriptors)
+
+### Miscellaneous
+
+- Guild configuration file at `guilds/<guild>.json`
+  - Cogs data at `guilds/<guild>/<cog>.json`
+- [List of time zones][tzlist] for custom server TZ
+
+[tzlist]: https://en.wikipedia.org/wiki/List_of_tz_database_time_zones
+
+## Deployment
+
+- Clean up stray files from older versions
