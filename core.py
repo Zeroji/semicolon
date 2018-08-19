@@ -76,7 +76,7 @@ class Bot(discord.Client):
         guild_ex = self.get_guild_ex(message)
 
         # Loading prefixes and breaker settings
-        prefixes = [self.user.mention]
+        prefixes = [self.user.mention, self.user.mention.replace('<@', '<@!')]
         prefixes.extend(guild_ex.prefixes)
         breaker = guild_ex.config['breaker']
 
