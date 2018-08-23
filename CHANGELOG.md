@@ -1,8 +1,11 @@
-## Change Log
+## Changelog
 
 All notable changes to this project will be documented in this file.
 
-### [[Unreleased][latest]]
+The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
+and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
+
+### [Unreleased]
 
 #### Added
 
@@ -12,7 +15,7 @@ All notable changes to this project will be documented in this file.
 
 * Completely changed TODO, improved CHANGELOG
 
-### [[v0.2.2]]
+### [0.2.2]
 
 #### Added
 
@@ -20,7 +23,7 @@ All notable changes to this project will be documented in this file.
   Also works as a launcher, effectively replacing the old `run.sh`
 + Python 3.7 support
 
-### [[v0.2.1]]
+### [0.2.1]
 
 #### Added
 
@@ -48,7 +51,7 @@ All notable changes to this project will be documented in this file.
 - Reaction handling with special cog decorators has been removed to the
   preference of the new event dispatch capabilities.
 
-### [[v0.2.0]]
+### [0.2.0]
 
 #### Added
 
@@ -77,7 +80,7 @@ All notable changes to this project will be documented in this file.
 * Proper error message when `cog` isn't defined
 * Possible failure on malformed config files
 
-### [[v0.1.4]]
+### [0.1.4]
 
 #### Added
 
@@ -98,7 +101,7 @@ All notable changes to this project will be documented in this file.
 
 - Default configuration file generation with `--generate`
 
-### [[v0.1.3]]
+### [0.1.3]
 
 #### Added
 
@@ -123,7 +126,7 @@ All notable changes to this project will be documented in this file.
 
 * `help` displaying base name of renamed commands
 
-### [[v0.1.2]]
+### [0.1.2]
 
 #### Added
 
@@ -147,7 +150,7 @@ All notable changes to this project will be documented in this file.
   positional arguments
 * Private message channels are now considered as servers (regarding settings)
 
-### [[v0.1.1]]
+### [0.1.1]
 
 #### Added
 
@@ -179,7 +182,7 @@ All notable changes to this project will be documented in this file.
 
 * Coroutine commands not detected as such
 
-### [[v0.1.0]]
+### [0.1.0]
 
 #### Added
 
@@ -194,12 +197,12 @@ All notable changes to this project will be documented in this file.
   + Dynamic loading of new cogs
   + Dynamic reloading of modified cogs
 
-[v0.1.0]: https://github.com/Zeroji/semicolon/releases/tag/v0.1.0
-[v0.1.1]: https://github.com/Zeroji/semicolon/releases/tag/v0.1.1
-[v0.1.2]: https://github.com/Zeroji/semicolon/releases/tag/v0.1.2
-[v0.1.3]: https://github.com/Zeroji/semicolon/releases/tag/v0.1.3
-[v0.1.4]: https://github.com/Zeroji/semicolon/releases/tag/v0.1.4
-[v0.2.0]: https://github.com/Zeroji/semicolon/releases/tag/v0.2.0
-[v0.2.1]: https://github.com/Zeroji/semicolon/releases/tag/v0.2.1
-[v0.2.2]: https://github.com/Zeroji/semicolon/releases/tag/v0.2.2
-[latest]: https://github.com/Zeroji/semicolon/releases/latest
+[0.1.0]: https://github.com/Zeroji/semicolon/releases/tag/v0.1.0
+[0.1.1]: https://github.com/Zeroji/semicolon/releases/tag/v0.1.1
+[0.1.2]: https://github.com/Zeroji/semicolon/releases/tag/v0.1.2
+[0.1.3]: https://github.com/Zeroji/semicolon/releases/tag/v0.1.3
+[0.1.4]: https://github.com/Zeroji/semicolon/releases/tag/v0.1.4
+[0.2.0]: https://github.com/Zeroji/semicolon/releases/tag/v0.2.0
+[0.2.1]: https://github.com/Zeroji/semicolon/releases/tag/v0.2.1
+[0.2.2]: https://github.com/Zeroji/semicolon/releases/tag/v0.2.2
+[Unreleased]: https://github.com/Zeroji/semicolon/compare/stable...master

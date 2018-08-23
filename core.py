@@ -216,7 +216,7 @@ class Bot(discord.Client):
     async def on_ready(self):
         """Initialization."""
         self.ws_server = await websockets.serve(self.on_socket, 'localhost', CFG['port']['websocket'])
-        version = 'v' + gearbox.version
+        version = gearbox.version
         if gearbox.version_is_dev:
             version += ' [dev]'
         game = discord.Game(version)

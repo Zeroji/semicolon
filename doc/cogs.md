@@ -30,7 +30,7 @@ import gearbox
 cog = gearbox.Cog('my_awesome_cog')
 ```
 
-> Since [v0.1.4], you can have a specific config file just for your cog,
+> Since [0.1.4], you can have a specific config file just for your cog,
 > just add a `config` argument with the value `json` or `yaml`:
 > ```python
 > import gearbox
@@ -97,7 +97,7 @@ As you can see, simply putting `author` in the function definition will give you
 the corresponding object. Why? Because `;;` is made in such a way that it'll
 look at what you want, and attempt to provide it to you so you don't need to
 write extra pieces of code. Here's a list of those "special" arguments:
-*(as of [v0.2.0])*
+*(as of [0.2.0])*
 
 |Argument    | Description
 | ---        | ---
@@ -125,7 +125,7 @@ which might not meet your expectations.*
 > ```
 >
 > Now if you call `;flag -ab`, it'll reply `I got ab`.  
-> Since [v0.1.3], writing `;flag -a-b` or `;flag -a -b` is also accepted.
+> Since [0.1.3], writing `;flag -a-b` or `;flag -a -b` is also accepted.
 
 #### Normal arguments
 
@@ -139,7 +139,7 @@ def repeat(what_they_said):
 ```
 
 Now, this may lead to an `Invalid argument count` error. That's because since
-[v0.1.1], `;;` has to be told explicitly when you want all the remaining text
+[0.1.1], `;;` has to be told explicitly when you want all the remaining text
 to be sent to your function:
 
 ```python
@@ -158,14 +158,14 @@ def add(number_a, number_b):
     return str(int(number_a) + int(number_b))
 ```
 
-> *May change in future versions (last changed [v0.1.1])*  
+> *May change in future versions (last changed [0.1.1])*  
 If the user doesn't provide the arguments you need, for example if they type
 `add 4`, `;;` will print an error message in the chat, and your command won't
 be executed. If the user sends too many arguments, for example by typing
 `add 1 2 3`, the same thing will happen.
 
 Now what if you'd like to have default arguments? Let's say you want `add` to
-add 1 if `number_b` isn't specified: since [v0.1.1], just do like you'd do with
+add 1 if `number_b` isn't specified: since [0.1.1], just do like you'd do with
 regular Python functions!
 
 ```python
@@ -446,7 +446,7 @@ You can only have one exit function.
 
 ### Event handlers
 
-You want to do even more stuff? As of [v0.2.1], you can write custom event
+You want to do even more stuff? As of [0.2.1], you can write custom event
 handlers! Those are the same events you can use in a `discord.py` client, except
 you register them using `@cog.event`. The best part is, you can use a bunch of
 special arguments and it'll likely
@@ -478,10 +478,12 @@ the old code until the new one is working.
 If you have name conflicts with another module, call your commands
 with `cog_name.command_name` to avoid collisions.
 
-[v0.1.0]: https://github.com/Zeroji/semicolon/releases/tag/v0.1.0
-[v0.1.1]: https://github.com/Zeroji/semicolon/releases/tag/v0.1.1
-[v0.1.2]: https://github.com/Zeroji/semicolon/releases/tag/v0.1.2
-[v0.1.3]: https://github.com/Zeroji/semicolon/releases/tag/v0.1.3
-[v0.1.4]: https://github.com/Zeroji/semicolon/releases/tag/v0.1.4
-[v0.2.0]: https://github.com/Zeroji/semicolon/releases/tag/v0.2.0
+[0.1.0]: https://github.com/Zeroji/semicolon/releases/tag/v0.1.0
+[0.1.1]: https://github.com/Zeroji/semicolon/releases/tag/v0.1.1
+[0.1.2]: https://github.com/Zeroji/semicolon/releases/tag/v0.1.2
+[0.1.3]: https://github.com/Zeroji/semicolon/releases/tag/v0.1.3
+[0.1.4]: https://github.com/Zeroji/semicolon/releases/tag/v0.1.4
+[0.2.0]: https://github.com/Zeroji/semicolon/releases/tag/v0.2.0
+[0.2.1]: https://github.com/Zeroji/semicolon/releases/tag/v0.2.1
+[0.2.2]: https://github.com/Zeroji/semicolon/releases/tag/v0.2.2
 [latest]: https://github.com/Zeroji/semicolon/releases/latest

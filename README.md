@@ -1,6 +1,6 @@
 ## ;;
 
-> v0.2.2
+> 0.2.2
 
 This is the repository for the *new* version of `;;`,
 a nice Discord bot with currently very few features.  
@@ -18,7 +18,7 @@ Edit `config.yaml` if you need to, or create another config file
 > Alternatively, you can run `./install.py` for a minimalistic setup
 
 To run the bot, type `./core.py` or `./core.py -c your_config.yaml`  
-Since [v0.1.1](https://github.com/Zeroji/semicolon/releases/tag/v0.1.1) you'll
+Since [0.1.1](https://github.com/Zeroji/semicolon/releases/tag/v0.1.1) you'll
 need Python 3.6.
 
 ### How to use (Discord side)
