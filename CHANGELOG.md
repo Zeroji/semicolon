@@ -1,31 +1,31 @@
-## Changelog
+# Changelog
 
 All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
-### [Unreleased]
+## [Unreleased]
 
-#### Added
+### Added
 
 + `.editorconfig` file to enforce conventions
 
-#### Changed
+### Changed
 
 * Completely changed TODO, improved CHANGELOG
 
-### [0.2.2]
+## [0.2.2]
 
-#### Added
+### Added
 
 + MISC (Installs Semicolon Cogs) configuration / installation tool  
   Also works as a launcher, effectively replacing the old `run.sh`
 + Python 3.7 support
 
-### [0.2.1]
+## [0.2.1]
 
-#### Added
+### Added
 
 + Websocket management for future integration with webserver
 + Sub-cogs now have a `parent` attribute pointing to their parent if any
@@ -33,11 +33,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 + Commands can now return `Embed` objects
 + Event handlers for cogs!
 
-#### Fixed
+### Fixed
 
 * `text || ;command` syntax didn't work
 
-#### Changed
+### Changed
 
 * **Switched to discord.py\[rewrite\]**
 * **BREAKING** Renamed `server` to `guild` in the configuration file,
@@ -46,14 +46,14 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
   to numeric (integer) IDs
 * Better convention compliance for Python and Markdown files
 
-#### Removed
+### Removed
 
 - Reaction handling with special cog decorators has been removed to the
   preference of the new event dispatch capabilities.
 
-### [0.2.0]
+## [0.2.0]
 
-#### Added
+### Added
 
 + Disabling a cog disables its sub-cogs
 + Banned users are actually banned
@@ -66,13 +66,13 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 + Added unit tests to `gearbox` and `config`
 + Server specific timezone settings
 
-#### Changed
+### Changed
 
 * `prefix` and `breaker` commands are in the `settings` cog
 * `help` now only displays commands you have permission to use
 * More helpful "Invalid argument count" message
 
-#### Fixed
+### Fixed
 
 * Server configuration not being loaded properly
 * Fixed `enable *` and `disable *` output when nothing is changed
@@ -80,9 +80,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 * Proper error message when `cog` isn't defined
 * Possible failure on malformed config files
 
-### [0.1.4]
+## [0.1.4]
 
-#### Added
+### Added
 
 + `info` command with bot / Python / Discord versions
 + Displaying version number in *Playing* status
@@ -93,17 +93,17 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 + Included default configuration, checks against type mismatches
 + Added very simple installer
 
-#### Fixed
+### Fixed
 
 * Not naming a sub-cog explicitly may crash the bot
 
-#### Removed
+### Removed
 
 - Default configuration file generation with `--generate`
 
-### [0.1.3]
+## [0.1.3]
 
-#### Added
+### Added
 
 + Extra documentation on all cogs
 + Sub-cogs!
@@ -115,20 +115,20 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
   + Language detection by bigram analysis
   + Automatic Caesar solving (multiple languages)
 
-#### Changed
+### Changed
 
 * `enable` and `disable` work with multiple cogs
 * `help` now displays command aliases
 * `help` can display special documentation with `-d page`
 * Flags can now be called with `-a-b` or `-a -b` (instead of only `-ab` previously)
 
-#### Fixed
+### Fixed
 
 * `help` displaying base name of renamed commands
 
-### [0.1.2]
+## [0.1.2]
 
-#### Added
+### Added
 
 + Per-server prefixes
 + Changelog file ;)
@@ -139,20 +139,20 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 + Added reaction support via `@cog.on_reaction` (more in doc)
 + `help` command, finally!
 
-#### Changed
+### Changed
 
 * Flags in `@cog.command` can now be either a string or a dictionary
   `{flag: description}` (for future documentation)
 
-#### Fixed
+### Fixed
 
 * `Invalid argument count` when passing no arguments to a command using
   positional arguments
 * Private message channels are now considered as servers (regarding settings)
 
-### [0.1.1]
+## [0.1.1]
 
-#### Added
+### Added
 
 + Configuration file
 + Command-line arguments and debug mode
@@ -166,7 +166,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 + Per-server settings
 + Ability to enable or disable cogs per server
 
-#### Changed
+### Changed
 
 * Switched from Python 3.5 to 3.6
 * Improved logging
@@ -178,13 +178,13 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
   * Command arguments can have default values
   * Commands can be passed bash-like flags
 
-#### Fixed
+### Fixed
 
 * Coroutine commands not detected as such
 
-### [0.1.0]
+## [0.1.0]
 
-#### Added
+### Added
 
 + Commands
   + Basic argument parsing

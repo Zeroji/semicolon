@@ -1,9 +1,9 @@
-## Translations
+# Translations
 
 As you may have noticed, `;;` is written in English. However, it can support
 multiple languages, if there are available translations.
 
-### Language settings
+## Language settings
 
 If you are a server owner, or if you have the "Manage server" permission on a
 server, you can use the command `lang` to display available languages and
@@ -13,7 +13,7 @@ Usage: `settings.lang [language]`
 
 > Currently, language codes ('en', 'fr', ...) are used, but greater flexibility will come soon
 
-### Create a translation
+## Create a translation
 
 Want to help translate `;;`? You're welcome!  
 If you look in the folder `locale/templates/`, you'll see a handful of files
@@ -30,7 +30,7 @@ Once this is done, start `;;` and `lang` should show the language you added.
 If you switch to it, messages from the cog you translated should be in your
 language!
 
-#### Contributing
+### Contributing
 
 If you want to push your translations to GitHub, fine, but make sure you
 follow those guidelines:
@@ -42,12 +42,12 @@ follow those guidelines:
 - It is recommended you use the `language_COUNTRY` notation, for example `fr_FR`,
   `en_GB` or `en_UK`
 
-### Make your cog translatable
+## Make your cog translatable
 
 Now, if as a developer you want to make your cog translatable by other people,
 it's fairly easy.
 
-#### Translation functions
+### Translation functions
 
 `;;` uses the `gettext` module for translations. It's quite very simplified
 here, so just use the following at the top of your cog:
@@ -65,7 +65,7 @@ the following line:
 ngettext = cog.ngettext
 ```
 
-#### Mark strings to be translated
+### Mark strings to be translated
 
 The `_` function performs white magic to translate your strings into whatever
 is currently needed. When you have some translatable text, just wrap it with it:
@@ -90,7 +90,7 @@ def apples(count: int):
 This will pick one of the other string depending on `count`, and format it to insert
 the number `count` inside it. It's mostly required for grammatical reasons.
 
-#### Generate translation templates
+### Generate translation templates
 
 If you have a Linux-based bash with `xgettext` on your system, just navigate to
 the folder containing `;;` and execute `./templates.sh`: it will generate translation

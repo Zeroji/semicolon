@@ -1,4 +1,4 @@
-## ;;
+# ;;
 
 > 0.2.2
 
@@ -9,7 +9,7 @@ a nice Discord bot with currently very few features.
 If you want to add features, feel free to
 [write a cog](https://github.com/Zeroji/semicolon/blob/master/doc/cogs.md)!
 
-### How to use
+## How to use
 
 Clone this repo, then run `pip install -r requirements`  
 Edit `config.yaml` if you need to, or create another config file
@@ -21,7 +21,7 @@ To run the bot, type `./core.py` or `./core.py -c your_config.yaml`
 Since [0.1.1](https://github.com/Zeroji/semicolon/releases/tag/v0.1.1) you'll
 need Python 3.6.
 
-### How to use (Discord side)
+## How to use (Discord side)
 
 When the bot status gets yellow (idle), it means everything is properly loaded.  
 You can then call commands by typing `;command whatever arguments it takes`.
@@ -30,7 +30,7 @@ Since multiple bots may use the `;` prefix, you can also mention `;;` instead of
 using the prefix: `@;; cog.command arguments`. You can also change the prefix to
 your liking if you have the `Manage Server` permission, check `@;; help prefix`.
 
-### Fancy ways to use commands
+## Fancy ways to use commands
 
 `;;` can now interpret commands inside other messages, if you use a "breaker"
 character. This character defaults to `|` and can be changed with the `breaker`

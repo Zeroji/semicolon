@@ -1,9 +1,9 @@
-## How to write your cog
+# How to write your cog
 
 `;;` draws its main features from modules, named "cogs".  
 Writing one is rather straightforward, but a couple rules have to be respected.
 
-### Match `[a-z][a-z_0-9]*\.py`
+## Match `[a-z][a-z_0-9]*\.py`
 
 Don't run away ~~yet~~! This simply means that the name of your file must be
 **full lowercase** and it has to start by a letter (any file starting with `_`
@@ -12,7 +12,7 @@ or a digit will be ignored). Once you have that file, just drop it in the
 
 > Also, don't erase `base.py` - you can rename it if needed, but it's quite essential.
 
-### Don't forget your tools
+## Don't forget your tools
 
 Every cog must contain a `cog` variable, which has to be an instance of
 `gearbox.Cog`. Here's what a standard cog header looks like:
@@ -40,7 +40,7 @@ cog = gearbox.Cog('my_awesome_cog')
 > If the file exists, `cog.load_cfg()` is automatically created. After you write
 > changes to the `cog.config` dictionary, you can use `cog.save_cfg()`.
 
-### Cogception
+## Cogception
 
 If you're an organized person, you might dislike the "drop it in the folder" part.
 That's why `;;` has sub-cogs! Start by creating a cog that can accept sub-cogs:
@@ -54,9 +54,9 @@ Note that disabling a cog also disables its sub-cogs.
 
 > Yes, you can have sub-sub-cogs. And so on.
 
-### Creating a command
+## Creating a command
 
-#### The basics
+### The basics
 
 If you're familiar with `discord.py`, then you probably know about `async`, `await`
 and all that stuff. If not, don't worry! You don't need that to write stuff.
@@ -75,7 +75,7 @@ Straightforward, right? Your command just has to return something, and `;;` will
 send it in the good channel. If you return nothing... Well, nothing happens.  
 But what if you want it to greet someone specifically?
 
-#### Special arguments
+### Special arguments
 
 Greeting a user can be done very simply:
 
@@ -88,6 +88,8 @@ def hello(author):
 > If you really aren't familiar with `discord.py`, have a look at
 > [their documentation](http://discordpy.readthedocs.io/en/latest/). For very
 > simple usage, you can get a user/channel/server name with `.name`.
+
+<!-- blockquote separator -->
 
 > Wondering what this `f'{}'` thing does? Basically, it's the same as
 > `'Hello, ' + author.name + '!'` but shorter and fancier.
@@ -127,7 +129,7 @@ which might not meet your expectations.*
 > Now if you call `;flag -ab`, it'll reply `I got ab`.  
 > Since [0.1.3], writing `;flag -a-b` or `;flag -a -b` is also accepted.
 
-#### Normal arguments
+### Normal arguments
 
 Now maybe you simply want to write a `repeat` command, but you don't know how
 to get the text? Just ask for it!
@@ -174,7 +176,7 @@ def add(number_a, number_b=1):  # If number_b isn't specified, it'll be 1
     return str(int(number_a) + int(number_b))
 ```
 
-#### More arguments!
+### More arguments
 
 Let's say you want to have a command that takes a string, then a series of
 strings, and inserts that first string between all the others, i.e. `, 1 2 3`
@@ -190,7 +192,7 @@ def join(my_string, *all_the_rest):
     return my_string.join(all_the_rest)
 ```
 
-#### About `async` and `await`
+### About `async` and `await`
 
 What if you're an advanced user and you know all that async stuff already and
 just want to add your tasks to the event loop while awaiting coroutines?
@@ -203,7 +205,7 @@ It's that simple. If your command is a coroutine, then `;;` will simply `await`
 it (if you want to send a message, do it yourself!); and the `client` argument
 will give you access to the main client. Hint, the loop is at `client.loop`
 
-### Documenting your command
+## Documenting your command
 
 > a.k.a. adding a cute little ribbon on it
 
@@ -212,7 +214,7 @@ some really neat stuff, like displaying what a command does, which arguments
 to use and all. Sadly, this information isn't magically generated: you have
 to add it to your command or it won't work.
 
-#### What your command does
+### What your command does
 
 This is done by adding a triple-quote string (`"""like this"""`) at the
 very beginning of your command:
@@ -231,7 +233,7 @@ side), but with `help <your_command>` it'll display the first line, then argumen
 and related stuff, and finally your additional documentation.  
 It is recommended you avoid using Discord formatting in the first line.
 
-#### Flags documentation
+### Flags documentation
 
 You may have seen flags earlier, they are some kind of one-letter arguments that are
 either present or absent:
@@ -257,9 +259,9 @@ With a dictionary, you can write `key:value` couples, with the `key` being your 
 and the `value` a short description of its use. If you don't want to specify a value
 for a certain flag, set it to `''` (empty string).
 
-#### Arguments documentation
+### Arguments documentation
 
-##### Annotations
+#### Annotations
 
 First of all, any "special" argument to your command will *not* be displayed:
 that's normal, because those are supposed to be internal arguments.  
@@ -286,7 +288,7 @@ def add(a: int, b: int=4)
 def add(a: 'An integer'=2, c: ('This one is a float', float)=3.14)
 ```
 
-##### Type annotations
+#### Type annotations
 
 Now, here's something cool about that `type` thingy: it automatically
 converts stuff! In the previous example, if the user were to type `add 2 6`,
@@ -326,7 +328,7 @@ string set, an error is displayed.
 > except an element cannot be present twice. It's very important that you use
 > a set, and not a list or tuple, otherwise your command just won't work.
 
-### Decorating your command
+## Decorating your command
 
 *Technically, this adds features to the cog rather than to the command.*
 
@@ -334,30 +336,30 @@ You've already used the decorator `@cog.command` to indicate that your function
 was a `;;` command and not a random function.  
 You can do a bit more, here, have a list:
 
-#### `@cog.rename(name)`
+### `@cog.rename(name)`
 
 This will change the name of your command. It's useful, for example, if you want
 your command to be called `str` but you can't because of Python's `str()`
 function. Just call your function `asdf` and put `@cog.rename('str')` before it.
 
-#### `@cog.alias(alias, ...)`
+### `@cog.alias(alias, ...)`
 
 This creates aliases for your command. Let's say you find `encrypt` is a quite
 long name, just add `@cog.alias('en')` and you'll be able to call your command
 with `encrypt` *and* `en`.
 
-#### `cog.hide`
+### `cog.hide`
 
 This will simply hide your command. This means that anything which, like `help`,
 gives a list of commands, won't show this one. Very useful for hiding your fallback
 commands (see below).
 
-### Getting the best out of `@cog.command`
+## Getting the best out of `@cog.command`
 
 If you've read all the above doc, you saw `@cog.command(fulltext=True)`: indeed,
 the `@cog.command` decorator can take a couple special parameters, here's the list
 
-#### `fulltext` (boolean, defaults to `False`)
+### `fulltext` (boolean, defaults to `False`)
 
 This argument, when set to `True`, will allow your command to receive all the
 text the user wrote, for example:
@@ -371,12 +373,12 @@ def say(text):
 If you call `;say Hello world!` it'll repeat it, but if `fulltext` was set to
 `False` it would have resulted in an `Invalid argument count` error.
 
-#### `delete_message` (boolean, defaults to `False`)
+### `delete_message` (boolean, defaults to `False`)
 
 If this option is enabled, `;;` will try to delete the user's message after the
 command was executed.
 
-#### `permissions` (string, tuple or list, defaults to `None`)
+### `permissions` (string, tuple or list, defaults to `None`)
 
 This one is a bit trickier: it allows you to specify that a user needs certain
 permissions for running a command. Say you want only users with `manage_server`
@@ -396,7 +398,7 @@ if you want your command to be available only to non-admins who can delete messa
 @cog.command(permissions=[('manage_server', False), 'manage_messages'])
 ```
 
-#### `fallback` (string) (optional)
+### `fallback` (string) (optional)
 
 > Please read the paragraph above about the `permissions` argument if you haven't already.
 
@@ -419,7 +421,7 @@ def delete2(number=1):
 
 > You can use `@cog.hide` to prevent `delete2` from being listed.
 
-#### `flags` (string or dictionary, defaults to `''`)
+### `flags` (string or dictionary, defaults to `''`)
 
 This allows you to tell `;;` which flags can be used by the command. An error
 message will be printed if the user tries to use an invalid flag. See the
@@ -428,23 +430,23 @@ You can use a string, like `'ab'`, or a dictionary if you'd like to add informat
 `{'a': 'Does a certain action', 'b': 'Executes plan B'}`  
 See the [Documenting your command](#documenting-your-command) for details about documentation.
 
-### Special functions
+## Special functions
 
 Cogs aren't made of commands only: you can have functions execute upon
 loading/unloading of a cog, or even based on events (see below).  
 This is done by using special decorators:
 
-#### `@cog.init`
+### `@cog.init`
 
 Any function decorated with this will be called when the cog is loaded.
 You can only have one init function.
 
-#### `@cog.exit`
+### `@cog.exit`
 
 Any function decorated with this will be called when the cog is unloaded.
 You can only have one exit function.
 
-### Event handlers
+## Event handlers
 
 You want to do even more stuff? As of [0.2.1], you can write custom event
 handlers! Those are the same events you can use in a `discord.py` client, except
@@ -465,7 +467,7 @@ you want to send.
 > Side note: returning a message will only work if the event takes place in a
 > specific channel. For example, on_reaction_add will work but not on_member_update.
 
-### Using your cog
+## Using your cog
 
 As written above, you just need to drop it in the `cogs` folder!
 
