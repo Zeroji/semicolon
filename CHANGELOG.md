@@ -15,7 +15,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 * Completely changed TODO, improved CHANGELOG
 
-## [0.2.2]
+## [0.2.2] - 2018-08-17
 
 ### Added
 
@@ -23,7 +23,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
   Also works as a launcher, effectively replacing the old `run.sh`
 + Python 3.7 support
 
-## [0.2.1]
+## [0.2.1] - 2018-06-17
 
 ### Added
 
@@ -51,7 +51,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Reaction handling with special cog decorators has been removed to the
   preference of the new event dispatch capabilities.
 
-## [0.2.0]
+## [0.2.0] - 2017-02-05
 
 ### Added
 
@@ -80,7 +80,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 * Proper error message when `cog` isn't defined
 * Possible failure on malformed config files
 
-## [0.1.4]
+## [0.1.4] - 2016-12-01
 
 ### Added
 
@@ -101,7 +101,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 - Default configuration file generation with `--generate`
 
-## [0.1.3]
+## [0.1.3] - 2016-11-27
 
 ### Added
 
@@ -126,7 +126,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 * `help` displaying base name of renamed commands
 
-## [0.1.2]
+## [0.1.2] 2016-11-17
 
 ### Added
 
@@ -150,7 +150,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
   positional arguments
 * Private message channels are now considered as servers (regarding settings)
 
-## [0.1.1]
+## [0.1.1] - 2016-11-14
 
 ### Added
 
@@ -182,7 +182,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 * Coroutine commands not detected as such
 
-## [0.1.0]
+## [0.1.0] - 2016-08-11
 
 ### Added
 
