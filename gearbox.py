@@ -4,6 +4,7 @@ import logging
 import os
 import re
 import json
+import subprocess
 import datetime
 import discord
 import yaml
@@ -62,8 +63,7 @@ SPECIAL_TYPES = {discord.Message: 'message', discord.abc.PrivateChannel: 'privat
 VALID_NAME = re.compile('[a-z][a-z_.0-9]*$')  # Regular expression all names must match
 CONFIG_LOADERS = {'json': json, 'yaml': yaml}  # name:module mapping of config loaders (for cog-specific config files)
 CFG = {}  # Configuration settings (nested dictionary)
-version = 'unknown'  # version number
-version_is_dev = False  # True if dev version, False if release
+version = {'num': 'unknown', 'stable': True, 'commits': 0, 'hash': None, 'dirty': False}  # version information
 LANGUAGES = {}  # language_code:translation mapping of all available languages for this module (gearbox)
 
 
@@ -71,25 +71,60 @@ def update_config(cfg):
     """Update local config from variable.
 
     Used during startup to load version number file properly and load all locale data, if any."""
-    global version, version_is_dev, LANGUAGES
+    global version, LANGUAGES
     # Update configuration
     CFG.update(cfg)
     # Try to load version information
-    version_path = CFG['path']['version']
     try:
-        ver_num, ver_type = open(version_path).read().strip().split()
-        version = ver_num  # String matching [0-9]+(?:\.[0-9]+)* for example 0.3.14
-        version_is_dev = ver_type == 'dev'  # Expected to be either "dev" or "release"
-    except ValueError:
-        logging.warning('Wrong version file format! It should be <number> <type>')
-    except FileNotFoundError:
-        logging.warning('Version file %s not found' % version_path)
-    except EnvironmentError as exc:
-        logging.warning("Couldn't open version file '%s': %s", version_path, exc)
+        version = git_version()
+    except subprocess.CalledProcessError:
+        logging.debug('Failed to get version from git, trying to read file')
+        version_path = CFG['path']['version']
+        try:
+            ver_num, ver_type = open(version_path).read().strip().split()
+            version['num'] = ver_num  # String matching [0-9]+(?:\.[0-9]+)* for example 0.3.14
+            version['stable'] = ver_type != 'dev'  # Expected to be either "dev" or "release"
+        except ValueError:
+            logging.warning('Wrong version file format! It should be <number> <type>')
+        except FileNotFoundError:
+            logging.warning('Version file %s not found' % version_path)
+        except EnvironmentError as exc:
+            logging.warning("Couldn't open version file '%s': %s", version_path, exc)
     # Go through all the directories in the locale folder and load all gearbox.mo translation files
     for lang in os.listdir(CFG['path']['locale']):
         if os.path.isfile(os.path.join(CFG['path']['locale'], lang, 'LC_MESSAGES', 'gearbox.mo')):
             LANGUAGES[lang] = gettext.translation('gearbox', localedir=CFG['path']['locale'], languages=[lang])
+
+
+def git_version():
+    """Determine detailed version information from git."""
+    def git(command_line):
+        """Execute git command and return result as string."""
+        return subprocess.check_output(['git'] + command_line.split()).rstrip().decode('utf-8')
+    tag = git('describe stable --tags').lstrip('vV')  # gets latest tag, even if you checked out v0.1.0
+    branch = git('rev-parse --abbrev-ref HEAD')
+    commits_ahead = int(git('rev-list stable..HEAD --count'))
+    commits_behind = int(git('rev-list HEAD..stable^ --count'))
+    commit_count = commits_ahead if commits_behind == 0 else -commits_behind
+    commit_sha = git('rev-parse HEAD')
+    dirty = len(git('diff --stat HEAD')) > 0
+    return {'num': tag, 'stable': branch.lower() == 'stable',
+            'commits': commit_count, 'hash': commit_sha, 'dirty': dirty}
+
+
+def prettify_version(abbrev=4):
+    """Prettify detailed version information for display."""
+    # Example: 0.1.0-dev+4:C0DE!
+    ver = version['num']
+    if not version['stable']:
+        ver += '-dev'
+    if version['commits'] != 0:
+        ver += '{:+}'.format(version['commits'])
+        if abbrev > 0:
+            ver += ':' + version['hash'].upper()[:abbrev]
+    if version['dirty']:
+        ver += '!'
+    return ver
 
 
 def is_valid(name):

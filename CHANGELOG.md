@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ### Added
 
 + `.editorconfig` file to enforce conventions
++ Version information is now read from `git` if available
 
 ### Changed
 

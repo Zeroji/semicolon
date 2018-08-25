@@ -193,9 +193,9 @@ def halp(__cogs, guild_ex, flags, permissions, name: 'Cog or command name'=None)
 @cog.alias('about')
 def info():
     """Display basic version information about me."""
-    ver = 'v' + gearbox.version + (' :warning:' if gearbox.version_is_dev else '')
+    ver = gearbox.prettify_version()
     pver = sys.version.split()[0]
-    return _("Hi, I'm `{name}`, a Discord bot written by {author} | {ver} | Python {pver} | discord.py {dver}" \
+    return _("Hi, I'm `{name}`, a Discord bot written by {author} | {ver} | Python {pver} | discord.py {dver}"
              " | running on {hostname}\nMy source code is available on GitHub: <{link}>").format(
         name=';;', author='Zeroji', link='https://github.com/Zeroji/semicolon/releases/latest',
         ver=ver, pver=pver, dver=discord.__version__, hostname=socket.gethostname()

@@ -216,9 +216,10 @@ class Bot(discord.Client):
     async def on_ready(self):
         """Initialization."""
         self.ws_server = await websockets.serve(self.on_socket, 'localhost', CFG['port']['websocket'])
-        version = gearbox.version
-        if gearbox.version_is_dev:
-            version += ' [dev]'
+        # version = gearbox.version['num']
+        # if not gearbox.version['stable']:
+        #     version += ' [unstable]'
+        version = gearbox.prettify_version(abbrev=0)
         game = discord.Game(version)
         await super(Bot, self).change_presence(status=discord.Status.idle, activity=game)
         logging.info('Client started.')
@@ -252,7 +253,7 @@ def main():
     if args.load is not None:
         for name in args.load:
             cogs.load(name)
-        CFG['wheel']['import'] = False
+    CFG['wheel']['reload'] = False
 
     token = open(CFG['path']['token'], 'r').read().strip()
 
