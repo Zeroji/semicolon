@@ -107,8 +107,8 @@ write extra pieces of code. Here's a list of those "special" arguments:
 |`message`   | The Message object which was sent - don't use like a string!
 |`author`    | Shortcut for `message.author`
 |`channel`   | Shortcut for `message.channel`
-|`server`    | Shortcut for `message.server`
-|`server_ex` | Special bot object including things like server config
+|`guild`     | Shortcut for `message.guild`
+|`guild_ex`  | Special bot object including things like server config
 |`flags`     | Flags specified by the user, if your command uses flags
 
 *Remember that using those will give you special values,
