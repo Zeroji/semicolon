@@ -12,6 +12,7 @@ import config
 import gearbox
 from cogs import Wrapper
 cogs = Wrapper()
+log = logging.getLogger('semi.core')
 
 
 # Global variable for configuration
@@ -93,19 +94,19 @@ class Bot(discord.Client):
             if message.author.id not in self.admins:
                 return
             if command == 'reload':
-                logging.info("Reloading all cogs")
+                log.info("Reloading all cogs")
                 for name, cog in cogs.cogs:
                     cogs.reload(name, cog)
             # Admins can restart the bot if it goes wild, but only owner may stop it completely
             if command == 'restart' or (command == 'shutdown' and message.author.id == self.master):
-                logging.info("%s initiated by %s", command.capitalize(), message.author.name)
+                log.info("%s initiated by %s", command.capitalize(), message.author.name)
                 if command == 'shutdown':
                     self.exit_status = 69  # Exit
                 else:
                     self.exit_status = 82  # Restart
                 for cog in cogs:
                     cog.on_exit()
-                logging.info("All cogs unloaded.")
+                log.info("All cogs unloaded.")
                 self.ws_server.close()
                 await self.change_presence(activity=None)
                 await self.logout()
@@ -171,8 +172,8 @@ class Bot(discord.Client):
                     name = name[:-3]
                     if gearbox.is_valid(name):
                         if parent_cog is not None and name in parent_cog.aliases:
-                            logging.critical("Sub-cog %s from cog %s couldn't be loaded because "
-                                             "a command with the same name exists", name, parent_cog.name)
+                            log.critical("Sub-cog %s from cog %s couldn't be loaded because "
+                                         "a command with the same name exists", name, parent_cog.name)
                             continue
                         name = base_name + name
                         if name not in cogs.cogs and name not in cogs.fail:
@@ -183,8 +184,8 @@ class Bot(discord.Client):
                 # If a directory containing `__init__.py` is found, load the init and the directory
                 elif os.path.isdir(full) and gearbox.is_valid(name) and not (name in cogs.cogs or name in cogs.fail):
                     if parent_cog is not None and name in parent_cog.aliases:
-                        logging.critical("Sub-cog %s from cog %s couldn't be loaded because "
-                                         "a command with the same name exists", name, parent_cog.name)
+                        log.critical("Sub-cog %s from cog %s couldn't be loaded because "
+                                     "a command with the same name exists", name, parent_cog.name)
                         continue
                     if '__init__.py' in os.listdir(full):
                         cogs.load(name)
@@ -192,7 +193,7 @@ class Bot(discord.Client):
                             parent_cog.subcogs[name] = cogs.cogs[name]
                         load_dir(full, base_name + name + '.', cogs.cogs[name].cog)
 
-        logging.info('Wheel rolling.')
+        log.info('Wheel rolling.')
         while True:
             if CFG['wheel']['import']:
                 load_dir()
@@ -222,7 +223,7 @@ class Bot(discord.Client):
         version = gearbox.prettify_version(abbrev=0)
         game = discord.Game(version)
         await super(Bot, self).change_presence(status=discord.Status.idle, activity=game)
-        logging.info('Client started.')
+        log.info('Client started.')
 
 
 def main():
@@ -247,7 +248,7 @@ def main():
     logging.getLogger('discord').setLevel(logging.WARNING)
     logging.getLogger('asyncio').setLevel(logging.WARNING)
     logging.getLogger('websockets').setLevel(logging.WARNING)
-    logging.info('Starting...')
+    log.info('Starting...')
 
     # When in debug mode, load specific cogs and prevent dynamic import
     if args.load is not None:
@@ -263,7 +264,7 @@ def main():
 
     bot = Bot(master, admins, banned)
     status = bot.run(token)
-    logging.info("Stopped")
+    log.info("Stopped")
     exit(status)
 
 if __name__ == '__main__':

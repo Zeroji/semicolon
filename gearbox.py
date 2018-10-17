@@ -65,6 +65,7 @@ CONFIG_LOADERS = {'json': json, 'yaml': yaml}  # name:module mapping of config l
 CFG = {}  # Configuration settings (nested dictionary)
 version = {'num': 'unknown', 'stable': True, 'commits': 0, 'hash': None, 'dirty': False}  # version information
 LANGUAGES = {}  # language_code:translation mapping of all available languages for this module (gearbox)
+log = logging.getLogger('semi.gear')
 
 
 def update_config(cfg):
@@ -78,18 +79,18 @@ def update_config(cfg):
     try:
         version = git_version()
     except subprocess.CalledProcessError:
-        logging.debug('Failed to get version from git, trying to read file')
+        log.debug('Failed to get version from git, trying to read file')
         version_path = CFG['path']['version']
         try:
             ver_num, ver_type = open(version_path).read().strip().split()
             version['num'] = ver_num  # String matching [0-9]+(?:\.[0-9]+)* for example 0.3.14
             version['stable'] = ver_type != 'dev'  # Expected to be either "dev" or "release"
         except ValueError:
-            logging.warning('Wrong version file format! It should be <number> <type>')
+            log.warning('Wrong version file format! It should be <number> <type>')
         except FileNotFoundError:
-            logging.warning('Version file %s not found' % version_path)
+            log.warning('Version file %s not found' % version_path)
         except EnvironmentError as exc:
-            logging.warning("Couldn't open version file '%s': %s", version_path, exc)
+            log.warning("Couldn't open version file '%s': %s", version_path, exc)
     # Go through all the directories in the locale folder and load all gearbox.mo translation files
     for lang in os.listdir(CFG['path']['locale']):
         if os.path.isfile(os.path.join(CFG['path']['locale'], lang, 'LC_MESSAGES', 'gearbox.mo')):
@@ -318,8 +319,8 @@ class Callable:
                     try:  # If the output can be casted to a string, send it to Discord
                         output = str(output)
                     except (UnicodeError, UnicodeEncodeError):
-                        logging.warning("Unicode error in command '%s' (with arguments %s, %s)",
-                                        self.func.__name__, args, kwargs)
+                        log.warning("Unicode error in command '%s' (with arguments %s, %s)",
+                                    self.func.__name__, args, kwargs)
                         return
                     if len(output) > 0:
                         await channel.send(str(output))
@@ -388,9 +389,9 @@ class Command(Callable):
                     elif any([isinstance(item[0], t) for t in type_types]) and isinstance(item[1], str):
                         self.annotations[key] = item
                     else:  # Warning in case the annotation is a tuple, but of invalid type
-                        logging.warning("Invalid annotation tuple for argument %s in function %s", key, func.__name__)
+                        log.warning("Invalid annotation tuple for argument %s in function %s", key, func.__name__)
                 else:
-                    logging.warning("Invalid annotation type for argument %s in function %s", key, func.__name__)
+                    log.warning("Invalid annotation type for argument %s in function %s", key, func.__name__)
         # Generate empty docstring if none is present
         if not func.__doc__:
             func.__doc__ = ' '
@@ -543,7 +544,7 @@ class Cog:
         module = CONFIG_LOADERS.get(self.config_type)
         path = CFG['path']['config'] % (self.name, self.config_type)
         if module is None:
-            logging.warning("Unsupported configuration format '%s' for cog '%s'", self.config_type, self.name)
+            log.warning("Unsupported configuration format '%s' for cog '%s'", self.config_type, self.name)
         return module, path
 
     def load_cfg(self):  # Called before cog init
@@ -562,7 +563,7 @@ class Cog:
             try:
                 self.config = module.load(open(path))
             except FileNotFoundError:
-                logging.warning("No config file at %s for cog %s", path, self.name)
+                log.warning("No config file at %s for cog %s", path, self.name)
 
     def save_cfg(self):  # Called after cog exit
         """Write the cog's config to its config file (in the specified format)."""
@@ -617,10 +618,10 @@ class Cog:
                         else:
                             self.aliases[alias] = func.__name__
                     else:
-                        logging.error("Couldn't register alias '%s' for '%s': already mapped to '%s'",
-                                      alias, func.__name__, self.aliases[alias])
+                        log.error("Couldn't register alias '%s' for '%s': already mapped to '%s'",
+                                  alias, func.__name__, self.aliases[alias])
                 else:
-                    logging.error("Invalid alias name: '%s'", alias)
+                    log.error("Invalid alias name: '%s'", alias)
             return func
         return decorate
 
@@ -628,12 +629,12 @@ class Cog:
         """Rename a command."""
         def decorate(func):
             if not is_valid(name):
-                logging.error("Couldn't rename '%s' to '%s': invalid name", func.__name__, name)
+                log.error("Couldn't rename '%s' to '%s': invalid name", func.__name__, name)
             elif name in self.commands:
-                logging.error("Couldn't rename '%s' to '%s': command already existing", func.__name__, name)
+                log.error("Couldn't rename '%s' to '%s': command already existing", func.__name__, name)
             else:
                 if name in self.aliases:
-                    logging.warning("Command '%s' overwrites an alias mapped to '%s'", name, self.aliases[name])
+                    log.warning("Command '%s' overwrites an alias mapped to '%s'", name, self.aliases[name])
                 self.aliases[name] = name
                 for alias, dest in self.aliases.items():
                     if dest == func.__name__:
@@ -660,10 +661,10 @@ class Cog:
                 name = real_name
             else:
                 if not is_valid(name):
-                    logging.critical("Invalid command name '%s' in module '%s'", name, self.name)
+                    log.critical("Invalid command name '%s' in module '%s'", name, self.name)
                     return lambda *a, **kw: None
                 if name in self.aliases:
-                    logging.warning("Command '%s' overwrites an alias mapped to '%s'", name, self.aliases[name])
+                    log.warning("Command '%s' overwrites an alias mapped to '%s'", name, self.aliases[name])
                 self.aliases[name] = name
             self.commands[name] = Command(function, parent=self, **kwargs)
             return function
