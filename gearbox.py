@@ -116,9 +116,9 @@ def git_version():
 def prettify_version(abbrev=4):
     """Prettify detailed version information for display."""
     # Example: 0.1.0-dev+4:C0DE!
-    ver = version['num']
+    ver = 'v' + version['num']
     if not version['stable']:
-        ver += '-dev'
+        ver += '-dev' if abbrev > 0 else 'd'
     if version['commits'] != 0:
         ver += '{:+}'.format(version['commits'])
         if abbrev > 0:
